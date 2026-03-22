@@ -17,7 +17,6 @@
         
         :root {
             --ios-bg: #000000;
-            --ios-accent: #5b00cc;
         }
 
         body {
@@ -53,7 +52,7 @@
             text-align-last: center;
         }
 
-        /* Modo Captura */
+        /* Estilos Modo Captura */
         .screenshot-mode header, .screenshot-mode nav, .screenshot-mode #btnCloud { display: none !important; }
         .screenshot-mode { background-color: #000000 !important; }
         .screenshot-mode #scheduleContainer { 
@@ -90,19 +89,16 @@
             filter: brightness(1.2);
         }
 
-        /* Ocultar Scrollbar */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="flex flex-col h-[100dvh] overflow-x-hidden" id="appBody">
 
-    <!-- Botón Salir Captura -->
     <button type="button" id="btnVolverCaptura" onclick="exitScreenshotMode()" class="hidden fixed z-50 w-9 h-9 bg-zinc-800/60 backdrop-blur-md text-white/70 rounded-full shadow-md border border-zinc-700/50 items-center justify-center active:scale-95 transition-all">
         <i data-lucide="x" class="w-4 h-4"></i>
     </button>
 
-    <!-- Header Principal -->
     <header class="sticky top-0 z-40 ios-blur px-3 pt-6 pb-2 flex flex-col border-b border-zinc-900">
         <div class="relative w-full flex items-center justify-center mb-4">
             <h1 class="text-[24px] font-extrabold tracking-tight text-white text-center">Predicación</h1>
@@ -125,18 +121,20 @@
         
         <div class="flex items-center gap-1.5 bg-zinc-900 p-1 rounded-lg">
             <select id="monthSelector" onchange="handleSelectChange()" class="bg-zinc-800 rounded px-2 py-1 text-xs font-semibold border-none flex-1 outline-none text-white">
-                <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+                <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+                <option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option>
+                <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
+                <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
             </select>
             <select id="weekSelector" onchange="handleSelectChange()" class="bg-zinc-800 rounded px-2 py-1 text-xs font-semibold border-none flex-[0.5] outline-none text-white">
-                <option value="1">Sem. 1</option><option value="2">Sem. 2</option><option value="3">Sem. 3</option><option value="4">Sem. 4</option><option value="5">Sem. 5</option>
+                <option value="1">Sem. 1</option><option value="2">Sem. 2</option><option value="3">Sem. 3</option>
+                <option value="4">Sem. 4</option><option value="5">Sem. 5</option>
             </select>
         </div>
     </header>
 
-    <!-- Contenedor Principal -->
     <main class="flex-1 p-2 overflow-y-auto pb-[80px] no-scrollbar" id="scheduleContainer"></main>
 
-    <!-- Tab Bar -->
     <nav class="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto ios-blur border-t border-zinc-900 pb-[env(safe-area-inset-bottom,4px)] flex justify-around items-stretch z-40 h-[58px] box-content">
         <button type="button" onclick="toggleModal('searchModal')" class="flex-1 flex flex-col items-center justify-center text-white/50 group">
             <div class="flex flex-col items-center justify-center transition-transform group-active:scale-95">
@@ -158,7 +156,6 @@
         </button>
     </nav>
 
-    <!-- Lista de Direcciones -->
     <datalist id="locationList"></datalist>
 
     <!-- Modales -->
@@ -166,7 +163,7 @@
         <div class="bg-[#1C1C1E] border border-zinc-800 w-full max-w-md rounded-t-[24px] p-5 pb-10 space-y-3">
             <div class="flex justify-between items-center"><h2 class="text-lg font-bold text-white">Buscar</h2><button onclick="toggleModal('searchModal')" class="p-1.5 bg-zinc-800 rounded-full"><i data-lucide="x" class="w-4 h-4"></i></button></div>
             <input type="text" id="searchInput" oninput="doSearch(this.value)" placeholder="Territorio..." class="w-full bg-black/40 text-white rounded-lg px-4 py-2.5 text-sm outline-none border border-zinc-700">
-            <div id="searchResults" class="max-h-[50vh] overflow-y-auto space-y-2"></div>
+            <div id="searchResults" class="max-h-[50vh] overflow-y-auto space-y-2 mt-2"></div>
         </div>
     </div>
 
@@ -198,7 +195,6 @@
         </div>
     </div>
 
-    <!-- Alerta iOS -->
     <div id="customAlert" class="fixed inset-0 z-[80] hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity opacity-0" id="customAlertBg"></div>
         <div class="bg-[#1C1C1E]/95 border border-zinc-800 w-full max-w-[240px] rounded-[18px] p-5 text-center transform scale-95 opacity-0 transition-all duration-200 z-10" id="customAlertBox">
@@ -240,11 +236,6 @@
             renderSchedule();
             renderTerritoryGrid();
             renderShiftTerritoryGrid();
-            
-            // Registro del Service Worker para PWA
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js').catch(() => {});
-            }
         }
 
         function getDatesForMonthWeek(month, weekNum) {
@@ -385,7 +376,7 @@
                 if (id === 'statsModal') {
                     const counts = {}; Object.values(state.assignments).forEach(w => Object.values(w).forEach(d => Object.values(d).forEach(s => { (s.territories || []).forEach(t => { if (t && t !== "Rev." && t !== "-") counts[t] = (counts[t] || 0) + 1; }); })));
                     const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,5);
-                    document.getElementById('statsContent').innerHTML = sorted.map(([n,c]) => `<div class="flex items-center justify-between p-2 bg-zinc-800 rounded-lg border border-zinc-700"><div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-[#5b00cc]/30 text-[#cda4ff] flex items-center justify-center font-bold text-[10px]">${n}</span><span class="text-[11px] text-white/90">Yvy ${n}</span></div><span class="text-[9px] font-bold text-white/60 bg-zinc-700 px-2 py-0.5 rounded">${c} veces</span></div>`).join('');
+                    document.getElementById('statsContent').innerHTML = sorted.length ? sorted.map(([n,c]) => `<div class="flex items-center justify-between p-2 bg-zinc-800 rounded-lg border border-zinc-700"><div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-[#5b00cc]/30 text-[#cda4ff] flex items-center justify-center font-bold text-[10px]">${n}</span><span class="text-[11px] text-white/90">Territorio ${n}</span></div><span class="text-[9px] font-bold text-white/60 bg-zinc-700 px-2 py-0.5 rounded">${c} veces</span></div>`).join('') : '<div class="text-center py-4 text-white/40 text-xs">Sin datos</div>';
                 }
                 m.classList.remove('hidden');
             } else m.classList.add('hidden');
@@ -414,12 +405,22 @@
             }
         }
         function saveShiftTerritories() { updateData(editingDay, editingShift, 'territories', [...tempTerritories]); toggleModal('shiftTerritoryModal'); renderSchedule(); renderTerritoryGrid(); }
+        
         function renderTerritoryGrid() {
-            const grid = document.getElementById('territoryGrid'); grid.innerHTML = '';
+            const grid = document.getElementById('territoryGrid'); grid.innerHTML = ''; const monthlyAssigned = new Set();
+            Object.keys(state.assignments).forEach(key => { 
+                if (key.startsWith(`${state.currentMonth}-`)) {
+                    Object.values(state.assignments[key]).forEach(dayData => {
+                        Object.values(dayData).forEach(shiftData => { 
+                            if (shiftData.territories) shiftData.territories.forEach(t => monthlyAssigned.add(t)); 
+                        });
+                    });
+                }
+            });
             for (let i = 1; i <= 75; i++) {
-                const btn = document.createElement('button'); const isMan = state.territories[i-1];
-                btn.className = `h-7 text-[10px] font-bold rounded flex items-center justify-center ${isMan ? 'bg-[#b800b8] text-white' : 'bg-zinc-800 text-white/50 border border-zinc-700'}`;
-                btn.textContent = i; btn.onclick = () => { state.territories[i-1] = !state.territories[i-1]; saveState(); renderTerritoryGrid(); }; grid.appendChild(btn);
+                const btn = document.createElement('button'); const tStr = i.toString(), isAuto = monthlyAssigned.has(tStr), isMan = state.territories[i-1];
+                btn.className = `h-7 text-[10px] font-bold rounded flex items-center justify-center ${isAuto ? 'bg-emerald-600 text-white' : (isMan ? 'bg-[#b800b8] text-white' : 'bg-zinc-800 text-white/50 border border-zinc-700')}`;
+                btn.textContent = i; btn.onclick = () => { if(!isAuto) { state.territories[i-1] = !state.territories[i-1]; saveState(); renderTerritoryGrid(); } showTerritoryInfo(tStr, isAuto || state.territories[i-1]); }; grid.appendChild(btn);
             }
         }
 
@@ -429,11 +430,11 @@
         function toggleCleaning() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isCleaning = !state.assignments[wk]['SAB'].isCleaning; if (state.assignments[wk]['SAB'].isCleaning) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isVisita = false; } saveState(); renderSchedule(); }
         function toggleManualMode(d, s, m) { updateData(d, s, 'manualMode', m); renderSchedule(); }
         function updateData(d, s, f, v) { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk][d]) state.assignments[wk][d] = {}; if (!state.assignments[wk][d][s]) state.assignments[wk][d][s] = {}; state.assignments[wk][d][s][f] = v; saveState(); }
-        function syncCloudPlaceholder() { showCustomAlert("Cloud disponible próximamente."); }
+        function syncCloudPlaceholder() { showCustomAlert("Sincronización en la nube próximamente."); }
         function toggleScreenshotMode() { document.getElementById('appBody').classList.add('screenshot-mode'); }
         function exitScreenshotMode() { document.getElementById('appBody').classList.remove('screenshot-mode'); }
         function saveState() { localStorage.setItem('app_horario_2026_v2', JSON.stringify(state)); }
-        function showCustomAlert(m) { document.getElementById('customAlertMsg').textContent = m; document.getElementById('customAlert').classList.remove('hidden'); document.getElementById('customAlert').classList.add('flex'); void document.getElementById('customAlertBox').offsetWidth; document.getElementById('customAlertBg').classList.remove('opacity-0'); document.getElementById('customAlertBox').classList.remove('opacity-100', 'scale-100'); document.getElementById('customAlertBox').classList.add('opacity-100', 'scale-100'); }
+        function showCustomAlert(m) { document.getElementById('customAlertMsg').textContent = m; document.getElementById('customAlert').classList.remove('hidden'); document.getElementById('customAlert').classList.add('flex'); void document.getElementById('customAlertBox').offsetWidth; document.getElementById('customAlertBg').classList.remove('opacity-0'); document.getElementById('customAlertBox').classList.remove('scale-95'); document.getElementById('customAlertBox').classList.add('opacity-100', 'scale-100'); }
         function closeCustomAlert() { document.getElementById('customAlertBg').classList.add('opacity-0'); document.getElementById('customAlertBox').classList.remove('opacity-100', 'scale-100'); setTimeout(() => { document.getElementById('customAlert').classList.add('hidden'); document.getElementById('customAlert').classList.remove('flex'); }, 200); }
 
         window.onload = init;
