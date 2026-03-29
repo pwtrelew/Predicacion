@@ -1,18 +1,22 @@
 {
   "name": "Predicación 2026",
   "short_name": "Predicación",
-  "description": "Agenda de Predicación Semanal",
+  "description": "Gestión premium de territorios y cronograma",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#5b00cc",
-  "orientation": "portrait",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3214/3214746.png",
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
