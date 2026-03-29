@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Meta tags para PWA en iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Predicación">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
+    
     <title>Predicación 2026</title>
     
+    <!-- Librerías Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
@@ -165,6 +169,23 @@
 </head>
 <body class="flex flex-col h-[100dvh] overflow-x-hidden" id="appBody">
 
+    <!-- === PANTALLA DE LOGIN CON CONTRASEÑA === -->
+    <div id="loginScreen" class="fixed inset-0 z-[200] bg-[#000000] flex flex-col items-center justify-center p-6 ios-transition">
+        <div class="w-20 h-20 bg-gradient-to-tr from-[#0A84FF] to-[#32D74B] rounded-[22px] mb-8 shadow-lg flex items-center justify-center">
+            <i data-lucide="lock" class="w-10 h-10 text-white"></i>
+        </div>
+        <h1 class="text-[34px] font-bold tracking-[-0.02em] text-white mb-2">Predicación</h1>
+        <p class="text-[15px] text-white/50 font-medium mb-8 text-center max-w-[280px] leading-relaxed">Ingresa la contraseña de acceso para ver y editar el cronograma.</p>
+
+        <div class="w-full max-w-[320px] mb-6">
+            <input type="password" id="accessPassword" placeholder="Contraseña" class="w-full bg-[#1C1C1E] text-white text-[17px] px-4 py-4 rounded-[14px] border border-white/10 outline-none focus:border-[#0A84FF] ios-transition text-center" onkeypress="if(event.key === 'Enter') loginWithPassword()">
+        </div>
+
+        <button onclick="loginWithPassword()" class="w-full max-w-[320px] bg-white text-black font-semibold text-[17px] py-3.5 rounded-[14px] flex items-center justify-center gap-2 active:scale-95 ios-transition shadow-[0_4px_14px_rgba(255,255,255,0.2)]">
+            Entrar
+        </button>
+    </div>
+
     <!-- Indicador Flotante -->
     <div id="weekIndicator">
         <div class="flex flex-col items-center text-center">
@@ -186,7 +207,7 @@
                 <button type="button" onclick="toggleScreenshotMode()" class="w-9 h-9 flex items-center justify-center bg-white/10 rounded-full text-[#0A84FF] active:scale-90 ios-transition">
                     <i data-lucide="camera" class="w-[18px] h-[18px]"></i>
                 </button>
-                <button type="button" id="btnCloud" onclick="showSyncStatus()" class="w-9 h-9 flex items-center justify-center bg-white/10 rounded-full text-white/80 active:scale-90 ios-transition relative">
+                <button type="button" onclick="showSyncStatus()" class="w-9 h-9 flex items-center justify-center bg-white/10 rounded-full text-white/80 active:scale-90 ios-transition relative">
                     <i data-lucide="cloud" id="cloudIcon" class="w-[18px] h-[18px] transition-colors duration-500"></i>
                 </button>
             </div>
@@ -234,6 +255,7 @@
     </nav>
 
     <!-- === MODALES === -->
+
     <div id="modesPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('modesPickerModal')">
         <div class="bg-[#1C1C1E] border-t border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
@@ -245,6 +267,7 @@
         </div>
     </div>
 
+    <!-- Modal Configurar Campaña -->
     <div id="campanaModal" class="fixed inset-0 z-[80] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('campanaModal')">
         <div class="bg-[#1C1C1E] border-t border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
@@ -367,7 +390,7 @@
     <!-- === MOTOR DE LÓGICA Y FIREBASE (ES MODULE) === -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Configuración de Firebase (Tus Llaves Reales)
@@ -384,6 +407,9 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const uniqueAppId = 'predicacion-60930'; 
+        
+        // === CONFIGURA AQUÍ TU CONTRASEÑA ÚNICA ===
+        const SHARED_PASSWORD = "trelew";
         
         let isFirebaseReady = false;
         let currentUser = null;
@@ -404,7 +430,6 @@
             { id: 'DOM', label: 'DOM', shifts: [{time: '10.00', id: 'm'}] }
         ];
 
-        // Usamos una variable local 'state' protegida de errores globales
         let state = { 
             currentMonth: 0, currentWeek: 1, assignments: {}, drivers: [...defaultDrivers],
             morningTime: "10.00", afternoonTime: "17.30", campanaConfig: { active: false, start: '', end: '' }
@@ -414,7 +439,7 @@
         let expandedLocationSection = null; 
         let territoryWarnings = {}; 
 
-        // Recuperación instantánea del caché local
+        // Recuperación del caché local inicial (se sobreescribirá con la nube si hay red)
         const savedState = localStorage.getItem('app_horario_2026_v2');
         if (savedState) {
             const parsed = JSON.parse(savedState);
@@ -425,20 +450,43 @@
             state = Object.assign(state, parsed);
         }
 
-        // --- INICIALIZACIÓN DE FIREBASE ---
-        const initFirebase = async () => {
-            try {
-                await signInAnonymously(auth);
-            } catch (error) {
-                console.error("Error Auth Firebase:", error);
-                document.getElementById('cloudIcon').classList.add('text-[#FF453A]');
+        // --- SISTEMA DE AUTENTICACIÓN CON CONTRASEÑA COMPARTIDA ---
+        async function loginWithPassword() {
+            const input = document.getElementById('accessPassword').value;
+            
+            if (input === SHARED_PASSWORD) {
+                try {
+                    await signInAnonymously(auth);
+                } catch (error) {
+                    console.error("Error Login:", error);
+                    showCustomAlert("Error al conectar con la base de datos.");
+                }
+            } else {
+                showCustomAlert("Contraseña incorrecta. Inténtalo de nuevo.");
+                document.getElementById('accessPassword').value = '';
             }
-        };
+        }
+
+        function handleLogout() {
+            signOut(auth).then(() => {
+                toggleModal('profileModal');
+            }).catch(e => console.error(e));
+        }
 
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
+            const loginScreen = document.getElementById('loginScreen');
+            
             if (user) {
+                // Usuario autenticado
+                loginScreen.style.opacity = '0';
+                setTimeout(() => loginScreen.classList.add('hidden'), 400); 
+                document.getElementById('accessPassword').value = ''; // Limpiar campo
                 setupRealtimeSync();
+            } else {
+                // Usuario NO autenticado
+                loginScreen.classList.remove('hidden');
+                setTimeout(() => loginScreen.style.opacity = '1', 10);
             }
         });
 
@@ -480,7 +528,7 @@
         
         function showSyncStatus() {
             if (isFirebaseReady) {
-                showCustomAlert("Conectado y Sincronizado. Tus cambios se guardan y reflejan en tiempo real en todos los dispositivos.");
+                showCustomAlert("Sincronización activa. Tus cambios se guardan en la nube en tiempo real.");
             } else {
                 showCustomAlert("Conectando a los servidores... Por favor, espera.");
             }
@@ -493,7 +541,6 @@
             renderSchedule();
             renderTerritoryGrid();
             renderShiftTerritoryGrid();
-            initFirebase(); 
         }
 
         function updateSelectDisplays() {
@@ -815,7 +862,6 @@
             return [...state.drivers].sort((a, b) => driverLastSeen[a] - driverLastSeen[b]);
         }
 
-        // --- Nuevas funciones de exportación para Inline Events ---
         function updateGlobalTime(field, value) {
             state[field] = value;
             saveState();
@@ -1258,6 +1304,7 @@
         }
 
         function updateData(d, s, f, v) { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk][d]) state.assignments[wk][d] = {}; if (!state.assignments[wk][d][s]) state.assignments[wk][d][s] = {}; if (f === null) state.assignments[wk][d][s] = v; else state.assignments[wk][d][s][f] = v; saveState(); }
+        
         function toggleScreenshotMode() { document.getElementById('appBody').classList.add('screenshot-mode'); }
         function exitScreenshotMode() { document.getElementById('appBody').classList.remove('screenshot-mode'); }
         
@@ -1285,10 +1332,9 @@
             openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, 
             handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, 
             openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, 
-            toggleShiftTerritory, updateGlobalTime, updateCleaningTime
+            toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, handleLogout
         });
 
-        // Aseguramos el inicio solo cuando el DOM esté listo
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {
