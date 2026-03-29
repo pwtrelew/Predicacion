@@ -3,17 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <!-- Meta tags para PWA en iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Predicación">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
-    
     <title>Predicación 2026</title>
     
-    <!-- Librerías Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
@@ -190,8 +186,8 @@
                 <button type="button" onclick="toggleScreenshotMode()" class="w-9 h-9 flex items-center justify-center bg-white/10 rounded-full text-[#0A84FF] active:scale-90 ios-transition">
                     <i data-lucide="camera" class="w-[18px] h-[18px]"></i>
                 </button>
-                <button type="button" id="btnCloud" onclick="syncCloudPlaceholder()" class="w-9 h-9 flex items-center justify-center bg-white/10 rounded-full text-white/80 active:scale-90 ios-transition">
-                    <i data-lucide="cloud" class="w-[18px] h-[18px]"></i>
+                <button type="button" id="btnCloud" onclick="showSyncStatus()" class="w-9 h-9 flex items-center justify-center bg-white/10 rounded-full text-white/80 active:scale-90 ios-transition relative">
+                    <i data-lucide="cloud" id="cloudIcon" class="w-[18px] h-[18px] transition-colors duration-500"></i>
                 </button>
             </div>
         </div>
@@ -237,8 +233,7 @@
         </button>
     </nav>
 
-    <!-- === MODALES (Bottom Sheets) === -->
-    
+    <!-- === MODALES === -->
     <div id="modesPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('modesPickerModal')">
         <div class="bg-[#1C1C1E] border-t border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
@@ -250,7 +245,6 @@
         </div>
     </div>
 
-    <!-- Modal Configurar Campaña -->
     <div id="campanaModal" class="fixed inset-0 z-[80] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('campanaModal')">
         <div class="bg-[#1C1C1E] border-t border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
@@ -258,7 +252,6 @@
                 <h2 class="text-xl font-bold text-white tracking-[-0.01em]">Configurar Campaña</h2>
                 <button onclick="toggleModal('campanaModal')" class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            
             <div class="space-y-4 mb-6">
                 <div class="bg-white/5 p-4 rounded-[16px] border border-white/5">
                     <label class="block text-[12px] font-bold text-[#CDA4FF] uppercase tracking-widest mb-2">Fecha de inicio</label>
@@ -269,7 +262,6 @@
                     <input type="date" id="campanaEndDate" class="w-full bg-transparent text-white text-[17px] outline-none font-medium [color-scheme:dark]">
                 </div>
             </div>
-
             <button onclick="saveCampana()" class="w-full py-4 text-[15px] font-semibold text-black bg-[#CDA4FF] rounded-[14px] active:scale-95 ios-transition shadow-lg shadow-[#CDA4FF]/20 mb-3">Guardar Fechas</button>
             <button onclick="disableCampana()" id="btnDisableCampana" class="w-full py-4 text-[15px] font-medium text-[#FF453A] bg-[#FF453A]/10 rounded-[14px] active:scale-95 ios-transition hidden">Desactivar Campaña</button>
         </div>
@@ -364,7 +356,6 @@
         </div>
     </div>
 
-    <!-- Alert Custom -->
     <div id="customAlert" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
         <div id="customAlertBg" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
         <div id="customAlertBox" class="relative bg-[rgba(30,30,30,0.85)] backdrop-blur-xl border border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-95 opacity-0 transition-all duration-300 shadow-2xl">
@@ -373,23 +364,34 @@
         </div>
     </div>
 
-    <script>
+    <!-- === MOTOR DE LÓGICA Y FIREBASE (ES MODULE) === -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Configuración de Firebase (Tus Llaves Reales)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDm4lYig4JJR7DlKj5kdFKYtNiVMpYgUZo",
+            authDomain: "predicacion-60930.firebaseapp.com",
+            projectId: "predicacion-60930",
+            storageBucket: "predicacion-60930.firebasestorage.app",
+            messagingSenderId: "11914959444",
+            appId: "1:11914959444:web:061ef375f382bed74c2bc1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const uniqueAppId = 'predicacion-60930'; 
+        
+        let isFirebaseReady = false;
+        let currentUser = null;
+
         const defaultDrivers = ["Jorge", "Jeremías", "Leonardo", "Darío", "Enzo", "Miguel", "Marcelo", "Pablo F.", "Diego", "Julio", "E. Gauna", "E. García", "Ramón S."];
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const userLocations = [
-            "P.J. Muzio y Cutillo", "Galina y Las Heras", "J. Berreta y J. Marmol", "Saavedra y Roque Gonzalez",
-            "Crucero Gral. Belgrano y J. Ingenieros", "Cutillo y Urquiza", "Galina y 2 de Abril", "P.J. Muzio y Pje. Los Andes",
-            "J. Ingenieros y Juan Evans", "P.J. Muzio y Alem", "13 de Julio y Jorge Montes", "Av. Cristobal Colon y C. Nahuelpan",
-            "Arturo Robert y 13 de Julio", "Saavedra y J. Ingenieros", "Salon del Reino", "C. Nahuelpan y Maria Humphreys",
-            "Maestro Puntanos y Love Parry", "Carrasco y Lezana", "J. A de Padilla y Alderete", "Arturo Robert y C. Nahuelpan",
-            "Conesa y Martin Fierro", "Maria Humphreys y Annie Jones", "C. Nahuelpan y A. Jenkins", "Cutillo y Moreno",
-            "Velero Mimosa y Hann", "Acceso a Base y Nahuelpan", "Galina y Nahuelpan", "Saavedra y Nahuelpan",
-            "Escuela 744", "Alem y Muzio", "Galina y Loyd Jones", "(Laguna Ch.) Calesita", "Italia y Alem",
-            "J.A de Padilla y Jose Hernandez", "J.A de Padilla y Cutillo", "Lezana y 13 de Julio", "Las Heras y L. Novaro",
-            "Alem y Alberdi", "R. Gonzalez y W. Davies", "Nahuelpan y Velero Mimosa", "Flia. Ferrin (Dario)",
-            "Flia. Ferrin (Pablo)", "Flia. Sanchez", "Flia. Velazquez", "Flia. Garcia", "Flia. Echegaray",
-            "Flia. Quirulef", "Flia. Cicchitti", "Flia. Perales", "Flia. Molina", "Maria Ch.", "Carmen S.", "Cleri J.",
-            "Maestros Puntanos y J. Murray Thomas", "Conesa y J. Jones"
+            "P.J. Muzio y Cutillo", "Galina y Las Heras", "J. Berreta y J. Marmol", "Saavedra y Roque Gonzalez", "Crucero Gral. Belgrano y J. Ingenieros", "Cutillo y Urquiza", "Galina y 2 de Abril", "P.J. Muzio y Pje. Los Andes", "J. Ingenieros y Juan Evans", "P.J. Muzio y Alem", "13 de Julio y Jorge Montes", "Av. Cristobal Colon y C. Nahuelpan", "Arturo Robert y 13 de Julio", "Saavedra y J. Ingenieros", "Salon del Reino", "C. Nahuelpan y Maria Humphreys", "Maestro Puntanos y Love Parry", "Carrasco y Lezana", "J. A de Padilla y Alderete", "Arturo Robert y C. Nahuelpan", "Conesa y Martin Fierro", "Maria Humphreys y Annie Jones", "C. Nahuelpan y A. Jenkins", "Cutillo y Moreno", "Velero Mimosa y Hann", "Acceso a Base y Nahuelpan", "Galina y Nahuelpan", "Saavedra y Nahuelpan", "Escuela 744", "Alem y Muzio", "Galina y Loyd Jones", "(Laguna Ch.) Calesita", "Italia y Alem", "J.A de Padilla y Jose Hernandez", "J.A de Padilla y Cutillo", "Lezana y 13 de Julio", "Las Heras y L. Novaro", "Alem y Alberdi", "R. Gonzalez y W. Davies", "Nahuelpan y Velero Mimosa", "Flia. Ferrin (Dario)", "Flia. Ferrin (Pablo)", "Flia. Sanchez", "Flia. Velazquez", "Flia. Garcia", "Flia. Echegaray", "Flia. Quirulef", "Flia. Cicchitti", "Flia. Perales", "Flia. Molina", "Maria Ch.", "Carmen S.", "Cleri J.", "Maestros Puntanos y J. Murray Thomas", "Conesa y J. Jones"
         ];
 
         const weekStructure = [
@@ -402,16 +404,17 @@
             { id: 'DOM', label: 'DOM', shifts: [{time: '10.00', id: 'm'}] }
         ];
 
+        // Usamos una variable local 'state' protegida de errores globales
         let state = { 
             currentMonth: 0, currentWeek: 1, assignments: {}, drivers: [...defaultDrivers],
-            morningTime: "10.00", afternoonTime: "17.30",
-            campanaConfig: { active: false, start: '', end: '' }
+            morningTime: "10.00", afternoonTime: "17.30", campanaConfig: { active: false, start: '', end: '' }
         };
         
         let editingDay, editingShift, tempTerritories = [], holdTimer, isHolding = false, indicatorTimer = null;
         let expandedLocationSection = null; 
         let territoryWarnings = {}; 
 
+        // Recuperación instantánea del caché local
         const savedState = localStorage.getItem('app_horario_2026_v2');
         if (savedState) {
             const parsed = JSON.parse(savedState);
@@ -422,12 +425,75 @@
             state = Object.assign(state, parsed);
         }
 
+        // --- INICIALIZACIÓN DE FIREBASE ---
+        const initFirebase = async () => {
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Error Auth Firebase:", error);
+                document.getElementById('cloudIcon').classList.add('text-[#FF453A]');
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                setupRealtimeSync();
+            }
+        });
+
+        function setupRealtimeSync() {
+            if (!currentUser) return;
+            const docRef = doc(db, 'artifacts', uniqueAppId, 'public', 'data', 'schedule', 'main');
+            
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const remoteData = docSnap.data();
+                    state = Object.assign(state, remoteData);
+                    localStorage.setItem('app_horario_2026_v2', JSON.stringify(state));
+                    updateSelectDisplays();
+                    renderSchedule();
+                    renderTerritoryGrid();
+                    renderShiftTerritoryGrid();
+                } else {
+                    setDoc(docRef, state, { merge: true });
+                }
+                isFirebaseReady = true;
+                const cloudIcon = document.getElementById('cloudIcon');
+                if(cloudIcon) {
+                    cloudIcon.outerHTML = '<i data-lucide="cloud-check" id="cloudIcon" class="w-[18px] h-[18px] text-[#32D74B] transition-colors duration-500"></i>';
+                    lucide.createIcons();
+                }
+            }, (error) => {
+                console.error("Error de sincronización", error);
+                document.getElementById('cloudIcon').classList.add('text-[#FF453A]');
+            });
+        }
+
+        function saveState() { 
+            localStorage.setItem('app_horario_2026_v2', JSON.stringify(state)); 
+            if (isFirebaseReady && currentUser) {
+                const docRef = doc(db, 'artifacts', uniqueAppId, 'public', 'data', 'schedule', 'main');
+                setDoc(docRef, state, { merge: true }).catch(e => console.error(e));
+            }
+        }
+        
+        function showSyncStatus() {
+            if (isFirebaseReady) {
+                showCustomAlert("Conectado y Sincronizado. Tus cambios se guardan y reflejan en tiempo real en todos los dispositivos.");
+            } else {
+                showCustomAlert("Conectando a los servidores... Por favor, espera.");
+            }
+        }
+
+        // --- Lógica Visual y de Interfaz ---
         function init() {
             lucide.createIcons();
             updateSelectDisplays();
             renderSchedule();
             renderTerritoryGrid();
             renderShiftTerritoryGrid();
+            initFirebase(); 
         }
 
         function updateSelectDisplays() {
@@ -649,7 +715,6 @@
             let activeModes = [];
             
             if (isWeekInCampana(state.currentMonth, state.currentWeek)) activeModes.push('Campaña');
-            
             if (sabData.isVisita) activeModes.push('Visita');
             if (sabData.isAsamblea) activeModes.push('Asamblea');
             if (sabData.isCleaning) activeModes.push('Limpieza');
@@ -750,6 +815,19 @@
             return [...state.drivers].sort((a, b) => driverLastSeen[a] - driverLastSeen[b]);
         }
 
+        // --- Nuevas funciones de exportación para Inline Events ---
+        function updateGlobalTime(field, value) {
+            state[field] = value;
+            saveState();
+        }
+
+        function updateCleaningTime(weekKey, value) {
+            if (!state.assignments[weekKey]) state.assignments[weekKey] = {};
+            if (!state.assignments[weekKey]['SAB']) state.assignments[weekKey]['SAB'] = {};
+            state.assignments[weekKey]['SAB'].cleaningTime = value;
+            saveState();
+        }
+
         function renderSchedule() {
             const container = document.getElementById('scheduleContainer'); container.innerHTML = '';
             const weekKey = getWeekKey(), weekData = state.assignments[weekKey] || {}, sabData = weekData['SAB'] || {};
@@ -759,8 +837,8 @@
             const globalHeader = document.createElement('div');
             globalHeader.className = "mb-4 px-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center ios-transition animate-fade";
             globalHeader.innerHTML = `
-                <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-white/70">Salidas por la mañana:</span><span contenteditable="true" onblur="state.morningTime = this.innerText; saveState();" class="text-[13px] font-bold text-white outline-none min-w-[30px]" data-placeholder="--:--">${state.morningTime}</span><span class="text-[12px] font-medium text-white/70">hs</span></div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-white/70">Salidas por la tarde:</span><span contenteditable="true" onblur="state.afternoonTime = this.innerText; saveState();" class="text-[13px] font-bold text-white outline-none min-w-[30px]" data-placeholder="--:--">${state.afternoonTime}</span><span class="text-[12px] font-medium text-white/70">hs</span></div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-white/70">Salidas por la mañana:</span><span contenteditable="true" onblur="updateGlobalTime('morningTime', this.innerText)" class="text-[13px] font-bold text-white outline-none min-w-[30px]" data-placeholder="--:--">${state.morningTime}</span><span class="text-[12px] font-medium text-white/70">hs</span></div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-white/70">Salidas por la tarde:</span><span contenteditable="true" onblur="updateGlobalTime('afternoonTime', this.innerText)" class="text-[13px] font-bold text-white outline-none min-w-[30px]" data-placeholder="--:--">${state.afternoonTime}</span><span class="text-[12px] font-medium text-white/70">hs</span></div>
             `;
             container.appendChild(globalHeader);
 
@@ -808,7 +886,7 @@
                 if (dayDef.id === 'SAB' && (dayData.isCleaning || dayData.isAsamblea)) {
                     if (dayData.isCleaning) {
                         content = `<div class="flex items-center w-full py-2 bg-[#32D74B]/10 border border-[#32D74B]/20 rounded-[10px] px-2 animate-fade">
-                            <span contenteditable="true" onblur="state.assignments['${weekKey}']['SAB'].cleaningTime = this.innerText; saveState();" 
+                            <span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" 
                                 class="w-[45px] text-center text-[12px] font-bold text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span>
                             <div class="flex-1 flex items-center justify-center gap-1.5">
                                 <i data-lucide="sparkles" class="w-4 h-4 text-[#32D74B]"></i>
@@ -1180,10 +1258,8 @@
         }
 
         function updateData(d, s, f, v) { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk][d]) state.assignments[wk][d] = {}; if (!state.assignments[wk][d][s]) state.assignments[wk][d][s] = {}; if (f === null) state.assignments[wk][d][s] = v; else state.assignments[wk][d][s][f] = v; saveState(); }
-        function syncCloudPlaceholder() { showCustomAlert("La sincronización en iCloud estará disponible pronto."); }
         function toggleScreenshotMode() { document.getElementById('appBody').classList.add('screenshot-mode'); }
         function exitScreenshotMode() { document.getElementById('appBody').classList.remove('screenshot-mode'); }
-        function saveState() { localStorage.setItem('app_horario_2026_v2', JSON.stringify(state)); }
         
         function showCustomAlert(m) { 
             document.getElementById('customAlertMsg').textContent = m; 
@@ -1201,21 +1277,30 @@
                 document.getElementById('customAlert').classList.remove('flex'); 
             }, 300); 
         }
-        
-        // Registro del Service Worker para PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registrado con éxito');
-                    })
-                    .catch(err => {
-                        console.log('Fallo al registrar ServiceWorker: ', err);
-                    });
-            });
+
+        // Exportamos TODAS las funciones requeridas por los eventos inline del HTML al entorno global
+        Object.assign(window, {
+            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, 
+            openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, 
+            openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, 
+            handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, 
+            openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, 
+            toggleShiftTerritory, updateGlobalTime, updateCleaningTime
+        });
+
+        // Aseguramos el inicio solo cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
         }
 
-        window.onload = init;
+        // Registro del Service Worker para PWA (Offline Support)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('ServiceWorker registrado con éxito'))
+                .catch(err => console.log('Fallo al registrar ServiceWorker: ', err));
+        }
     </script>
 </body>
 </html>
