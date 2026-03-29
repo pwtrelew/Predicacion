@@ -1,28 +1,33 @@
-const CACHE_NAME = 'predicacion-ios17-v1';
+// === REGLA DE ORO: Cambia este número de versión cada vez que modifiques tu index.html ===
+const CACHE_NAME = 'predicacion-v2'; // Ejemplo: la próxima vez pon 'predicacion-v3'
+
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json'
 ];
 
-// Instalación: Guardamos la app en la memoria del dispositivo
+// Instalación: Guardamos la app y forzamos la actualización inmediata
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Obliga al celular a instalar la nueva versión sin esperar
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache abierto exitosamente');
+        console.log('Cache actualizado a', CACHE_NAME);
         return cache.addAll(ASSETS_TO_CACHE);
       })
   );
 });
 
-// Activación: Limpiamos cachés antiguos si actualizamos la versión
+// Activación: Tomamos el control y limpiamos la basura vieja
 self.addEventListener('activate', event => {
+  event.waitUntil(clients.claim()); // Aplica los cambios a todas las pestañas abiertas
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
+            console.log('Borrando caché antiguo:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -31,17 +36,17 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Intercepción de red: Priorizamos el caché para una carga instantánea y soporte Offline
+// Intercepción de red: Estrategia "Network First" (Red primero, luego Caché)
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        // Si está en el caché, lo devolvemos al instante
-        if (response) {
-          return response;
-        }
-        // Si no, lo buscamos en internet
-        return fetch(event.request);
+        // Si hay internet, obtenemos la versión más fresca de GitHub
+        return response;
+      })
+      .catch(() => {
+        // Si NO hay internet (modo avión o sin señal), servimos la versión guardada
+        return caches.match(event.request);
       })
   );
 });
