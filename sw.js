@@ -1,5 +1,5 @@
 // === REGLA DE ORO: Cambia este número de versión cada vez que modifiques tu index.html ===
-const CACHE_NAME = 'predicacion-v4'; 
+const CACHE_NAME = 'predicacion-v5'; 
 
 const ASSETS_TO_CACHE = [
   './',
