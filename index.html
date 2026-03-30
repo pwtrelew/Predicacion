@@ -17,14 +17,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' };
-        // Inicializar tema antes de renderizar para evitar destellos (FOUC)
-        if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
-        else document.documentElement.classList.add('dark');
+        // Inicializar tema antes de renderizar para evitar destellos
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        /* === ESTÉTICA PREMIUM iOS === */
+        /* === ESTÉTICA PREMIUM iOS 17 PRO MAX === */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
@@ -37,10 +40,11 @@
             position: relative;
             overscroll-behavior-y: none;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
             transition: background-color 0.4s ease, color 0.4s ease;
         }
 
-        /* Efectos Cristalinos (Glassmorphism) */
         .ios-blur {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(45px) saturate(250%);
@@ -52,7 +56,6 @@
             border-bottom: 0.5px solid rgba(255, 255, 255, 0.08); 
         }
         
-        /* Profundidad de Tarjetas */
         .ios-card-depth-1 {
             background-color: #FFFFFF; 
             border: 0.5px solid rgba(0, 0, 0, 0.05);
@@ -75,7 +78,6 @@
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         }
 
-        /* Formas Suaves (Squircles) */
         .ios-squircle {
             border-radius: 14px;
             background: #F0F0F0;
@@ -87,10 +89,11 @@
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
-        /* Modo Captura de Pantalla */
         .screenshot-mode header, .screenshot-mode nav { display: none !important; }
+        
         .screenshot-mode { background-color: #F2F2F7 !important; }
         html.dark .screenshot-mode { background-color: #000000 !important; }
+        
         .screenshot-mode #scheduleContainer { 
             padding-top: calc(env(safe-area-inset-top, 20px) + 60px) !important; 
             padding-bottom: 40px !important;
@@ -109,25 +112,18 @@
         #btnVolverCaptura:active { opacity: 1; transform: scale(0.9); }
         .screenshot-mode #btnVolverCaptura { display: flex !important; }
 
-        /* Utilidades Estructurales */
-        .grid-75 {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
-            gap: 6px;
-        }
+        .grid-75 { display: grid; grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); gap: 6px; }
 
         .ios-transition { transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
         .ios-unlock-transition { transition: all 0.6s cubic-bezier(0.32, 0.72, 0, 1); }
 
         #scheduleContainer { will-change: transform, opacity; }
 
-        /* Indicador de Semana Flotante */
         #weekIndicator {
             position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%) scale(0.8);
             background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(40px) saturate(200%);
-            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
             padding: 20px 32px; border-radius: 28px;
             border: 0.5px solid rgba(0, 0, 0, 0.1);
             z-index: 200; opacity: 0; pointer-events: none;
@@ -139,13 +135,10 @@
             border: 0.5px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
         }
+
         #weekIndicator.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-        /* Animaciones */
-        @keyframes fadeInPremium {
-            from { opacity: 0; transform: scale(0.97) translateY(4px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
+        @keyframes fadeInPremium { from { opacity: 0; transform: scale(0.97) translateY(4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .animate-fade { animation: fadeInPremium 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 
         @keyframes shake {
@@ -157,35 +150,20 @@
         }
         .animate-shake { animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
 
-        /* Interacciones */
-        .holding {
-            transform: scale(0.95);
-            background-color: rgba(10, 132, 255, 0.15) !important;
-            transition: all 0.15s cubic-bezier(0.3, 0, 0.2, 1);
-        }
+        .holding { transform: scale(0.95); background-color: rgba(10, 132, 255, 0.15) !important; transition: all 0.15s cubic-bezier(0.3, 0, 0.2, 1); }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .modal-grabber {
-            width: 36px; height: 5px;
-            background-color: #D1D1D6; border-radius: 2.5px;
-            margin: 0 auto 16px auto;
-        }
+        .modal-grabber { width: 36px; height: 5px; background-color: #D1D1D6; border-radius: 2.5px; margin: 0 auto 16px auto; }
         .dark .modal-grabber { background-color: #5C5C5E; }
 
         [contenteditable], input { -webkit-user-select: text; user-select: text; }
 
-        [contenteditable]:empty:before {
-            content: attr(data-placeholder);
-            color: rgba(0, 0, 0, 0.3); pointer-events: none; display: block;
-        }
+        [contenteditable]:empty:before { content: attr(data-placeholder); color: rgba(0, 0, 0, 0.3); pointer-events: none; display: block; }
         .dark [contenteditable]:empty:before { color: rgba(255, 255, 255, 0.25); }
 
-        .manual-edit-active {
-            background-color: rgba(0, 0, 0, 0.05) !important;
-            border-radius: 8px; box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.4);
-        }
+        .manual-edit-active { background-color: rgba(0, 0, 0, 0.05) !important; border-radius: 8px; box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.4); }
         .dark .manual-edit-active { background-color: rgba(255, 255, 255, 0.12) !important; }
 
         .ios-modal-sheet { box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.15); }
@@ -194,21 +172,17 @@
 </head>
 <body class="flex flex-col h-[100dvh] overflow-x-hidden bg-[#F2F2F7] dark:bg-[#000000] text-black dark:text-white" id="appBody">
 
-    <!-- === PANTALLA DE LOGIN PREMIUM === -->
+    <!-- === PANTALLA DE LOGIN PREMIUM iOS === -->
     <div id="loginScreen" class="fixed inset-0 z-[200] bg-[#F2F2F7] dark:bg-[#000000] flex flex-col items-center justify-center p-6 ios-unlock-transition">
         <div id="loginContent" class="w-full max-w-[300px] flex flex-col items-center justify-center transform scale-100 opacity-100 ios-unlock-transition">
-            
             <div class="w-16 h-16 mb-5 rounded-[18px] bg-gradient-to-tr from-black/5 to-transparent dark:from-white/10 dark:to-white/5 flex items-center justify-center shadow-inner border border-black/5 dark:border-white/5">
                 <i data-lucide="lock" class="w-7 h-7 text-black/60 dark:text-white/60"></i>
             </div>
-
             <h1 class="text-[44px] font-extrabold tracking-[-0.04em] text-black dark:text-white mb-2 leading-none">Pr<span class="text-[#FF00FF]">e</span>di</h1>
             <p class="text-[14px] text-black/50 dark:text-white/50 font-medium mb-10 text-center tracking-wide">Protegido con contraseña</p>
-
             <div class="w-full mb-4 relative">
                 <input type="password" id="accessPassword" placeholder="Contraseña" class="w-full bg-black/5 dark:bg-white/10 text-black dark:text-white text-[17px] px-5 py-4 rounded-[16px] border border-black/5 dark:border-white/5 outline-none focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#0A84FF]/50 focus:ring-4 focus:ring-[#0A84FF]/10 transition-all duration-300 text-center font-semibold placeholder-black/30 dark:placeholder-white/30 backdrop-blur-md" onkeypress="if(event.key === 'Enter') loginWithPassword()">
             </div>
-
             <button onclick="loginWithPassword()" class="w-full bg-black dark:bg-white text-white dark:text-black font-semibold text-[17px] py-4 rounded-[16px] flex items-center justify-center gap-2 active:scale-[0.97] transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.15)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.15)]">
                 Desbloquear
             </button>
@@ -288,7 +262,6 @@
 
     <!-- === MODALES === -->
 
-    <!-- Plantilla base para evitar código repetitivo en la estructura de modales -->
     <div id="modesPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('modesPickerModal')">
         <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
@@ -352,12 +325,9 @@
                 <button onclick="toggleModal('locationPickerModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             
-            <!-- BUSCADOR ESTILO iOS -->
             <div class="mb-4 relative flex items-center bg-black/5 dark:bg-white/10 rounded-[12px] px-3 py-2.5">
                 <i data-lucide="search" class="w-5 h-5 text-black/40 dark:text-white/40 shrink-0"></i>
-                <input type="text" id="locationSearchInput" placeholder="Buscar calle o familia..." 
-                    class="w-full bg-transparent text-black dark:text-white text-[15px] font-medium ml-2 outline-none placeholder-black/40 dark:placeholder-white/40"
-                    oninput="renderLocationOptions(this.value)">
+                <input type="text" id="locationSearchInput" placeholder="Buscar calle o familia..." class="w-full bg-transparent text-black dark:text-white text-[15px] font-medium ml-2 outline-none placeholder-black/40 dark:placeholder-white/40" oninput="renderLocationOptions(this.value)">
             </div>
             
             <div id="locationOptionsList" class="max-h-[50vh] overflow-y-auto space-y-1 no-scrollbar pb-10"></div>
@@ -434,7 +404,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Configuración Firebase (Tus credenciales)
+        // Configuración Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDm4lYig4JJR7DlKj5kdFKYtNiVMpYgUZo",
             authDomain: "predicacion-60930.firebaseapp.com",
@@ -453,11 +423,11 @@
         let isFirebaseReady = false;
         let currentUser = null;
 
-        // Conductores Base Garantizados (Orden Alfabético)
+        // Conductores Base Garantizados (Orden Alfabético en Origen)
         const defaultDrivers = ["Darío", "Diego", "E. García", "E. Gauna", "Enzo", "Jeremías", "Jorge", "Julio", "Leonardo", "Luis", "Marcelo", "Miguel", "Pablo F.", "Ramón S."];
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         
-        // Ubicaciones limpias para agrupar jerárquicamente
+        // Ubicaciones limpias
         const userLocations = [
             "P.J. Muzio y Cutillo", "Galina y Las Heras", "J. Berreta y J. Marmol", "Saavedra y Roque Gonzalez", 
             "Crucero Gral. Belgrano y J. Ingenieros", "Cutillo y Urquiza", "Galina y 2 de Abril", "P.J. Muzio y Pje. Los Andes", 
@@ -483,7 +453,6 @@
             { id: 'DOM', label: 'DOM', shifts: [{time: '10.00', id: 'm'}] }
         ];
 
-        // Estado inicial de la app
         let state = { 
             currentMonth: 0, currentWeek: 1, assignments: {}, drivers: [...defaultDrivers],
             morningTime: "10.00", afternoonTime: "17.30", campanaConfig: { active: false, start: '', end: '' }
@@ -493,22 +462,19 @@
         let expandedLocationSection = null; 
         let territoryWarnings = {}; 
 
-        // Recuperación de la memoria caché
+        // Cargar desde LocalStorage
         const savedState = localStorage.getItem('app_horario_2026_v2');
         if (savedState) {
             const parsed = JSON.parse(savedState);
-            // Migración de variables obsoletas
             if (parsed.isCampana !== undefined) {
                 parsed.campanaConfig = { active: parsed.isCampana, start: '', end: '' };
                 delete parsed.isCampana;
             }
             state = Object.assign(state, parsed);
         }
-
-        // Validación de conductores locales por si el caché era muy antiguo
         if (!state.drivers) state.drivers = [...defaultDrivers];
 
-        // --- AUTENTICACIÓN Y SINCRONIZACIÓN ---
+        // --- AUTENTICACIÓN ---
         async function loginWithPassword() {
             const input = document.getElementById('accessPassword');
             const content = document.getElementById('loginContent');
@@ -524,11 +490,8 @@
                 content.classList.add('animate-shake');
                 if ("vibrate" in navigator) navigator.vibrate([50, 50, 50]);
                 setTimeout(() => content.classList.remove('animate-shake'), 400);
-                
-                input.value = '';
-                input.placeholder = 'Contraseña incorrecta';
+                input.value = ''; input.placeholder = 'Contraseña incorrecta';
                 input.classList.add('placeholder-[#FF453A]', 'border-[#FF453A]/50');
-                
                 setTimeout(() => {
                     input.placeholder = 'Contraseña';
                     input.classList.remove('placeholder-[#FF453A]', 'border-[#FF453A]/50');
@@ -540,24 +503,15 @@
             currentUser = user;
             const loginScreen = document.getElementById('loginScreen');
             const loginContent = document.getElementById('loginContent');
-            
             if (user) {
                 loginContent.style.transform = 'scale(1.05) translateY(-15px)';
                 loginContent.style.opacity = '0';
-                
-                setTimeout(() => {
-                    loginScreen.style.opacity = '0';
-                    loginScreen.style.backdropFilter = 'blur(0px)';
-                }, 100); 
-
+                setTimeout(() => { loginScreen.style.opacity = '0'; loginScreen.style.backdropFilter = 'blur(0px)'; }, 100); 
                 setTimeout(() => {
                     loginScreen.classList.add('hidden');
-                    loginContent.style.transform = '';
-                    loginContent.style.opacity = '';
-                    loginScreen.style.opacity = '';
-                    loginScreen.style.backdropFilter = '';
+                    loginContent.style.transform = ''; loginContent.style.opacity = '';
+                    loginScreen.style.opacity = ''; loginScreen.style.backdropFilter = '';
                 }, 700); 
-                
                 document.getElementById('accessPassword').value = ''; 
                 setupRealtimeSync();
             } else {
@@ -565,10 +519,10 @@
             }
         });
 
+        // --- SINCRONIZACIÓN FIREBASE ---
         function setupRealtimeSync() {
             if (!currentUser) return;
             const docRef = doc(db, 'artifacts', uniqueAppId, 'public', 'data', 'schedule', 'main');
-            
             onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const remoteData = docSnap.data();
@@ -576,17 +530,13 @@
                     
                     if (!state.drivers) state.drivers = [];
                     const missingDrivers = defaultDrivers.filter(d => !state.drivers.includes(d));
-                    
                     if (missingDrivers.length > 0) {
                         state.drivers.push(...missingDrivers);
                         setDoc(docRef, { drivers: state.drivers }, { merge: true });
                     }
 
                     localStorage.setItem('app_horario_2026_v2', JSON.stringify(state));
-                    updateSelectDisplays();
-                    renderSchedule();
-                    renderTerritoryGrid();
-                    renderShiftTerritoryGrid();
+                    updateSelectDisplays(); renderSchedule(); renderTerritoryGrid(); renderShiftTerritoryGrid();
                 } else {
                     setDoc(docRef, state, { merge: true });
                 }
@@ -615,15 +565,11 @@
             else showCustomAlert("Conectando a los servidores... Por favor, espera.");
         }
 
+        // --- THEME ---
         function toggleTheme() {
             const doc = document.documentElement;
-            if (doc.classList.contains('dark')) {
-                doc.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                doc.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
+            if (doc.classList.contains('dark')) { doc.classList.remove('dark'); localStorage.setItem('theme', 'light'); }
+            else { doc.classList.add('dark'); localStorage.setItem('theme', 'dark'); }
             updateThemeIcon();
         }
 
@@ -634,13 +580,9 @@
             lucide.createIcons();
         }
 
+        // --- INICIALIZACIÓN ---
         function init() {
-            updateThemeIcon();
-            updateSelectDisplays();
-            renderSchedule();
-            renderTerritoryGrid();
-            renderShiftTerritoryGrid();
-            lucide.createIcons();
+            updateThemeIcon(); updateSelectDisplays(); renderSchedule(); renderTerritoryGrid(); renderShiftTerritoryGrid(); lucide.createIcons();
         }
 
         function updateSelectDisplays() {
@@ -654,25 +596,21 @@
             const weekSpan = document.getElementById('indicatorWeek');
             document.getElementById('indicatorMonth').textContent = monthNames[state.currentMonth];
             weekSpan.textContent = `Semana ${state.currentWeek}`;
-            
             const isDark = document.documentElement.classList.contains('dark');
             const weekColors = { 1: isDark ? "#FFFFFF" : "#000000", 2: "#0A84FF", 3: "#32D74B", 4: "#FF00FF", 5: "#FF9F0A" };
             weekSpan.style.color = weekColors[state.currentWeek] || (isDark ? "#FFFFFF" : "#000000");
-            
-            indicator.classList.remove('visible');
-            void indicator.offsetWidth; 
-            indicator.classList.add('visible');
+            indicator.classList.remove('visible'); void indicator.offsetWidth; indicator.classList.add('visible');
             if (indicatorTimer) clearTimeout(indicatorTimer);
             indicatorTimer = setTimeout(() => indicator.classList.remove('visible'), 1200);
             if ("vibrate" in navigator) navigator.vibrate(10);
         }
 
+        // --- CÁLCULO DE FECHAS ---
         function getDatesForMonthWeek(month, weekNum) {
             let firstDayOfMonth = new Date(2026, month, 1);
             let dayOfWeek = firstDayOfMonth.getDay(); 
             let daysToFirstTuesday = (2 - dayOfWeek + 7) % 7; 
             let firstTuesdayDate = new Date(2026, month, 1 + daysToFirstTuesday);
-            
             let targetMonday = new Date(firstTuesdayDate);
             targetMonday.setDate(firstTuesdayDate.getDate() - 1);
             targetMonday.setDate(targetMonday.getDate() + (weekNum - 1) * 7);
@@ -694,20 +632,17 @@
             return dates.some(d => d.fullDate >= start && d.fullDate <= end);
         }
 
+        // --- MODALES SELECTORES ---
         function openCampanaModal() {
             toggleModal('modesPickerModal'); 
             setTimeout(() => {
                 const startInput = document.getElementById('campanaStartDate');
                 const endInput = document.getElementById('campanaEndDate');
                 const disableBtn = document.getElementById('btnDisableCampana');
-                
                 if (state.campanaConfig?.active) {
-                    startInput.value = state.campanaConfig.start;
-                    endInput.value = state.campanaConfig.end;
-                    disableBtn.classList.remove('hidden');
+                    startInput.value = state.campanaConfig.start; endInput.value = state.campanaConfig.end; disableBtn.classList.remove('hidden');
                 } else {
-                    startInput.value = ''; endInput.value = '';
-                    disableBtn.classList.add('hidden');
+                    startInput.value = ''; endInput.value = ''; disableBtn.classList.add('hidden');
                 }
                 toggleModal('campanaModal');
             }, 300);
@@ -718,13 +653,9 @@
             const end = document.getElementById('campanaEndDate').value;
             if (!start || !end) { showCustomAlert("Por favor, selecciona fechas de inicio y fin."); return; }
             if (new Date(start) > new Date(end)) { showCustomAlert("La fecha de inicio no puede ser posterior al final."); return; }
-            
             state.campanaConfig = { active: true, start, end };
             const wk = getWeekKey();
-            if (state.assignments[wk]?.['SAB']) {
-                state.assignments[wk]['SAB'].isVisita = false;
-                state.assignments[wk]['SAB'].isAsamblea = false;
-            }
+            if (state.assignments[wk]?.['SAB']) { state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isAsamblea = false; }
             saveState(); renderSchedule(); updateModesToggleState(); toggleModal('campanaModal');
         }
 
@@ -741,7 +672,10 @@
                 btn.className = `w-full text-left px-5 py-4 text-[15px] font-medium border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition ${isActive ? 'text-[#0A84FF] font-semibold' : 'text-black dark:text-white'}`;
                 btn.textContent = name;
                 btn.onclick = () => {
-                    state.currentMonth = index; updateSelectDisplays(); renderSchedule(); saveState(); renderTerritoryGrid(); showWeekIndicator(); toggleModal('monthPickerModal');
+                    state.currentMonth = index; 
+                    let datesWeek5 = getDatesForMonthWeek(state.currentMonth, 5);
+                    if (state.currentWeek === 5 && datesWeek5[0].fullDate.getMonth() !== state.currentMonth) state.currentWeek = 4;
+                    updateSelectDisplays(); renderSchedule(); saveState(); renderTerritoryGrid(); showWeekIndicator(); toggleModal('monthPickerModal');
                 };
                 list.appendChild(btn);
             });
@@ -750,7 +684,11 @@
 
         function openWeekPicker() {
             const list = document.getElementById('weekOptionsList'); list.innerHTML = '';
-            [1, 2, 3, 4, 5].forEach(weekNum => {
+            let availableWeeks = [1, 2, 3, 4];
+            let datesWeek5 = getDatesForMonthWeek(state.currentMonth, 5);
+            if (datesWeek5[0].fullDate.getMonth() === state.currentMonth) availableWeeks.push(5);
+
+            availableWeeks.forEach(weekNum => {
                 const isActive = state.currentWeek === weekNum;
                 const btn = document.createElement('button');
                 btn.className = `w-full text-left px-5 py-4 text-[15px] font-medium border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition ${isActive ? 'text-[#0A84FF] font-semibold' : 'text-black dark:text-white'}`;
@@ -767,7 +705,6 @@
             const list = document.getElementById('modesOptionsList');
             const wk = getWeekKey(), sabData = state.assignments[wk]?.['SAB'] || {};
             const isCampActive = state.campanaConfig?.active;
-            
             const modes = [
                 { id: 'normal', name: 'Normal', active: !isCampActive && !sabData.isVisita && !sabData.isAsamblea && !sabData.isCleaning },
                 { id: 'campana', name: 'Campaña', active: isCampActive },
@@ -775,17 +712,11 @@
                 { id: 'asamblea', name: 'Asamblea', active: sabData.isAsamblea },
                 { id: 'limpieza', name: 'Limpieza', active: sabData.isCleaning }
             ];
-            
             list.innerHTML = modes.map(m => {
                 const isSpecial = m.id === 'campana' && m.active;
                 const activeColor = isSpecial ? 'text-[#CDA4FF] font-semibold' : 'text-[#32D74B] font-semibold';
-                return `
-                <button type="button" onclick="handleModeSelection('${m.id}')" 
-                    class="w-full text-left px-5 py-4 text-[15px] font-medium ios-transition border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 
-                    ${m.active ? activeColor : 'text-black/80 dark:text-white/80'}">
-                    ${m.name}
-                </button>
-            `}).join('');
+                return `<button type="button" onclick="handleModeSelection('${m.id}')" class="w-full text-left px-5 py-4 text-[15px] font-medium ios-transition border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ${m.active ? activeColor : 'text-black/80 dark:text-white/80'}">${m.name}</button>`;
+            }).join('');
             toggleModal('modesPickerModal');
         }
 
@@ -802,48 +733,31 @@
 
         function resetModes() { 
             const wk = getWeekKey(); 
-            if (state.assignments[wk]?.['SAB']) { 
-                state.assignments[wk]['SAB'].isVisita = false; 
-                state.assignments[wk]['SAB'].isAsamblea = false; 
-                state.assignments[wk]['SAB'].isCleaning = false; 
-            } 
+            if (state.assignments[wk]?.['SAB']) { state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; } 
             saveState(); renderSchedule(); updateModesToggleState();
         }
 
         function toggleVisita() {
             const wk = getWeekKey();
-            if (!state.assignments[wk]) state.assignments[wk] = {};
-            if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {};
+            if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {};
             state.assignments[wk]['SAB'].isVisita = !state.assignments[wk]['SAB'].isVisita;
-            if (state.assignments[wk]['SAB'].isVisita) {
-                state.assignments[wk]['SAB'].isAsamblea = false;
-                state.assignments[wk]['SAB'].isCleaning = false;
-            }
+            if (state.assignments[wk]['SAB'].isVisita) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; }
             saveState(); renderSchedule(); updateModesToggleState();
         }
 
         function toggleAsamblea() {
             const wk = getWeekKey();
-            if (!state.assignments[wk]) state.assignments[wk] = {};
-            if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {};
+            if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {};
             state.assignments[wk]['SAB'].isAsamblea = !state.assignments[wk]['SAB'].isAsamblea;
-            if (state.assignments[wk]['SAB'].isAsamblea) {
-                state.assignments[wk]['SAB'].isCleaning = false;
-                state.assignments[wk]['SAB'].isVisita = false;
-            }
+            if (state.assignments[wk]['SAB'].isAsamblea) { state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isVisita = false; }
             saveState(); renderSchedule(); updateModesToggleState();
         }
 
         function toggleCleaning() {
             const wk = getWeekKey();
-            if (!state.assignments[wk]) state.assignments[wk] = {};
-            if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {};
+            if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {};
             state.assignments[wk]['SAB'].isCleaning = !state.assignments[wk]['SAB'].isCleaning;
-            if (state.assignments[wk]['SAB'].isCleaning) {
-                state.assignments[wk]['SAB'].isAsamblea = false;
-                state.assignments[wk]['SAB'].isVisita = false;
-                if (!state.assignments[wk]['SAB'].cleaningTime) state.assignments[wk]['SAB'].cleaningTime = "9.00";
-            }
+            if (state.assignments[wk]['SAB'].isCleaning) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isVisita = false; if (!state.assignments[wk]['SAB'].cleaningTime) state.assignments[wk]['SAB'].cleaningTime = "9.00"; }
             saveState(); renderSchedule(); updateModesToggleState();
         }
 
@@ -851,7 +765,6 @@
             const wk = getWeekKey(), sabData = state.assignments[wk]?.['SAB'] || {};
             const btn = document.getElementById('btnToggleModes'), textSpan = document.getElementById('modesToggleText');
             let activeModes = [];
-            
             if (isWeekInCampana(state.currentMonth, state.currentWeek)) activeModes.push('Campaña');
             if (sabData.isVisita) activeModes.push('Visita');
             if (sabData.isAsamblea) activeModes.push('Asamblea');
@@ -872,6 +785,7 @@
             }
         }
 
+        // --- SISTEMA EDICIÓN PLANILLA ---
         function handleHoldStart(e, day, shift, type = 'spot') {
             const el = e.currentTarget; isHolding = false; el.classList.add('holding');
             holdTimer = setTimeout(() => {
@@ -882,26 +796,19 @@
                 el.classList.remove('holding');
             }, 600); 
         }
-
         function handleHoldEnd(e) { clearTimeout(holdTimer); e.currentTarget.classList.remove('holding'); }
 
         function openLocationPicker(day, shift) { 
             if (isHolding) return; 
-            editingDay = day; editingShift = shift; 
-            expandedLocationSection = null; 
-            
+            editingDay = day; editingShift = shift; expandedLocationSection = null; 
             const searchInput = document.getElementById('locationSearchInput');
             if (searchInput) searchInput.value = '';
-            
-            renderLocationOptions(); 
-            toggleModal('locationPickerModal'); 
+            renderLocationOptions(); toggleModal('locationPickerModal'); 
         }
 
         function openDriverPicker(day, shift) { 
             if (isHolding) return; 
-            editingDay = day; editingShift = shift; 
-            renderDriverOptions(); 
-            toggleModal('driverPickerModal'); 
+            editingDay = day; editingShift = shift; renderDriverOptions(); toggleModal('driverPickerModal'); 
         }
 
         function toggleLocationSection(section) {
@@ -911,10 +818,8 @@
         }
 
         function renderLocationOptions(searchTerm = '') {
-            const list = document.getElementById('locationOptionsList');
-            list.innerHTML = '';
-            const casas = [], callesGroups = {};
-            const term = searchTerm.toLowerCase().trim();
+            const list = document.getElementById('locationOptionsList'); list.innerHTML = '';
+            const casas = [], callesGroups = {}; const term = searchTerm.toLowerCase().trim();
             
             userLocations.forEach(loc => {
                 const isCasa = loc.toLowerCase().includes("flia.") || ["Maria Ch.", "Carmen S.", "Cleri J.", "Salon del Reino", "Escuela 744"].includes(loc);
@@ -929,45 +834,34 @@
             const renderSingleOption = (loc, iconName) => {
                 const btn = document.createElement('button');
                 btn.className = "w-full flex items-center gap-3 px-5 py-4 border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition";
-                btn.innerHTML = `
-                    <i data-lucide="${iconName}" class="w-[18px] h-[18px] text-black/50 dark:text-white/50 shrink-0"></i>
-                    <span class="text-[16px] font-medium text-black dark:text-white text-left flex-1">${loc}</span>
-                `;
+                btn.innerHTML = `<i data-lucide="${iconName}" class="w-[18px] h-[18px] text-black/50 dark:text-white/50 shrink-0"></i><span class="text-[16px] font-medium text-black dark:text-white text-left flex-1">${loc}</span>`;
                 btn.onclick = () => { updateData(editingDay, editingShift, 'spot', loc); toggleModal('locationPickerModal'); renderSchedule(); };
                 list.appendChild(btn);
             };
 
             if (term) {
                 const filtered = userLocations.filter(loc => loc.toLowerCase().includes(term));
-                if (filtered.length === 0) {
-                    list.innerHTML = `<div class="py-8 text-center text-[15px] text-black/50 dark:text-white/50 font-medium">No se encontraron resultados</div>`;
-                } else {
+                if (filtered.length === 0) { list.innerHTML = `<div class="py-8 text-center text-[15px] text-black/50 dark:text-white/50 font-medium">No se encontraron resultados</div>`; } 
+                else {
                     filtered.sort().forEach(loc => {
                         const isCasa = loc.toLowerCase().includes("flia.") || ["Maria Ch.", "Carmen S.", "Cleri J.", "Salon del Reino", "Escuela 744"].includes(loc);
                         renderSingleOption(loc, isCasa ? "home" : "map-pin");
                     });
                 }
-                lucide.createIcons();
-                return;
+                lucide.createIcons(); return;
             }
 
             const renderAccordion = (title, id, items, iconName) => {
                 const isOpen = expandedLocationSection === id;
                 const header = document.createElement('button');
-                header.className = `w-full flex items-center gap-3 px-5 py-4 border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition`;
+                header.className = `w-full flex items-center gap-3 px-5 py-4 border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition rounded-lg`;
                 header.onclick = () => toggleLocationSection(id);
-                
-                header.innerHTML = `
-                    <i data-lucide="${iconName}" class="w-[18px] h-[18px] text-black/70 dark:text-white/70 shrink-0"></i>
-                    <span class="text-[16px] font-semibold text-black dark:text-white text-left flex-1">${title}</span>
-                    <span class="text-[13px] font-medium text-black/30 dark:text-white/30 mr-2">${items.length}</span>
-                    <i data-lucide="chevron-${isOpen ? 'up' : 'down'}" class="w-4 h-4 text-black/40 dark:text-white/40 transition-transform duration-300"></i>
-                `;
+                header.innerHTML = `<i data-lucide="${iconName}" class="w-[18px] h-[18px] text-black/70 dark:text-white/70 shrink-0"></i><span class="text-[16px] font-semibold text-black dark:text-white text-left flex-1">${title}</span><span class="text-[13px] font-medium text-black/30 dark:text-white/30 mr-2">${items.length}</span><i data-lucide="chevron-${isOpen ? 'up' : 'down'}" class="w-4 h-4 text-black/40 dark:text-white/40 transition-transform duration-300"></i>`;
                 list.appendChild(header);
                 
                 if (isOpen) {
                     const container = document.createElement('div');
-                    container.className = "animate-fade overflow-hidden bg-black/[0.03] dark:bg-white/[0.03] border-b border-black/5 dark:border-white/5 shadow-inner";
+                    container.className = "animate-fade overflow-hidden bg-black/[0.03] dark:bg-white/[0.03] border-b border-black/5 dark:border-white/5 shadow-inner mb-2 rounded-b-xl";
                     items.forEach(loc => {
                         const btn = document.createElement('button');
                         btn.className = "w-full flex items-center pl-[46px] pr-5 py-3.5 border-b border-black/5 dark:border-white/5 last:border-0 active:bg-black/5 dark:active:bg-white/10 ios-transition";
@@ -980,16 +874,11 @@
             };
             
             if (casas.length > 0) renderAccordion("Casas y Especiales", "casas", casas.sort(), "home");
-            
             const singleStreets = [];
             Object.keys(callesGroups).sort().forEach(mainStreet => {
-                if (callesGroups[mainStreet].length === 1) {
-                    singleStreets.push(callesGroups[mainStreet][0]);
-                } else {
-                    renderAccordion(mainStreet, "calle_" + mainStreet.replace(/\s/g, ''), callesGroups[mainStreet].sort(), "map");
-                }
+                if (callesGroups[mainStreet].length === 1) singleStreets.push(callesGroups[mainStreet][0]);
+                else renderAccordion(mainStreet, "calle_" + mainStreet.replace(/\s/g, ''), callesGroups[mainStreet].sort(), "map");
             });
-            
             singleStreets.sort().forEach(loc => renderSingleOption(loc, "map-pin"));
             lucide.createIcons();
         }
@@ -997,8 +886,6 @@
         function renderDriverOptions() {
             const list = document.getElementById('driverOptionsList'); list.innerHTML = '';
             const baseOptions = ["-", "Super"];
-            
-            // Ordenamiento alfabético estricto respetando acentos en español
             const sortedDrivers = [...state.drivers].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
             
             [...baseOptions, ...sortedDrivers].forEach(driver => {
@@ -1010,7 +897,6 @@
             });
         }
 
-        // --- RENDERIZADO PRINCIPAL ---
         function updateGlobalTime(field, value) { state[field] = value; saveState(); }
         function updateCleaningTime(weekKey, value) { updateData('SAB', null, 'cleaningTime', value, weekKey); }
 
@@ -1030,7 +916,6 @@
 
             weekStructure.forEach((dayDef, index) => {
                 if (dayDef.id === 'LUN' && !isCampanaActive) return;
-                
                 const dateInfo = dates[index], dayData = weekData[dayDef.id] || {};
                 const depthClass = index % 2 === 0 ? 'ios-card-depth-1' : 'ios-card-depth-2';
                 
@@ -1039,7 +924,6 @@
                     const isManual = sData.manualMode === true, isManualDriver = sData.manualDriverMode === true;
                     const defDriver = sabData.isVisita ? (dayDef.id === 'MAR' ? '' : 'Super') : '';
                     const currentDriver = sData.driver !== undefined ? sData.driver : defDriver, tArray = sData.territories || [];
-                    
                     const cellEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'spot')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)"`;
                     const driverEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'driver')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)"`;
                     
@@ -1057,34 +941,18 @@
                     } else {
                         let label = (shift.id === 'm' || shift.id === 'g1') ? "M" : "T";
                         let widthClass = "w-[20px]", colorClass = "text-[#0A84FF]", fontSizeWeight = "text-[12px] font-black";
-                        if (dayDef.id === 'SAB' && sabData.isVisita && shift.id === 't') {
-                            label = "19.30"; widthClass = "w-[30px]"; colorClass = "text-black dark:text-white"; fontSizeWeight = "text-[10px] font-bold";
-                        }
+                        if (dayDef.id === 'SAB' && sabData.isVisita && shift.id === 't') { label = "19.30"; widthClass = "w-[30px]"; colorClass = "text-black dark:text-white"; fontSizeWeight = "text-[10px] font-bold"; }
                         timeField = `<span class="${widthClass} text-center ${fontSizeWeight} ${colorClass} shrink-0 select-none">${label}</span>`;
                     }
-                    
                     const terrColorClass = tArray.length > 0 ? 'text-black dark:text-[#32D74B]' : 'text-black/30 dark:text-white/30';
-                    
-                    return `<div class="flex items-center gap-1.5 w-full py-0.5 border-b border-black/5 dark:border-white/5 last:border-0">
-                        ${!compact ? timeField : ''}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div>
-                        <button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 h-[26px] min-w-[32px] rounded bg-black/5 dark:bg-white/10 px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition">${tArray.length > 0 ? tArray.join(',') : '-'}</button>
-                        <div class="ios-transition" ${driverEvents}>${driverContent}</div></div>`;
+                    return `<div class="flex items-center gap-1.5 w-full py-0.5 border-b border-black/5 dark:border-white/5 last:border-0">${!compact ? timeField : ''}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 h-[26px] min-w-[32px] rounded bg-black/5 dark:bg-white/10 px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition">${tArray.length > 0 ? tArray.join(',') : '-'}</button><div class="ios-transition" ${driverEvents}>${driverContent}</div></div>`;
                 };
 
                 let content = '';
                 if (dayDef.id === 'SAB' && (dayData.isCleaning || dayData.isAsamblea)) {
                     if (dayData.isCleaning) {
-                        content = `<div class="flex items-center w-full py-2 bg-black/5 dark:bg-[#32D74B]/10 border border-black/10 dark:border-[#32D74B]/20 rounded-[10px] px-2 animate-fade">
-                            <span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" 
-                                class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span>
-                            <div class="flex-1 flex items-center justify-center gap-1.5">
-                                <i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i>
-                                <span class="font-bold text-[13px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span>
-                            </div>
-                        </div>`;
-                    } else {
-                        content = `<div class="flex items-center w-full py-2.5 bg-black dark:bg-[#32D74B] rounded-[10px] animate-fade shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
-                    }
+                        content = `<div class="flex items-center w-full py-2 bg-black/5 dark:bg-[#32D74B]/10 border border-black/10 dark:border-[#32D74B]/20 rounded-[10px] px-2 animate-fade"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[13px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
+                    } else { content = `<div class="flex items-center w-full py-2.5 bg-black dark:bg-[#32D74B] rounded-[10px] animate-fade shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`; }
                 } else if (dayDef.id === 'SAB' && dayData.isVisita) {
                     content = [{time: '09.30', id: 'm'}, {time: '19.30', id: 't'}].map(s => getShiftHtml(s, s.id === 't' ? 'Salón del Reino' : '')).join('');
                 } else if (dayDef.id === 'SAB') {
@@ -1101,181 +969,97 @@
                         return getShiftHtml(s, spot);
                     }).join('');
                 }
-                
-                const card = document.createElement('div'); 
-                card.className = `rounded-[18px] p-2 flex items-center overflow-hidden mb-2.5 ios-transition ${depthClass} animate-fade`;
-                card.innerHTML = `
-                    <div class="w-[52px] h-[52px] shrink-0 flex flex-col items-center justify-center mr-3 ios-squircle shadow-sm">
-                        <span class="text-[9px] font-bold text-black/60 dark:text-white/60 mb-0.5 leading-none">${dayDef.label}</span>
-                        <span class="text-[18px] font-bold text-black dark:text-white tracking-[-0.02em] leading-none">${dateInfo.day}</span>
-                    </div>
-                    <div class="flex-1 flex flex-col justify-center gap-0">${content}</div>
-                `;
+                const card = document.createElement('div'); card.className = `rounded-[18px] p-2 flex items-center overflow-hidden mb-2.5 ios-transition ${depthClass} animate-fade`;
+                card.innerHTML = `<div class="w-[52px] h-[52px] shrink-0 flex flex-col items-center justify-center mr-3 ios-squircle shadow-sm"><span class="text-[9px] font-bold text-black/60 dark:text-white/60 mb-0.5 leading-none">${dayDef.label}</span><span class="text-[18px] font-bold text-black dark:text-white tracking-[-0.02em] leading-none">${dateInfo.day}</span></div><div class="flex-1 flex flex-col justify-center gap-0">${content}</div>`;
                 container.appendChild(card);
             });
+            lucide.createIcons();
         }
 
         // --- SISTEMA DE MODALES Y ESTADÍSTICAS ---
         function toggleModal(id) {
-            const m = document.getElementById(id);
-            if (!m) return;
-            if (m.classList.contains('hidden')) { 
-                m.classList.remove('hidden'); 
-                setTimeout(() => { if (m.firstElementChild) m.firstElementChild.classList.remove('translate-y-full'); }, 10);
-            } else { 
-                if (m.firstElementChild) m.firstElementChild.classList.add('translate-y-full'); 
-                setTimeout(() => m.classList.add('hidden'), 500); 
-            }
+            const m = document.getElementById(id); if (!m) return;
+            if (m.classList.contains('hidden')) { m.classList.remove('hidden'); setTimeout(() => { if (m.firstElementChild) m.firstElementChild.classList.remove('translate-y-full'); }, 10); } 
+            else { if (m.firstElementChild) m.firstElementChild.classList.add('translate-y-full'); setTimeout(() => m.classList.add('hidden'), 500); }
         }
 
         function openRankingModal() { renderRanking(); toggleModal('statsModal'); }
 
         function renderRanking() {
-            const container = document.getElementById('statsContent');
-            document.getElementById('statsModalTitle').textContent = `Ranking de ${monthNames[state.currentMonth]}`;
-            container.innerHTML = '';
-            
+            const container = document.getElementById('statsContent'); document.getElementById('statsModalTitle').textContent = `Ranking de ${monthNames[state.currentMonth]}`; container.innerHTML = '';
             const driverCounts = {}; let totalOutputs = 0;
             Object.keys(state.assignments).forEach(key => {
                 if (key.startsWith(`${state.currentMonth}-`)) {
-                    Object.values(state.assignments[key]).forEach(dayData => {
-                        Object.values(dayData).forEach(shiftData => {
-                            const drv = shiftData.driver;
-                            if (drv && drv !== "Super" && drv !== "-") {
-                                driverCounts[drv] = (driverCounts[drv] || 0) + 1;
-                                totalOutputs++;
-                            }
-                        });
-                    });
+                    Object.values(state.assignments[key]).forEach(dayData => Object.values(dayData).forEach(shiftData => {
+                        const drv = shiftData.driver; if (drv && drv !== "Super" && drv !== "-") { driverCounts[drv] = (driverCounts[drv] || 0) + 1; totalOutputs++; }
+                    }));
                 }
             });
-
-            const sortedDrivers = Object.entries(driverCounts).sort((a, b) => b[1] - a[1]);
-            let html = '';
-
+            const sortedDrivers = Object.entries(driverCounts).sort((a, b) => b[1] - a[1]); let html = '';
             if (sortedDrivers.length > 0) {
                 html += `<div class="bg-gray-100 dark:bg-[#2C2C2E]/60 border border-black/5 dark:border-white/5 rounded-[16px] overflow-hidden shadow-sm animate-fade">`;
                 sortedDrivers.forEach((item, index) => {
-                    const [driver, count] = item;
-                    const borderClass = index === sortedDrivers.length - 1 ? '' : 'border-b border-black/5 dark:border-white/5';
-                    
+                    const [driver, count] = item; const borderClass = index === sortedDrivers.length - 1 ? '' : 'border-b border-black/5 dark:border-white/5';
                     let medalIcon = `<span class="w-6 text-center text-[15px] font-bold text-black/30 dark:text-white/30">${index + 1}</span>`;
-                    if (index === 0) medalIcon = `<i data-lucide="trophy" class="w-5 h-5 text-[#FFD700] mx-0.5"></i>`; 
-                    else if (index === 1) medalIcon = `<i data-lucide="medal" class="w-5 h-5 text-[#C0C0C0] mx-0.5"></i>`; 
-                    else if (index === 2) medalIcon = `<i data-lucide="medal" class="w-5 h-5 text-[#CD7F32] mx-0.5"></i>`; 
-
-                    html += `
-                    <div class="flex items-center justify-between p-4 ${borderClass} bg-black/5 dark:bg-white/5">
-                        <div class="flex items-center gap-3">${medalIcon}<span class="text-[16px] font-medium text-black dark:text-white">${driver}</span></div>
-                        <span class="bg-[#0A84FF]/20 text-[#0A84FF] px-2.5 py-1 rounded-full text-[13px] font-bold border border-[#0A84FF]/30">${count}</span>
-                    </div>`;
+                    if (index === 0) medalIcon = `<i data-lucide="trophy" class="w-5 h-5 text-[#FFD700] mx-0.5"></i>`; else if (index === 1) medalIcon = `<i data-lucide="medal" class="w-5 h-5 text-[#C0C0C0] mx-0.5"></i>`; else if (index === 2) medalIcon = `<i data-lucide="medal" class="w-5 h-5 text-[#CD7F32] mx-0.5"></i>`; 
+                    html += `<div class="flex items-center justify-between p-4 ${borderClass} bg-black/5 dark:bg-white/5"><div class="flex items-center gap-3">${medalIcon}<span class="text-[16px] font-medium text-black dark:text-white">${driver}</span></div><span class="bg-[#0A84FF]/20 text-[#0A84FF] px-2.5 py-1 rounded-full text-[13px] font-bold border border-[#0A84FF]/30">${count}</span></div>`;
                 });
                 html += `</div><p class="text-[12px] text-black/40 dark:text-white/40 text-center mt-3">Total de salidas válidas: ${totalOutputs}</p>`;
             } else {
-                html += `<div class="flex flex-col items-center justify-center text-center py-10 opacity-60">
-                    <i data-lucide="user" class="w-12 h-12 text-black/40 dark:text-white/40 mb-3"></i>
-                    <span class="text-[15px] text-black dark:text-white font-medium">No conductores asignados.</span>
-                </div>`;
+                html += `<div class="flex flex-col items-center justify-center text-center py-10 opacity-60"><i data-lucide="user" class="w-12 h-12 text-black/40 dark:text-white/40 mb-3"></i><span class="text-[15px] text-black dark:text-white font-medium">No conductores asignados.</span></div>`;
             }
-            container.innerHTML = html;
-            lucide.createIcons();
+            container.innerHTML = html; lucide.createIcons();
         }
 
         function openSummaryModal() { renderSummary(); toggleModal('summaryModal'); }
 
         function renderSummary() {
-            const container = document.getElementById('summaryContent');
-            container.innerHTML = ''; let hasData = false;
-
+            const container = document.getElementById('summaryContent'); container.innerHTML = ''; let hasData = false;
             for (let m = 0; m < 12; m++) {
                 const monthlyCounts = {}; let totalAssigned = 0; let campanaTerrs = new Set(); 
-
                 Object.keys(state.assignments).forEach(key => {
                     if (key.startsWith(`${m}-`)) {
-                        const [mm, ww] = key.split('-');
-                        const weekDates = getDatesForMonthWeek(parseInt(mm), parseInt(ww));
-
+                        const [mm, ww] = key.split('-'); const weekDates = getDatesForMonthWeek(parseInt(mm), parseInt(ww));
                         Object.keys(state.assignments[key]).forEach(dayId => {
-                            const dayIndex = weekStructure.findIndex(ds => ds.id === dayId);
-                            let shiftFullDate = weekDates[dayIndex]?.fullDate;
-                            
+                            const dayIndex = weekStructure.findIndex(ds => ds.id === dayId); let shiftFullDate = weekDates[dayIndex]?.fullDate;
                             let isShiftCampana = false;
                             if (state.campanaConfig?.active && shiftFullDate) {
-                                // Normalización robusta de fechas
                                 const shiftDateNorm = new Date(shiftFullDate.getFullYear(), shiftFullDate.getMonth(), shiftFullDate.getDate());
-                                const startParts = state.campanaConfig.start.split('-');
-                                const startDateNorm = new Date(startParts[0], startParts[1] - 1, startParts[2]);
-                                const endParts = state.campanaConfig.end.split('-');
-                                const endDateNorm = new Date(endParts[0], endParts[1] - 1, endParts[2]);
-                                
+                                const startParts = state.campanaConfig.start.split('-'); const startDateNorm = new Date(startParts[0], startParts[1] - 1, startParts[2]);
+                                const endParts = state.campanaConfig.end.split('-'); const endDateNorm = new Date(endParts[0], endParts[1] - 1, endParts[2]);
                                 isShiftCampana = shiftDateNorm >= startDateNorm && shiftDateNorm <= endDateNorm;
                             }
-
                             Object.values(state.assignments[key][dayId]).forEach(s => {
                                 if (s.territories && s.territories.length > 0) {
-                                    s.territories.forEach(t => {
-                                        if (t !== 'Rev.') {
-                                            monthlyCounts[t] = (monthlyCounts[t] || 0) + 1;
-                                            totalAssigned++;
-                                            if (isShiftCampana) campanaTerrs.add(t);
-                                        }
-                                    });
+                                    s.territories.forEach(t => { if (t !== 'Rev.') { monthlyCounts[t] = (monthlyCounts[t] || 0) + 1; totalAssigned++; if (isShiftCampana) campanaTerrs.add(t); } });
                                 }
                             });
                         });
                     }
                 });
-
                 if (totalAssigned > 0) {
-                    hasData = true;
-                    const sortedTerrs = Object.entries(monthlyCounts).sort((a, b) => b[1] - a[1]);
-                    const repetidos = sortedTerrs.filter(t => t[1] > 1);
-                    const unicos = sortedTerrs.filter(t => t[1] === 1);
-
-                    let html = `<div class="bg-gray-100 dark:bg-[#2C2C2E]/60 border border-black/5 dark:border-white/5 p-4 rounded-[16px] mb-3 shadow-sm animate-fade">`;
-                    html += `<div class="flex justify-between items-center mb-3">
-                                <h3 class="text-[17px] font-bold text-black dark:text-white tracking-tight">${monthNames[m]}</h3>
-                                <span class="text-[12px] text-black/50 dark:text-white/50 font-medium">${totalAssigned} asig.</span>
-                             </div><div class="space-y-3">`;
-
+                    hasData = true; const sortedTerrs = Object.entries(monthlyCounts).sort((a, b) => b[1] - a[1]);
+                    const repetidos = sortedTerrs.filter(t => t[1] > 1); const unicos = sortedTerrs.filter(t => t[1] === 1);
+                    let html = `<div class="bg-gray-100 dark:bg-[#2C2C2E]/60 border border-black/5 dark:border-white/5 p-4 rounded-[16px] mb-3 shadow-sm animate-fade"><div class="flex justify-between items-center mb-3"><h3 class="text-[17px] font-bold text-black dark:text-white tracking-tight">${monthNames[m]}</h3><span class="text-[12px] text-black/50 dark:text-white/50 font-medium">${totalAssigned} asig.</span></div><div class="space-y-3">`;
                     if (repetidos.length > 0) {
-                        html += `<div><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest block mb-1.5 flex items-center gap-1"><i data-lucide="flame" class="w-3 h-3 text-[#FF453A]"></i> Más Hechos (Repetidos)</span>
-                            <div class="flex flex-wrap gap-1.5">
-                                ${repetidos.map(t => {
-                                    const isCamp = campanaTerrs.has(t[0]);
-                                    const colorCls = isCamp ? 'bg-[#CDA4FF]/20 text-[#CDA4FF] border border-[#CDA4FF]/30' : 'bg-[#0A84FF]/20 text-[#0A84FF] border border-[#0A84FF]/30';
-                                    return `<span class="px-2 py-1 rounded-md text-[13px] font-medium ${colorCls}">${t[0]} <span class="opacity-70 text-[10px] ml-0.5">x${t[1]}</span></span>`;
-                                }).join('')}
-                            </div></div>`;
+                        html += `<div><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest block mb-1.5 flex items-center gap-1"><i data-lucide="flame" class="w-3 h-3 text-[#FF453A]"></i> Más Hechos (Repetidos)</span><div class="flex flex-wrap gap-1.5">
+                            ${repetidos.map(t => { const isCamp = campanaTerrs.has(t[0]); const colorCls = isCamp ? 'bg-[#CDA4FF]/20 text-[#CDA4FF] border border-[#CDA4FF]/30' : 'bg-[#0A84FF]/20 text-[#0A84FF] border border-[#0A84FF]/30'; return `<span class="px-2 py-1 rounded-md text-[13px] font-medium ${colorCls}">${t[0]} <span class="opacity-70 text-[10px] ml-0.5">x${t[1]}</span></span>`; }).join('')}
+                        </div></div>`;
                     }
                     if (unicos.length > 0) {
-                        html += `<div><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest block mb-1.5 flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3 text-black dark:text-[#32D74B]"></i> Realizados 1 vez</span>
-                            <div class="flex flex-wrap gap-1.5">
-                                ${unicos.map(t => {
-                                    const isCamp = campanaTerrs.has(t[0]);
-                                    const colorCls = isCamp ? 'bg-[#CDA4FF]/10 text-[#CDA4FF] border border-[#CDA4FF]/20' : 'bg-black/10 dark:bg-white/10 text-black/80 dark:text-white/80 border border-black/10 dark:border-white/10';
-                                    return `<span class="px-2 py-1 rounded-md text-[13px] font-medium ${colorCls}">${t[0]}</span>`;
-                                }).join('')}
-                            </div></div>`;
+                        html += `<div><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest block mb-1.5 flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3 text-black dark:text-[#32D74B]"></i> Realizados 1 vez</span><div class="flex flex-wrap gap-1.5">
+                            ${unicos.map(t => { const isCamp = campanaTerrs.has(t[0]); const colorCls = isCamp ? 'bg-[#CDA4FF]/10 text-[#CDA4FF] border border-[#CDA4FF]/20' : 'bg-black/10 dark:bg-white/10 text-black/80 dark:text-white/80 border border-black/10 dark:border-white/10'; return `<span class="px-2 py-1 rounded-md text-[13px] font-medium ${colorCls}">${t[0]}</span>`; }).join('')}
+                        </div></div>`;
                     }
-                    if (campanaTerrs.size > 0) {
-                        html += `<div class="mt-3 pt-3 border-t border-black/5 dark:border-white/5 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#CDA4FF] shadow-[0_0_8px_rgba(205,164,255,0.6)]"></span><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest">Abarcados en Campaña</span></div>`;
-                    }
-                    html += `</div></div>`;
-                    container.innerHTML += html;
+                    if (campanaTerrs.size > 0) { html += `<div class="mt-3 pt-3 border-t border-black/5 dark:border-white/5 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#CDA4FF] shadow-[0_0_8px_rgba(205,164,255,0.6)]"></span><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest">Abarcados en Campaña</span></div>`; }
+                    html += `</div></div>`; container.innerHTML += html;
                 }
             }
-
-            if (!hasData) {
-                container.innerHTML = `<div class="flex flex-col items-center justify-center text-center py-10 opacity-60">
-                    <i data-lucide="folder-open" class="w-12 h-12 text-black/40 dark:text-white/40 mb-3"></i>
-                    <span class="text-[15px] text-black dark:text-white font-medium">No hay datos registrados aún.</span>
-                </div>`;
-            }
+            if (!hasData) { container.innerHTML = `<div class="flex flex-col items-center justify-center text-center py-10 opacity-60"><i data-lucide="folder-open" class="w-12 h-12 text-black/40 dark:text-white/40 mb-3"></i><span class="text-[15px] text-black dark:text-white font-medium">No hay datos registrados aún.</span></div>`; }
             lucide.createIcons();
         }
 
-        // --- MANEJO DE TERRITORIOS Y ADVERTENCIAS ---
+        // --- MANEJO DE TERRITORIOS ---
         function getRelativeWeekData(m, w, offset) {
             let newW = w + offset; let newM = m;
             while (newW < 1) { newM -= 1; newW += 5; }
@@ -1283,101 +1067,65 @@
         }
 
         function extractTerritoryWarnings(m, w, colorStatus) {
-            const wk = `${m}-${w}`; const weekData = state.assignments[wk];
-            if (!weekData) return;
+            const wk = `${m}-${w}`; const weekData = state.assignments[wk]; if (!weekData) return;
             const dates = getDatesForMonthWeek(m, w);
             weekStructure.forEach((dayDef, index) => {
                 if (!weekData[dayDef.id]) return;
-                Object.values(weekData[dayDef.id]).forEach(shiftData => {
-                    shiftData.territories?.forEach(t => {
-                        if (t !== 'Rev.') territoryWarnings[t] = { color: colorStatus, dateStr: `${dates[index].day} de ${monthNames[m]}` };
-                    });
-                });
+                Object.values(weekData[dayDef.id]).forEach(shiftData => shiftData.territories?.forEach(t => { if (t !== 'Rev.') territoryWarnings[t] = { color: colorStatus, dateStr: `${dates[index].day} de ${monthNames[m]}` }; }));
             });
         }
 
         function openShiftTerritoryModal(day, shift) { 
-            editingDay = day; editingShift = shift; 
-            tempTerritories = [...(state.assignments[getWeekKey()]?.[day]?.[shift]?.territories || [])]; 
-            territoryWarnings = {};
-            
-            let w2 = getRelativeWeekData(state.currentMonth, state.currentWeek, -2);
-            if (w2) extractTerritoryWarnings(w2.month, w2.week, 'orange');
-
-            let w1 = getRelativeWeekData(state.currentMonth, state.currentWeek, -1);
-            if (w1) extractTerritoryWarnings(w1.month, w1.week, 'red');
-
+            editingDay = day; editingShift = shift; tempTerritories = [...(state.assignments[getWeekKey()]?.[day]?.[shift]?.territories || [])]; territoryWarnings = {};
+            let w2 = getRelativeWeekData(state.currentMonth, state.currentWeek, -2); if (w2) extractTerritoryWarnings(w2.month, w2.week, 'orange');
+            let w1 = getRelativeWeekData(state.currentMonth, state.currentWeek, -1); if (w1) extractTerritoryWarnings(w1.month, w1.week, 'red');
             renderShiftTerritoryGrid(); toggleModal('shiftTerritoryModal'); 
         }
 
         function toggleShiftTerritory(val) { 
-            const i = tempTerritories.indexOf(val); 
-            if (i > -1) tempTerritories.splice(i, 1); 
-            else if (tempTerritories.length < 4) tempTerritories.push(val); 
+            const i = tempTerritories.indexOf(val); if (i > -1) tempTerritories.splice(i, 1); else if (tempTerritories.length < 4) tempTerritories.push(val); 
             renderShiftTerritoryGrid(); 
         }
         
         function renderShiftTerritoryGrid() {
             const g = document.getElementById('shiftTerritoryGrid'); g.innerHTML = '';
             const allTerrs = ['Rev.']; for(let i=1; i<=75; i++) { allTerrs.push(i.toString()); if(i===4) allTerrs.push('4.1'); }
-            
             allTerrs.forEach(tStr => {
-                const sel = tempTerritories.indexOf(tStr) > -1;
-                const warning = territoryWarnings[tStr];
+                const sel = tempTerritories.indexOf(tStr) > -1; const warning = territoryWarnings[tStr];
                 let bgClass = 'bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70';
-                
                 if (sel) bgClass = 'bg-black text-white dark:bg-[#32D74B] dark:text-black font-semibold shadow-md dark:shadow-[#32D74B]/20';
                 else if (warning) {
                     if (warning.color === 'red') bgClass = 'bg-[#FF453A]/20 text-[#FF453A] border border-[#FF453A]/30 font-semibold shadow-sm';
                     else if (warning.color === 'orange') bgClass = 'bg-[#FF9F0A]/20 text-[#FF9F0A] border border-[#FF9F0A]/30 font-medium shadow-sm';
                 }
-
-                const btn = document.createElement('button'); 
-                btn.className = `h-8 text-[12px] rounded-md flex items-center justify-center ios-transition active:scale-90 ${bgClass}`;
-                btn.textContent = tStr; 
-                btn.onclick = () => { 
-                    if (!sel && warning && tStr !== 'Rev.') showCustomAlert(`El territorio ${tStr} ya fue asignado el día ${warning.dateStr}.`);
-                    toggleShiftTerritory(tStr); 
-                }; 
+                const btn = document.createElement('button'); btn.className = `h-8 text-[12px] rounded-md flex items-center justify-center ios-transition active:scale-90 ${bgClass}`; btn.textContent = tStr; 
+                btn.onclick = () => { if (!sel && warning && tStr !== 'Rev.') showCustomAlert(`El territorio ${tStr} ya fue asignado el día ${warning.dateStr}.`); toggleShiftTerritory(tStr); }; 
                 g.appendChild(btn);
             });
         }
 
-        function saveShiftTerritories() { 
-            updateData(editingDay, editingShift, 'territories', [...tempTerritories]); 
-            toggleModal('shiftTerritoryModal'); renderSchedule(); renderTerritoryGrid(); 
-        }
+        function saveShiftTerritories() { updateData(editingDay, editingShift, 'territories', [...tempTerritories]); toggleModal('shiftTerritoryModal'); renderSchedule(); renderTerritoryGrid(); }
         
         function renderTerritoryGrid() {
             document.getElementById('territoryModalTitle').textContent = `Territorios trabajados en ${monthNames[state.currentMonth]}`;
             const grid = document.getElementById('territoryGrid'); grid.innerHTML = ''; const monthlyAssigned = new Set();
-            
             Object.keys(state.assignments).forEach(key => { 
                 if (key.startsWith(`${state.currentMonth}-`)) {
-                    Object.values(state.assignments[key]).forEach(d => {
-                        Object.values(d).forEach(s => s.territories?.forEach(t => { if (t !== 'Rev.') monthlyAssigned.add(t); }));
-                    });
+                    Object.values(state.assignments[key]).forEach(d => Object.values(d).forEach(s => s.territories?.forEach(t => { if (t !== 'Rev.') monthlyAssigned.add(t); })));
                 }
             });
-
             const allTerrs = ['Rev.']; for(let i=1; i<=75; i++) { allTerrs.push(i.toString()); if(i===4) allTerrs.push('4.1'); }
-            
-            let workedCount = 0;
-            allTerrs.forEach(tStr => { if (tStr !== 'Rev.' && monthlyAssigned.has(tStr)) workedCount++; });
+            let workedCount = 0; allTerrs.forEach(tStr => { if (tStr !== 'Rev.' && monthlyAssigned.has(tStr)) workedCount++; });
             const remainingCount = 76 - workedCount;
-
             const subtitleEl = document.getElementById('territoryModalSubtitle');
             if (subtitleEl) {
                 if (remainingCount === 0) subtitleEl.innerHTML = `<span class="text-black dark:text-[#32D74B] font-bold">¡Todos los territorios abarcados!</span>`;
                 else subtitleEl.innerHTML = `Quedan <span class="text-black dark:text-[#32D74B] font-bold">${remainingCount}</span> territorios por terminar`;
             }
-
             allTerrs.forEach(tStr => {
-                const isAuto = monthlyAssigned.has(tStr);
-                const div = document.createElement('div'); 
+                const isAuto = monthlyAssigned.has(tStr); const div = document.createElement('div'); 
                 div.className = `h-8 text-[11px] font-medium rounded-md flex items-center justify-center ios-transition ${isAuto ? 'bg-black/10 text-black border border-black/20 dark:bg-[#32D74B]/20 dark:text-[#32D74B] dark:border-[#32D74B]/30 shadow-sm' : 'bg-black/5 dark:bg-white/5 text-black/30 dark:text-white/30'}`;
-                div.textContent = tStr; 
-                grid.appendChild(div);
+                div.textContent = tStr; grid.appendChild(div);
             });
         }
 
@@ -1386,9 +1134,8 @@
             if (!state.assignments[wk]) state.assignments[wk] = {}; 
             if (d && !state.assignments[wk][d]) state.assignments[wk][d] = {}; 
             if (d && s && !state.assignments[wk][d][s]) state.assignments[wk][d][s] = {}; 
-            
             if (f === null) state.assignments[wk][d][s] = v; 
-            else if (d === 'SAB' && s === null) state.assignments[wk]['SAB'][f] = v; // Para variables globales del sábado
+            else if (d === 'SAB' && s === null) state.assignments[wk]['SAB'][f] = v; 
             else state.assignments[wk][d][s][f] = v; 
             saveState(); 
         }
@@ -1397,40 +1144,24 @@
         function exitScreenshotMode() { document.getElementById('appBody').classList.remove('screenshot-mode'); }
         
         function showCustomAlert(m) { 
-            document.getElementById('customAlertMsg').textContent = m; 
-            document.getElementById('customAlert').classList.remove('hidden'); 
-            document.getElementById('customAlert').classList.add('flex'); 
+            document.getElementById('customAlertMsg').textContent = m; document.getElementById('customAlert').classList.remove('hidden'); document.getElementById('customAlert').classList.add('flex'); 
             void document.getElementById('customAlertBox').offsetWidth; 
-            document.getElementById('customAlertBg').classList.remove('opacity-0'); 
-            document.getElementById('customAlertBox').classList.remove('scale-95', 'opacity-0'); 
+            document.getElementById('customAlertBg').classList.remove('opacity-0'); document.getElementById('customAlertBox').classList.remove('scale-95', 'opacity-0'); 
         }
         function closeCustomAlert() { 
-            document.getElementById('customAlertBg').classList.add('opacity-0'); 
-            document.getElementById('customAlertBox').classList.add('scale-95', 'opacity-0'); 
-            setTimeout(() => { 
-                document.getElementById('customAlert').classList.add('hidden'); 
-                document.getElementById('customAlert').classList.remove('flex'); 
-            }, 300); 
+            document.getElementById('customAlertBg').classList.add('opacity-0'); document.getElementById('customAlertBox').classList.add('scale-95', 'opacity-0'); 
+            setTimeout(() => { document.getElementById('customAlert').classList.add('hidden'); document.getElementById('customAlert').classList.remove('flex'); }, 300); 
         }
 
-        // Exportar al entorno Global (Requerido para PWA de un solo archivo)
+        // Exportar al entorno Global
         Object.assign(window, {
-            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, 
-            openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, 
-            openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, 
-            handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, 
-            openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, 
-            toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme,
-            renderLocationOptions // Exportado para que el buscador pueda usarlo
+            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions
         });
 
-        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-        else init();
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
-        // Registro Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').catch(err => console.log('Fallo SW: ', err));
-        }
+        // Registro SW
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(err => console.log('Fallo SW: ', err)); }
     </script>
 </body>
 </html>
