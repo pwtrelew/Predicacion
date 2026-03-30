@@ -210,9 +210,19 @@
                 <button type="button" onclick="toggleTheme()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/70 dark:text-white/80 active:scale-90 ios-transition">
                     <i data-lucide="sun" id="themeIcon" class="w-[18px] h-[18px]"></i>
                 </button>
-                <button type="button" onclick="toggleScreenshotMode()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-[#0A84FF] active:scale-90 ios-transition">
+                
+                <!-- FIX: Botón de cámara ahora usa Pointer Events y soporta click largo para Reset -->
+                <button type="button" 
+                    onclick="handleCameraClick()" 
+                    onpointerdown="handleCameraHoldStart(event)" 
+                    onpointerup="handleCameraHoldEnd(event)" 
+                    onpointerleave="handleCameraHoldEnd(event)"
+                    onpointercancel="handleCameraHoldEnd(event)"
+                    oncontextmenu="event.preventDefault();"
+                    class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-[#0A84FF] active:scale-90 ios-transition">
                     <i data-lucide="camera" class="w-[18px] h-[18px]"></i>
                 </button>
+
                 <button type="button" onclick="showSyncStatus()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/70 dark:text-white/80 active:scale-90 ios-transition relative">
                     <i data-lucide="cloud" id="cloudIcon" class="w-[18px] h-[18px] transition-colors duration-500"></i>
                 </button>
@@ -330,7 +340,7 @@
                 <input type="text" id="locationSearchInput" placeholder="Buscar calle o familia..." class="w-full bg-transparent text-black dark:text-white text-[15px] font-medium ml-2 outline-none placeholder-black/40 dark:placeholder-white/40" oninput="renderLocationOptions(this.value)">
             </div>
             
-            <div id="locationOptionsList" class="max-h-[50vh] overflow-y-auto space-y-1 no-scrollbar pb-10"></div>
+            <div id="locationOptionsList" class="max-h-[60vh] overflow-y-auto space-y-1 no-scrollbar pb-10"></div>
         </div>
     </div>
 
@@ -398,6 +408,18 @@
         </div>
     </div>
 
+    <!-- FIX: Modal Confirmación Resetear añadido -->
+    <div id="customConfirm" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div id="customConfirmBg" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="customConfirmBox" class="relative bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(30,30,30,0.95)] backdrop-blur-xl border border-black/10 dark:border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-95 opacity-0 transition-all duration-300 shadow-2xl">
+            <p id="customConfirmMsg" class="text-[16px] font-medium text-black dark:text-white mb-6 leading-relaxed"></p>
+            <div class="flex gap-3">
+                <button onclick="closeCustomConfirm()" class="flex-1 py-3 text-black/60 dark:text-white/60 font-medium text-[15px] bg-black/5 dark:bg-white/10 rounded-xl active:scale-95 ios-transition">Cancelar</button>
+                <button id="customConfirmBtn" class="flex-1 py-3 text-white font-semibold text-[15px] bg-[#FF453A] rounded-xl shadow-lg shadow-[#FF453A]/20 active:scale-95 ios-transition">Resetear</button>
+            </div>
+        </div>
+    </div>
+
     <!-- === MOTOR DE LÓGICA Y FIREBASE === -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -461,6 +483,8 @@
         let editingDay, editingShift, tempTerritories = [], holdTimer, isHolding = false, indicatorTimer = null;
         let expandedLocationSection = null; 
         let territoryWarnings = {}; 
+        let cameraHoldTimer = null;
+        let cameraPreventClick = false;
 
         // Cargar desde LocalStorage
         const savedState = localStorage.getItem('app_horario_2026_v2');
@@ -787,7 +811,8 @@
 
         // --- SISTEMA EDICIÓN PLANILLA ---
         function handleHoldStart(e, day, shift, type = 'spot') {
-            const el = e.currentTarget; isHolding = false; el.classList.add('holding');
+            clearTimeout(holdTimer); isHolding = false; 
+            const el = e.currentTarget; el.classList.add('holding');
             holdTimer = setTimeout(() => {
                 isHolding = true; const wk = getWeekKey(), field = type === 'spot' ? 'manualMode' : 'manualDriverMode';
                 const currentMode = state.assignments[wk]?.[day]?.[shift]?.[field] || false;
@@ -924,8 +949,9 @@
                     const isManual = sData.manualMode === true, isManualDriver = sData.manualDriverMode === true;
                     const defDriver = sabData.isVisita ? (dayDef.id === 'MAR' ? '' : 'Super') : '';
                     const currentDriver = sData.driver !== undefined ? sData.driver : defDriver, tArray = sData.territories || [];
-                    const cellEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'spot')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)"`;
-                    const driverEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'driver')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)"`;
+                    
+                    const cellEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'spot')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
+                    const driverEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'driver')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
                     
                     let addrContent = isManual 
                         ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full min-h-[26px] flex items-center px-1 text-[11px] text-black dark:text-white outline-none animate-fade" data-placeholder="Escribir...">${spotValue}</div>`
@@ -1155,7 +1181,6 @@
 
         // Lógica de reseteo rápido al presionar Cámara
         function handleCameraHoldStart(e) {
-            if (e.type === 'mousedown' && e.button !== 0) return;
             clearTimeout(cameraHoldTimer); cameraPreventClick = false;
             cameraHoldTimer = setTimeout(() => {
                 cameraPreventClick = true;
@@ -1175,14 +1200,25 @@
             document.getElementById('customConfirmMsg').textContent = "¿Desea borrar todos los datos de esta semana?";
             document.getElementById('customConfirmBtn').onclick = () => {
                 const wk = getWeekKey();
-                if (state.assignments[wk]) {
-                    // Limpiamos los días de forma que Firebase los reciba como vacíos y sobreescriba.
-                    Object.keys(state.assignments[wk]).forEach(day => {
-                        state.assignments[wk][day] = null; 
-                    });
-                    saveState(); renderSchedule(); renderTerritoryGrid();
-                    showCustomAlert("Semana reseteada con éxito.");
-                }
+                
+                // Sobrescribir con estructura de base para borrar en Firebase (merge:true)
+                const empty = { spot: '', driver: '', territories: [], manualMode: false, manualDriverMode: false, time: '' };
+                state.assignments[wk] = {
+                    LUN: { m: {...empty}, t: {...empty} },
+                    MAR: { m: {...empty}, t: {...empty} },
+                    MIE: { m: {...empty}, t: {...empty}, n: {...empty} },
+                    JUE: { m: {...empty}, t: {...empty} },
+                    VIE: { m: {...empty}, t: {...empty}, n: {...empty} },
+                    SAB: { 
+                        m: {...empty}, t: {...empty},
+                        g1: {...empty}, g2: {...empty}, g3: {...empty}, g4: {...empty},
+                        isVisita: false, isAsamblea: false, isCleaning: false, cleaningTime: ''
+                    },
+                    DOM: { m: {...empty} }
+                };
+                
+                saveState(); renderSchedule(); renderTerritoryGrid(); updateModesToggleState();
+                showCustomAlert("Semana reseteada con éxito.");
                 closeCustomConfirm();
             };
             const modal = document.getElementById('customConfirm');
