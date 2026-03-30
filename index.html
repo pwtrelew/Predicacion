@@ -1153,9 +1153,55 @@
             setTimeout(() => { document.getElementById('customAlert').classList.add('hidden'); document.getElementById('customAlert').classList.remove('flex'); }, 300); 
         }
 
+        // Lógica de reseteo rápido al presionar Cámara
+        function handleCameraHoldStart(e) {
+            if (e.type === 'mousedown' && e.button !== 0) return;
+            clearTimeout(cameraHoldTimer); cameraPreventClick = false;
+            cameraHoldTimer = setTimeout(() => {
+                cameraPreventClick = true;
+                if ("vibrate" in navigator) navigator.vibrate([20, 40, 20]);
+                showConfirmResetWeek();
+            }, 600);
+        }
+
+        function handleCameraHoldEnd(e) { clearTimeout(cameraHoldTimer); }
+
+        function handleCameraClick() {
+            if (cameraPreventClick) return;
+            toggleScreenshotMode();
+        }
+
+        function showConfirmResetWeek() {
+            document.getElementById('customConfirmMsg').textContent = "¿Desea borrar todos los datos de esta semana?";
+            document.getElementById('customConfirmBtn').onclick = () => {
+                const wk = getWeekKey();
+                if (state.assignments[wk]) {
+                    // Limpiamos los días de forma que Firebase los reciba como vacíos y sobreescriba.
+                    Object.keys(state.assignments[wk]).forEach(day => {
+                        state.assignments[wk][day] = null; 
+                    });
+                    saveState(); renderSchedule(); renderTerritoryGrid();
+                    showCustomAlert("Semana reseteada con éxito.");
+                }
+                closeCustomConfirm();
+            };
+            const modal = document.getElementById('customConfirm');
+            modal.classList.remove('hidden'); modal.classList.add('flex'); 
+            void document.getElementById('customConfirmBox').offsetWidth; 
+            document.getElementById('customConfirmBg').classList.remove('opacity-0'); 
+            document.getElementById('customConfirmBox').classList.remove('scale-95', 'opacity-0');
+        }
+
+        function closeCustomConfirm() {
+            document.getElementById('customConfirmBg').classList.add('opacity-0'); 
+            document.getElementById('customConfirmBox').classList.add('scale-95', 'opacity-0'); 
+            setTimeout(() => { document.getElementById('customConfirm').classList.add('hidden'); document.getElementById('customConfirm').classList.remove('flex'); }, 300);
+        }
+
         // Exportar al entorno Global
         Object.assign(window, {
-            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions
+            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions,
+            handleCameraHoldStart, handleCameraHoldEnd, handleCameraClick, closeCustomConfirm
         });
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
