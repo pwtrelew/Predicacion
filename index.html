@@ -17,17 +17,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' };
-        // Inicializar tema antes de renderizar para evitar destellos
-        if (localStorage.getItem('theme') === 'light') {
-            document.documentElement.classList.remove('dark');
-        } else {
-            document.documentElement.classList.add('dark');
-        }
+        // Inicializar tema antes de renderizar para evitar destellos (FOUC)
+        if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+        else document.documentElement.classList.add('dark');
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        /* === ESTÉTICA PREMIUM iOS 17 PRO MAX === */
+        /* === ESTÉTICA PREMIUM iOS === */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
@@ -40,11 +37,10 @@
             position: relative;
             overscroll-behavior-y: none;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            overflow-x: hidden;
             transition: background-color 0.4s ease, color 0.4s ease;
         }
 
+        /* Efectos Cristalinos (Glassmorphism) */
         .ios-blur {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(45px) saturate(250%);
@@ -55,45 +51,11 @@
             background: rgba(18, 18, 18, 0.65);
             border-bottom: 0.5px solid rgba(255, 255, 255, 0.08); 
         }
-        
-        .ios-card-depth-1 {
-            background-color: #FFFFFF; 
-            border: 0.5px solid rgba(0, 0, 0, 0.05);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-        }
-        .dark .ios-card-depth-1 {
-            background-color: rgba(28, 28, 30, 0.7); 
-            border: 0.5px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-        }
 
-        .ios-card-depth-2 {
-            background-color: #F9F9F9; 
-            border: 0.5px solid rgba(0, 0, 0, 0.03);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-        }
-        .dark .ios-card-depth-2 {
-            background-color: rgba(44, 44, 46, 0.5); 
-            border: 0.5px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-        }
-
-        .ios-squircle {
-            border-radius: 14px;
-            background: #F0F0F0;
-            border: 0.5px solid rgba(0, 0, 0, 0.05);
-        }
-        .dark .ios-squircle {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-            border: 0.5px solid rgba(255, 255, 255, 0.12);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        }
-
+        /* Modo Captura de Pantalla */
         .screenshot-mode header, .screenshot-mode nav { display: none !important; }
-        
         .screenshot-mode { background-color: #F2F2F7 !important; }
         html.dark .screenshot-mode { background-color: #000000 !important; }
-        
         .screenshot-mode #scheduleContainer { 
             padding-top: calc(env(safe-area-inset-top, 20px) + 60px) !important; 
             padding-bottom: 40px !important;
@@ -112,18 +74,22 @@
         #btnVolverCaptura:active { opacity: 1; transform: scale(0.9); }
         .screenshot-mode #btnVolverCaptura { display: flex !important; }
 
+        /* Utilidades Estructurales */
         .grid-75 { display: grid; grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); gap: 6px; }
 
         .ios-transition { transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
         .ios-unlock-transition { transition: all 0.6s cubic-bezier(0.32, 0.72, 0, 1); }
+        .ios-spring { transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1); } 
 
         #scheduleContainer { will-change: transform, opacity; }
 
+        /* Indicador de Semana Flotante */
         #weekIndicator {
             position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%) scale(0.8);
             background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
             padding: 20px 32px; border-radius: 28px;
             border: 0.5px solid rgba(0, 0, 0, 0.1);
             z-index: 200; opacity: 0; pointer-events: none;
@@ -135,10 +101,13 @@
             border: 0.5px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
         }
-
         #weekIndicator.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-        @keyframes fadeInPremium { from { opacity: 0; transform: scale(0.97) translateY(4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        /* Animaciones */
+        @keyframes fadeInPremium {
+            from { opacity: 0; transform: scale(0.97) translateY(4px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
         .animate-fade { animation: fadeInPremium 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 
         @keyframes shake {
@@ -150,29 +119,41 @@
         }
         .animate-shake { animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
 
-        .holding { transform: scale(0.95); background-color: rgba(10, 132, 255, 0.15) !important; transition: all 0.15s cubic-bezier(0.3, 0, 0.2, 1); }
+        /* Interacciones */
+        .holding {
+            transform: scale(0.95);
+            background-color: rgba(10, 132, 255, 0.15) !important;
+            transition: all 0.15s cubic-bezier(0.3, 0, 0.2, 1);
+        }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .modal-grabber { width: 36px; height: 5px; background-color: #D1D1D6; border-radius: 2.5px; margin: 0 auto 16px auto; }
+        .modal-grabber {
+            width: 36px; height: 5px;
+            background-color: #D1D1D6; border-radius: 2.5px;
+            margin: 0 auto 16px auto;
+        }
         .dark .modal-grabber { background-color: #5C5C5E; }
 
         [contenteditable], input { -webkit-user-select: text; user-select: text; }
 
-        [contenteditable]:empty:before { content: attr(data-placeholder); color: rgba(0, 0, 0, 0.3); pointer-events: none; display: block; }
+        [contenteditable]:empty:before {
+            content: attr(data-placeholder);
+            color: rgba(0, 0, 0, 0.3); pointer-events: none; display: block;
+        }
         .dark [contenteditable]:empty:before { color: rgba(255, 255, 255, 0.25); }
 
-        .manual-edit-active { background-color: rgba(0, 0, 0, 0.05) !important; border-radius: 8px; box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.4); }
+        .manual-edit-active {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+            border-radius: 8px; box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.4);
+        }
         .dark .manual-edit-active { background-color: rgba(255, 255, 255, 0.12) !important; }
-
-        .ios-modal-sheet { box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.15); }
-        .dark .ios-modal-sheet { box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6); }
     </style>
 </head>
 <body class="flex flex-col h-[100dvh] overflow-x-hidden bg-[#F2F2F7] dark:bg-[#000000] text-black dark:text-white" id="appBody">
 
-    <!-- === PANTALLA DE LOGIN PREMIUM iOS === -->
+    <!-- === PANTALLA DE LOGIN === -->
     <div id="loginScreen" class="fixed inset-0 z-[200] bg-[#F2F2F7] dark:bg-[#000000] flex flex-col items-center justify-center p-6 ios-unlock-transition">
         <div id="loginContent" class="w-full max-w-[300px] flex flex-col items-center justify-center transform scale-100 opacity-100 ios-unlock-transition">
             <div class="w-16 h-16 mb-5 rounded-[18px] bg-gradient-to-tr from-black/5 to-transparent dark:from-white/10 dark:to-white/5 flex items-center justify-center shadow-inner border border-black/5 dark:border-white/5">
@@ -189,7 +170,6 @@
         </div>
     </div>
 
-    <!-- Indicador Flotante -->
     <div id="weekIndicator">
         <div class="flex flex-col items-center text-center">
             <span id="indicatorWeek" class="text-[22px] font-bold tracking-tight mb-1 text-black dark:text-white">Semana 1</span>
@@ -197,7 +177,6 @@
         </div>
     </div>
 
-    <!-- Botón Volver Captura -->
     <button type="button" id="btnVolverCaptura" onclick="exitScreenshotMode()" class="hidden fixed z-50 w-10 h-10 text-white rounded-full shadow-lg items-center justify-center ios-transition">
         <i data-lucide="x" class="w-5 h-5"></i>
     </button>
@@ -210,8 +189,6 @@
                 <button type="button" onclick="toggleTheme()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/70 dark:text-white/80 active:scale-90 ios-transition">
                     <i data-lucide="sun" id="themeIcon" class="w-[18px] h-[18px]"></i>
                 </button>
-                
-                <!-- FIX: Botón de cámara ahora usa Pointer Events y soporta click largo para Reset -->
                 <button type="button" 
                     onclick="handleCameraClick()" 
                     onpointerdown="handleCameraHoldStart(event)" 
@@ -222,7 +199,6 @@
                     class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-[#0A84FF] active:scale-90 ios-transition">
                     <i data-lucide="camera" class="w-[18px] h-[18px]"></i>
                 </button>
-
                 <button type="button" onclick="showSyncStatus()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/70 dark:text-white/80 active:scale-90 ios-transition relative">
                     <i data-lucide="cloud" id="cloudIcon" class="w-[18px] h-[18px] transition-colors duration-500"></i>
                 </button>
@@ -236,13 +212,11 @@
                     <i data-lucide="chevron-down" id="modesChevron" class="w-3.5 h-3.5 transition-transform duration-500"></i>
                 </button>
             </div>
-
             <div class="flex items-center gap-1.5 flex-1 justify-end">
                 <div onclick="openMonthPicker()" class="relative flex-1 max-w-[110px] h-[34px] bg-black/5 dark:bg-white/10 rounded-full flex items-center px-3 border border-black/5 dark:border-white/5 cursor-pointer active:scale-95 ios-transition">
                     <span id="monthDisplay" class="text-black dark:text-white font-medium text-[12px] pointer-events-none truncate">Enero</span>
                     <i data-lucide="chevron-down" class="w-3 h-3 text-black/40 dark:text-white/40 ml-auto pointer-events-none shrink-0"></i>
                 </div>
-                
                 <div onclick="openWeekPicker()" class="relative w-[100px] h-[34px] bg-black/5 dark:bg-white/10 rounded-full flex items-center px-3 border border-black/5 dark:border-white/5 cursor-pointer active:scale-95 ios-transition">
                     <span id="weekDisplay" class="text-black dark:text-white font-medium text-[12px] pointer-events-none truncate">Semana 1</span>
                     <i data-lucide="chevron-down" class="w-3 h-3 text-black/40 dark:text-white/40 ml-auto pointer-events-none shrink-0"></i>
@@ -251,7 +225,7 @@
         </div>
     </header>
 
-    <!-- Contenedor Principal -->
+    <!-- Contenedor Principal (Planilla) -->
     <main class="flex-1 p-3 overflow-y-auto pb-[100px] no-scrollbar" id="scheduleContainer"></main>
 
     <!-- Barra Inferior -->
@@ -271,8 +245,7 @@
     </nav>
 
     <!-- === MODALES === -->
-
-    <div id="modesPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('modesPickerModal')">
+    <div id="modesPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('modesPickerModal')">
         <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
@@ -283,7 +256,7 @@
         </div>
     </div>
 
-    <div id="campanaModal" class="fixed inset-0 z-[80] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('campanaModal')">
+    <div id="campanaModal" class="fixed inset-0 z-[80] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('campanaModal')">
         <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
@@ -305,7 +278,7 @@
         </div>
     </div>
 
-    <div id="monthPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('monthPickerModal')">
+    <div id="monthPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('monthPickerModal')">
         <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
@@ -316,7 +289,7 @@
         </div>
     </div>
 
-    <div id="weekPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('weekPickerModal')">
+    <div id="weekPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('weekPickerModal')">
         <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
@@ -327,24 +300,22 @@
         </div>
     </div>
 
-    <div id="locationPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('locationPickerModal')">
+    <div id="locationPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('locationPickerModal')">
         <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold text-black dark:text-white tracking-[-0.01em]">Seleccionar Ubicación</h2>
                 <button onclick="toggleModal('locationPickerModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            
             <div class="mb-4 relative flex items-center bg-black/5 dark:bg-white/10 rounded-[12px] px-3 py-2.5">
                 <i data-lucide="search" class="w-5 h-5 text-black/40 dark:text-white/40 shrink-0"></i>
                 <input type="text" id="locationSearchInput" placeholder="Buscar calle o familia..." class="w-full bg-transparent text-black dark:text-white text-[15px] font-medium ml-2 outline-none placeholder-black/40 dark:placeholder-white/40" oninput="renderLocationOptions(this.value)">
             </div>
-            
             <div id="locationOptionsList" class="max-h-[60vh] overflow-y-auto space-y-1 no-scrollbar pb-10"></div>
         </div>
     </div>
 
-    <div id="driverPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('driverPickerModal')">
+    <div id="driverPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('driverPickerModal')">
         <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
@@ -355,7 +326,7 @@
         </div>
     </div>
 
-    <div id="summaryModal" class="fixed inset-0 z-[60] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('summaryModal')">
+    <div id="summaryModal" class="fixed inset-0 z-[60] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('summaryModal')">
         <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
@@ -366,7 +337,7 @@
         </div>
     </div>
 
-    <div id="shiftTerritoryModal" class="fixed inset-0 z-[60] hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('shiftTerritoryModal')">
+    <div id="shiftTerritoryModal" class="fixed inset-0 z-[60] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('shiftTerritoryModal')">
         <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold text-black dark:text-white tracking-[-0.01em]">Territorios</h2><button onclick="toggleModal('shiftTerritoryModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button></div>
@@ -375,7 +346,7 @@
         </div>
     </div>
 
-    <div id="territoryModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('territoryModal')">
+    <div id="territoryModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('territoryModal')">
         <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-start mb-6">
@@ -389,7 +360,7 @@
         </div>
     </div>
 
-    <div id="statsModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-md flex items-end justify-center ios-transition" onclick="toggleModal('statsModal')">
+    <div id="statsModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('statsModal')">
         <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
@@ -400,18 +371,18 @@
         </div>
     </div>
 
+    <!-- POPUPS CENTRALES -->
     <div id="customAlert" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
         <div id="customAlertBg" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
-        <div id="customAlertBox" class="relative bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(30,30,30,0.95)] backdrop-blur-xl border border-black/10 dark:border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-95 opacity-0 transition-all duration-300 shadow-2xl">
+        <div id="customAlertBox" class="relative bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(30,30,30,0.95)] backdrop-blur-xl border border-black/10 dark:border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-[1.10] opacity-0 ios-spring shadow-2xl">
             <p id="customAlertMsg" class="text-[15px] font-medium text-black dark:text-white mb-5 leading-relaxed"></p>
             <button onclick="closeCustomAlert()" class="w-full py-3 text-[#0A84FF] font-semibold text-[16px] border-t border-black/10 dark:border-white/10 active:opacity-70 ios-transition">OK</button>
         </div>
     </div>
 
-    <!-- FIX: Modal Confirmación Resetear añadido -->
     <div id="customConfirm" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
         <div id="customConfirmBg" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
-        <div id="customConfirmBox" class="relative bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(30,30,30,0.95)] backdrop-blur-xl border border-black/10 dark:border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-95 opacity-0 transition-all duration-300 shadow-2xl">
+        <div id="customConfirmBox" class="relative bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(30,30,30,0.95)] backdrop-blur-xl border border-black/10 dark:border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-[1.10] opacity-0 ios-spring shadow-2xl">
             <p id="customConfirmMsg" class="text-[16px] font-medium text-black dark:text-white mb-6 leading-relaxed"></p>
             <div class="flex gap-3">
                 <button onclick="closeCustomConfirm()" class="flex-1 py-3 text-black/60 dark:text-white/60 font-medium text-[15px] bg-black/5 dark:bg-white/10 rounded-xl active:scale-95 ios-transition">Cancelar</button>
@@ -445,11 +416,9 @@
         let isFirebaseReady = false;
         let currentUser = null;
 
-        // Conductores Base Garantizados (Orden Alfabético en Origen)
         const defaultDrivers = ["Darío", "Diego", "E. García", "E. Gauna", "Enzo", "Jeremías", "Jorge", "Julio", "Leonardo", "Luis", "Marcelo", "Miguel", "Pablo F.", "Ramón S."];
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         
-        // Ubicaciones limpias
         const userLocations = [
             "P.J. Muzio y Cutillo", "Galina y Las Heras", "J. Berreta y J. Marmol", "Saavedra y Roque Gonzalez", 
             "Crucero Gral. Belgrano y J. Ingenieros", "Cutillo y Urquiza", "Galina y 2 de Abril", "P.J. Muzio y Pje. Los Andes", 
@@ -486,7 +455,6 @@
         let cameraHoldTimer = null;
         let cameraPreventClick = false;
 
-        // Cargar desde LocalStorage
         const savedState = localStorage.getItem('app_horario_2026_v2');
         if (savedState) {
             const parsed = JSON.parse(savedState);
@@ -502,24 +470,15 @@
         async function loginWithPassword() {
             const input = document.getElementById('accessPassword');
             const content = document.getElementById('loginContent');
-            
             if (input.value === SHARED_PASSWORD) {
-                try {
-                    await signInAnonymously(auth);
-                } catch (error) {
-                    console.error("Error Login:", error);
-                    showCustomAlert("Error al conectar con la base de datos.");
-                }
+                try { await signInAnonymously(auth); } catch (error) { showCustomAlert("Error al conectar con la base de datos."); }
             } else {
                 content.classList.add('animate-shake');
                 if ("vibrate" in navigator) navigator.vibrate([50, 50, 50]);
                 setTimeout(() => content.classList.remove('animate-shake'), 400);
                 input.value = ''; input.placeholder = 'Contraseña incorrecta';
                 input.classList.add('placeholder-[#FF453A]', 'border-[#FF453A]/50');
-                setTimeout(() => {
-                    input.placeholder = 'Contraseña';
-                    input.classList.remove('placeholder-[#FF453A]', 'border-[#FF453A]/50');
-                }, 2000);
+                setTimeout(() => { input.placeholder = 'Contraseña'; input.classList.remove('placeholder-[#FF453A]', 'border-[#FF453A]/50'); }, 2000);
             }
         }
 
@@ -528,8 +487,7 @@
             const loginScreen = document.getElementById('loginScreen');
             const loginContent = document.getElementById('loginContent');
             if (user) {
-                loginContent.style.transform = 'scale(1.05) translateY(-15px)';
-                loginContent.style.opacity = '0';
+                loginContent.style.transform = 'scale(1.05) translateY(-15px)'; loginContent.style.opacity = '0';
                 setTimeout(() => { loginScreen.style.opacity = '0'; loginScreen.style.backdropFilter = 'blur(0px)'; }, 100); 
                 setTimeout(() => {
                     loginScreen.classList.add('hidden');
@@ -549,31 +507,16 @@
             const docRef = doc(db, 'artifacts', uniqueAppId, 'public', 'data', 'schedule', 'main');
             onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    const remoteData = docSnap.data();
-                    state = Object.assign(state, remoteData);
-                    
+                    const remoteData = docSnap.data(); state = Object.assign(state, remoteData);
                     if (!state.drivers) state.drivers = [];
                     const missingDrivers = defaultDrivers.filter(d => !state.drivers.includes(d));
-                    if (missingDrivers.length > 0) {
-                        state.drivers.push(...missingDrivers);
-                        setDoc(docRef, { drivers: state.drivers }, { merge: true });
-                    }
-
+                    if (missingDrivers.length > 0) { state.drivers.push(...missingDrivers); setDoc(docRef, { drivers: state.drivers }, { merge: true }); }
                     localStorage.setItem('app_horario_2026_v2', JSON.stringify(state));
                     updateSelectDisplays(); renderSchedule(); renderTerritoryGrid(); renderShiftTerritoryGrid();
-                } else {
-                    setDoc(docRef, state, { merge: true });
-                }
-                isFirebaseReady = true;
-                const cloudIcon = document.getElementById('cloudIcon');
-                if(cloudIcon) {
-                    cloudIcon.outerHTML = '<i data-lucide="cloud-check" id="cloudIcon" class="w-[18px] h-[18px] text-black dark:text-[#32D74B] transition-colors duration-500"></i>';
-                    lucide.createIcons();
-                }
-            }, (error) => {
-                console.error("Error Sync:", error);
-                document.getElementById('cloudIcon').classList.add('text-[#FF453A]');
-            });
+                } else { setDoc(docRef, state, { merge: true }); }
+                isFirebaseReady = true; const cloudIcon = document.getElementById('cloudIcon');
+                if(cloudIcon) { cloudIcon.outerHTML = '<i data-lucide="cloud-check" id="cloudIcon" class="w-[18px] h-[18px] text-black dark:text-[#32D74B] transition-colors duration-500"></i>'; lucide.createIcons(); }
+            }, (error) => { document.getElementById('cloudIcon').classList.add('text-[#FF453A]'); });
         }
 
         function saveState() { 
@@ -598,13 +541,11 @@
         }
 
         function updateThemeIcon() {
-            const doc = document.documentElement;
-            const icon = document.getElementById('themeIcon');
+            const doc = document.documentElement; const icon = document.getElementById('themeIcon');
             if (icon) icon.setAttribute('data-lucide', doc.classList.contains('dark') ? 'sun' : 'moon');
             lucide.createIcons();
         }
 
-        // --- INICIALIZACIÓN ---
         function init() {
             updateThemeIcon(); updateSelectDisplays(); renderSchedule(); renderTerritoryGrid(); renderShiftTerritoryGrid(); lucide.createIcons();
         }
@@ -616,8 +557,7 @@
         }
 
         function showWeekIndicator() {
-            const indicator = document.getElementById('weekIndicator');
-            const weekSpan = document.getElementById('indicatorWeek');
+            const indicator = document.getElementById('weekIndicator'); const weekSpan = document.getElementById('indicatorWeek');
             document.getElementById('indicatorMonth').textContent = monthNames[state.currentMonth];
             weekSpan.textContent = `Semana ${state.currentWeek}`;
             const isDark = document.documentElement.classList.contains('dark');
@@ -629,21 +569,14 @@
             if ("vibrate" in navigator) navigator.vibrate(10);
         }
 
-        // --- CÁLCULO DE FECHAS ---
         function getDatesForMonthWeek(month, weekNum) {
-            let firstDayOfMonth = new Date(2026, month, 1);
-            let dayOfWeek = firstDayOfMonth.getDay(); 
+            let firstDayOfMonth = new Date(2026, month, 1); let dayOfWeek = firstDayOfMonth.getDay(); 
             let daysToFirstTuesday = (2 - dayOfWeek + 7) % 7; 
             let firstTuesdayDate = new Date(2026, month, 1 + daysToFirstTuesday);
-            let targetMonday = new Date(firstTuesdayDate);
-            targetMonday.setDate(firstTuesdayDate.getDate() - 1);
-            targetMonday.setDate(targetMonday.getDate() + (weekNum - 1) * 7);
-
+            let targetMonday = new Date(firstTuesdayDate); targetMonday.setDate(firstTuesdayDate.getDate() - 1); targetMonday.setDate(targetMonday.getDate() + (weekNum - 1) * 7);
             let dates = [];
             for(let i = 0; i < 7; i++) {
-                let d = new Date(targetMonday); 
-                d.setDate(targetMonday.getDate() + i);
-                dates.push({ day: d.getDate(), fullDate: d });
+                let d = new Date(targetMonday); d.setDate(targetMonday.getDate() + i); dates.push({ day: d.getDate(), fullDate: d });
             }
             return dates;
         }
@@ -651,34 +584,37 @@
         function isWeekInCampana(month, week) {
             if (!state.campanaConfig?.active || !state.campanaConfig.start || !state.campanaConfig.end) return false;
             const dates = getDatesForMonthWeek(month, week);
-            const start = new Date(state.campanaConfig.start + "T00:00:00");
-            const end = new Date(state.campanaConfig.end + "T23:59:59");
+            const start = new Date(state.campanaConfig.start + "T00:00:00"); const end = new Date(state.campanaConfig.end + "T23:59:59");
             return dates.some(d => d.fullDate >= start && d.fullDate <= end);
         }
 
-        // --- MODALES SELECTORES ---
+        function toggleModal(id) {
+            const m = document.getElementById(id); if (!m) return;
+            if (m.classList.contains('hidden')) { 
+                m.classList.remove('hidden'); void m.offsetWidth; m.classList.remove('opacity-0'); m.classList.add('opacity-100');
+                setTimeout(() => { if (m.firstElementChild) m.firstElementChild.classList.remove('translate-y-full'); }, 10); 
+            } else { 
+                if (m.firstElementChild) m.firstElementChild.classList.add('translate-y-full'); 
+                m.classList.remove('opacity-100'); m.classList.add('opacity-0');
+                setTimeout(() => m.classList.add('hidden'), 400); 
+            }
+        }
+
         function openCampanaModal() {
             toggleModal('modesPickerModal'); 
             setTimeout(() => {
-                const startInput = document.getElementById('campanaStartDate');
-                const endInput = document.getElementById('campanaEndDate');
-                const disableBtn = document.getElementById('btnDisableCampana');
-                if (state.campanaConfig?.active) {
-                    startInput.value = state.campanaConfig.start; endInput.value = state.campanaConfig.end; disableBtn.classList.remove('hidden');
-                } else {
-                    startInput.value = ''; endInput.value = ''; disableBtn.classList.add('hidden');
-                }
+                const startInput = document.getElementById('campanaStartDate'); const endInput = document.getElementById('campanaEndDate'); const disableBtn = document.getElementById('btnDisableCampana');
+                if (state.campanaConfig?.active) { startInput.value = state.campanaConfig.start; endInput.value = state.campanaConfig.end; disableBtn.classList.remove('hidden'); } 
+                else { startInput.value = ''; endInput.value = ''; disableBtn.classList.add('hidden'); }
                 toggleModal('campanaModal');
             }, 300);
         }
 
         function saveCampana() {
-            const start = document.getElementById('campanaStartDate').value;
-            const end = document.getElementById('campanaEndDate').value;
+            const start = document.getElementById('campanaStartDate').value; const end = document.getElementById('campanaEndDate').value;
             if (!start || !end) { showCustomAlert("Por favor, selecciona fechas de inicio y fin."); return; }
             if (new Date(start) > new Date(end)) { showCustomAlert("La fecha de inicio no puede ser posterior al final."); return; }
-            state.campanaConfig = { active: true, start, end };
-            const wk = getWeekKey();
+            state.campanaConfig = { active: true, start, end }; const wk = getWeekKey();
             if (state.assignments[wk]?.['SAB']) { state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isAsamblea = false; }
             saveState(); renderSchedule(); updateModesToggleState(); toggleModal('campanaModal');
         }
@@ -697,8 +633,7 @@
                 btn.textContent = name;
                 btn.onclick = () => {
                     state.currentMonth = index; 
-                    let datesWeek5 = getDatesForMonthWeek(state.currentMonth, 5);
-                    if (state.currentWeek === 5 && datesWeek5[0].fullDate.getMonth() !== state.currentMonth) state.currentWeek = 4;
+                    state.currentWeek = 1; // Al cambiar el mes, volvemos siempre a la semana 1
                     updateSelectDisplays(); renderSchedule(); saveState(); renderTerritoryGrid(); showWeekIndicator(); toggleModal('monthPickerModal');
                 };
                 list.appendChild(btn);
@@ -708,221 +643,129 @@
 
         function openWeekPicker() {
             const list = document.getElementById('weekOptionsList'); list.innerHTML = '';
-            let availableWeeks = [1, 2, 3, 4];
-            let datesWeek5 = getDatesForMonthWeek(state.currentMonth, 5);
+            let availableWeeks = [1, 2, 3, 4]; let datesWeek5 = getDatesForMonthWeek(state.currentMonth, 5);
             if (datesWeek5[0].fullDate.getMonth() === state.currentMonth) availableWeeks.push(5);
-
             availableWeeks.forEach(weekNum => {
-                const isActive = state.currentWeek === weekNum;
-                const btn = document.createElement('button');
+                const isActive = state.currentWeek === weekNum; const btn = document.createElement('button');
                 btn.className = `w-full text-left px-5 py-4 text-[15px] font-medium border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition ${isActive ? 'text-[#0A84FF] font-semibold' : 'text-black dark:text-white'}`;
                 btn.textContent = "Semana " + weekNum;
-                btn.onclick = () => {
-                    state.currentWeek = weekNum; updateSelectDisplays(); renderSchedule(); saveState(); showWeekIndicator(); toggleModal('weekPickerModal');
-                };
+                btn.onclick = () => { state.currentWeek = weekNum; updateSelectDisplays(); renderSchedule(); saveState(); showWeekIndicator(); toggleModal('weekPickerModal'); };
                 list.appendChild(btn);
             });
             toggleModal('weekPickerModal');
         }
 
         function openModesPicker() {
-            const list = document.getElementById('modesOptionsList');
-            const wk = getWeekKey(), sabData = state.assignments[wk]?.['SAB'] || {};
-            const isCampActive = state.campanaConfig?.active;
-            const modes = [
-                { id: 'normal', name: 'Normal', active: !isCampActive && !sabData.isVisita && !sabData.isAsamblea && !sabData.isCleaning },
-                { id: 'campana', name: 'Campaña', active: isCampActive },
-                { id: 'visita', name: 'Visita', active: sabData.isVisita },
-                { id: 'asamblea', name: 'Asamblea', active: sabData.isAsamblea },
-                { id: 'limpieza', name: 'Limpieza', active: sabData.isCleaning }
-            ];
+            const list = document.getElementById('modesOptionsList'); const wk = getWeekKey(), sabData = state.assignments[wk]?.['SAB'] || {}; const isCampActive = state.campanaConfig?.active;
+            const modes = [ { id: 'normal', name: 'Normal', active: !isCampActive && !sabData.isVisita && !sabData.isAsamblea && !sabData.isCleaning }, { id: 'campana', name: 'Campaña', active: isCampActive }, { id: 'visita', name: 'Visita', active: sabData.isVisita }, { id: 'asamblea', name: 'Asamblea', active: sabData.isAsamblea }, { id: 'limpieza', name: 'Limpieza', active: sabData.isCleaning } ];
             list.innerHTML = modes.map(m => {
-                const isSpecial = m.id === 'campana' && m.active;
-                const activeColor = isSpecial ? 'text-[#CDA4FF] font-semibold' : 'text-[#32D74B] font-semibold';
+                const isSpecial = m.id === 'campana' && m.active; const activeColor = isSpecial ? 'text-[#CDA4FF] font-semibold' : 'text-[#32D74B] font-semibold';
                 return `<button type="button" onclick="handleModeSelection('${m.id}')" class="w-full text-left px-5 py-4 text-[15px] font-medium ios-transition border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ${m.active ? activeColor : 'text-black/80 dark:text-white/80'}">${m.name}</button>`;
             }).join('');
             toggleModal('modesPickerModal');
         }
 
         function handleModeSelection(modeId) {
-            if (modeId === 'normal') resetModes();
-            else if (modeId === 'campana') openCampanaModal();
-            else if (modeId === 'visita') toggleVisita();
-            else if (modeId === 'asamblea') toggleAsamblea();
-            else if (modeId === 'limpieza') toggleCleaning();
+            if (modeId === 'normal') resetModes(); else if (modeId === 'campana') openCampanaModal(); else if (modeId === 'visita') toggleVisita(); else if (modeId === 'asamblea') toggleAsamblea(); else if (modeId === 'limpieza') toggleCleaning();
             if (modeId !== 'campana') toggleModal('modesPickerModal');
         }
 
         function getWeekKey() { return `${state.currentMonth}-${state.currentWeek}`; }
 
-        function resetModes() { 
-            const wk = getWeekKey(); 
-            if (state.assignments[wk]?.['SAB']) { state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; } 
-            saveState(); renderSchedule(); updateModesToggleState();
-        }
-
-        function toggleVisita() {
-            const wk = getWeekKey();
-            if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {};
-            state.assignments[wk]['SAB'].isVisita = !state.assignments[wk]['SAB'].isVisita;
-            if (state.assignments[wk]['SAB'].isVisita) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; }
-            saveState(); renderSchedule(); updateModesToggleState();
-        }
-
-        function toggleAsamblea() {
-            const wk = getWeekKey();
-            if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {};
-            state.assignments[wk]['SAB'].isAsamblea = !state.assignments[wk]['SAB'].isAsamblea;
-            if (state.assignments[wk]['SAB'].isAsamblea) { state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isVisita = false; }
-            saveState(); renderSchedule(); updateModesToggleState();
-        }
-
-        function toggleCleaning() {
-            const wk = getWeekKey();
-            if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {};
-            state.assignments[wk]['SAB'].isCleaning = !state.assignments[wk]['SAB'].isCleaning;
-            if (state.assignments[wk]['SAB'].isCleaning) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isVisita = false; if (!state.assignments[wk]['SAB'].cleaningTime) state.assignments[wk]['SAB'].cleaningTime = "9.00"; }
-            saveState(); renderSchedule(); updateModesToggleState();
-        }
+        function resetModes() { const wk = getWeekKey(); if (state.assignments[wk]?.['SAB']) { state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleVisita() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isVisita = !state.assignments[wk]['SAB'].isVisita; if (state.assignments[wk]['SAB'].isVisita) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleAsamblea() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isAsamblea = !state.assignments[wk]['SAB'].isAsamblea; if (state.assignments[wk]['SAB'].isAsamblea) { state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isVisita = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleCleaning() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isCleaning = !state.assignments[wk]['SAB'].isCleaning; if (state.assignments[wk]['SAB'].isCleaning) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isVisita = false; if (!state.assignments[wk]['SAB'].cleaningTime) state.assignments[wk]['SAB'].cleaningTime = "9.00"; } saveState(); renderSchedule(); updateModesToggleState(); }
 
         function updateModesToggleState() {
-            const wk = getWeekKey(), sabData = state.assignments[wk]?.['SAB'] || {};
-            const btn = document.getElementById('btnToggleModes'), textSpan = document.getElementById('modesToggleText');
-            let activeModes = [];
-            if (isWeekInCampana(state.currentMonth, state.currentWeek)) activeModes.push('Campaña');
-            if (sabData.isVisita) activeModes.push('Visita');
-            if (sabData.isAsamblea) activeModes.push('Asamblea');
-            if (sabData.isCleaning) activeModes.push('Limpieza');
-            
+            const wk = getWeekKey(), sabData = state.assignments[wk]?.['SAB'] || {}; const btn = document.getElementById('btnToggleModes'), textSpan = document.getElementById('modesToggleText'); let activeModes = [];
+            if (isWeekInCampana(state.currentMonth, state.currentWeek)) activeModes.push('Campaña'); if (sabData.isVisita) activeModes.push('Visita'); if (sabData.isAsamblea) activeModes.push('Asamblea'); if (sabData.isCleaning) activeModes.push('Limpieza');
             if (activeModes.length > 0) {
                 textSpan.textContent = `Modo: ${activeModes.join(' + ')}`;
-                if (activeModes.includes('Campaña') && activeModes.length === 1) {
-                    btn.classList.add('bg-[#CDA4FF]/20', 'text-[#CDA4FF]', 'border-[#CDA4FF]/30');
-                    btn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-black/80', 'dark:text-white/80', 'bg-[#32D74B]/20', 'text-[#32D74B]', 'border-[#32D74B]/30');
-                } else {
-                    btn.classList.add('bg-[#32D74B]/20', 'text-[#32D74B]', 'border-[#32D74B]/30');
-                    btn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-black/80', 'dark:text-white/80', 'bg-[#CDA4FF]/20', 'text-[#CDA4FF]', 'border-[#CDA4FF]/30');
-                }
+                if (activeModes.includes('Campaña') && activeModes.length === 1) { btn.classList.add('bg-[#CDA4FF]/20', 'text-[#CDA4FF]', 'border-[#CDA4FF]/30'); btn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-black/80', 'dark:text-white/80', 'bg-[#32D74B]/20', 'text-[#32D74B]', 'border-[#32D74B]/30'); } 
+                else { btn.classList.add('bg-[#32D74B]/20', 'text-[#32D74B]', 'border-[#32D74B]/30'); btn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-black/80', 'dark:text-white/80', 'bg-[#CDA4FF]/20', 'text-[#CDA4FF]', 'border-[#CDA4FF]/30'); }
             } else {
-                textSpan.textContent = `Modos`;
-                btn.className = "flex items-center gap-1 bg-black/5 dark:bg-white/10 border border-black/5 dark:border-white/5 text-black/80 dark:text-white/80 px-3 py-2 rounded-full text-[12px] font-medium active:scale-95 ios-transition shrink-0";
+                textSpan.textContent = `Modos`; btn.className = "flex items-center gap-1 bg-black/5 dark:bg-white/10 border border-black/5 dark:border-white/5 text-black/80 dark:text-white/80 px-3 py-2 rounded-full text-[12px] font-medium active:scale-95 ios-transition shrink-0";
             }
         }
 
         // --- SISTEMA EDICIÓN PLANILLA ---
         function handleHoldStart(e, day, shift, type = 'spot') {
-            clearTimeout(holdTimer); isHolding = false; 
-            const el = e.currentTarget; el.classList.add('holding');
+            clearTimeout(holdTimer); isHolding = false; const el = e.currentTarget; el.classList.add('holding');
             holdTimer = setTimeout(() => {
                 isHolding = true; const wk = getWeekKey(), field = type === 'spot' ? 'manualMode' : 'manualDriverMode';
                 const currentMode = state.assignments[wk]?.[day]?.[shift]?.[field] || false;
                 updateData(day, shift, field, !currentMode); renderSchedule();
-                if ("vibrate" in navigator) navigator.vibrate([15, 30, 15]); 
-                el.classList.remove('holding');
+                if ("vibrate" in navigator) navigator.vibrate([15, 30, 15]); el.classList.remove('holding');
             }, 600); 
         }
         function handleHoldEnd(e) { clearTimeout(holdTimer); e.currentTarget.classList.remove('holding'); }
 
         function openLocationPicker(day, shift) { 
-            if (isHolding) return; 
-            editingDay = day; editingShift = shift; expandedLocationSection = null; 
-            const searchInput = document.getElementById('locationSearchInput');
-            if (searchInput) searchInput.value = '';
+            if (isHolding) return; editingDay = day; editingShift = shift; expandedLocationSection = null; 
+            const searchInput = document.getElementById('locationSearchInput'); if (searchInput) searchInput.value = '';
             renderLocationOptions(); toggleModal('locationPickerModal'); 
         }
 
-        function openDriverPicker(day, shift) { 
-            if (isHolding) return; 
-            editingDay = day; editingShift = shift; renderDriverOptions(); toggleModal('driverPickerModal'); 
-        }
-
-        function toggleLocationSection(section) {
-            expandedLocationSection = (expandedLocationSection === section) ? null : section;
-            renderLocationOptions();
-            if ("vibrate" in navigator) navigator.vibrate(10);
-        }
+        function openDriverPicker(day, shift) { if (isHolding) return; editingDay = day; editingShift = shift; renderDriverOptions(); toggleModal('driverPickerModal'); }
+        function toggleLocationSection(section) { expandedLocationSection = (expandedLocationSection === section) ? null : section; renderLocationOptions(); if ("vibrate" in navigator) navigator.vibrate(10); }
 
         function renderLocationOptions(searchTerm = '') {
             const list = document.getElementById('locationOptionsList'); list.innerHTML = '';
             const casas = [], callesGroups = {}; const term = searchTerm.toLowerCase().trim();
-            
             userLocations.forEach(loc => {
                 const isCasa = loc.toLowerCase().includes("flia.") || ["Maria Ch.", "Carmen S.", "Cleri J.", "Salon del Reino", "Escuela 744"].includes(loc);
-                if (isCasa) casas.push(loc);
-                else {
-                    let mainStreet = loc.split(" y ")[0].trim();
-                    if (!callesGroups[mainStreet]) callesGroups[mainStreet] = [];
-                    callesGroups[mainStreet].push(loc);
-                }
+                if (isCasa) casas.push(loc); else { let mainStreet = loc.split(" y ")[0].trim(); if (!callesGroups[mainStreet]) callesGroups[mainStreet] = []; callesGroups[mainStreet].push(loc); }
             });
 
             const renderSingleOption = (loc, iconName) => {
-                const btn = document.createElement('button');
-                btn.className = "w-full flex items-center gap-3 px-5 py-4 border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition";
+                const btn = document.createElement('button'); btn.className = "w-full flex items-center gap-3 px-5 py-4 border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition";
                 btn.innerHTML = `<i data-lucide="${iconName}" class="w-[18px] h-[18px] text-black/50 dark:text-white/50 shrink-0"></i><span class="text-[16px] font-medium text-black dark:text-white text-left flex-1">${loc}</span>`;
-                btn.onclick = () => { updateData(editingDay, editingShift, 'spot', loc); toggleModal('locationPickerModal'); renderSchedule(); };
-                list.appendChild(btn);
+                btn.onclick = () => { updateData(editingDay, editingShift, 'spot', loc); toggleModal('locationPickerModal'); renderSchedule(); }; list.appendChild(btn);
             };
 
             if (term) {
                 const filtered = userLocations.filter(loc => loc.toLowerCase().includes(term));
                 if (filtered.length === 0) { list.innerHTML = `<div class="py-8 text-center text-[15px] text-black/50 dark:text-white/50 font-medium">No se encontraron resultados</div>`; } 
-                else {
-                    filtered.sort().forEach(loc => {
-                        const isCasa = loc.toLowerCase().includes("flia.") || ["Maria Ch.", "Carmen S.", "Cleri J.", "Salon del Reino", "Escuela 744"].includes(loc);
-                        renderSingleOption(loc, isCasa ? "home" : "map-pin");
-                    });
-                }
+                else { filtered.sort().forEach(loc => { const isCasa = loc.toLowerCase().includes("flia.") || ["Maria Ch.", "Carmen S.", "Cleri J.", "Salon del Reino", "Escuela 744"].includes(loc); renderSingleOption(loc, isCasa ? "home" : "map-pin"); }); }
                 lucide.createIcons(); return;
             }
 
+            const emptyBtn = document.createElement('button'); 
+            emptyBtn.className = "w-full flex items-center gap-3 px-5 py-4 border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition";
+            emptyBtn.innerHTML = `<i data-lucide="minus" class="w-[18px] h-[18px] text-black/50 dark:text-white/50 shrink-0"></i><span class="text-[16px] font-medium text-black dark:text-white text-left flex-1">-</span>`;
+            emptyBtn.onclick = () => { updateData(editingDay, editingShift, 'spot', ''); toggleModal('locationPickerModal'); renderSchedule(); }; 
+            list.appendChild(emptyBtn);
+
             const renderAccordion = (title, id, items, iconName) => {
-                const isOpen = expandedLocationSection === id;
-                const header = document.createElement('button');
-                header.className = `w-full flex items-center gap-3 px-5 py-4 border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition rounded-lg`;
-                header.onclick = () => toggleLocationSection(id);
-                header.innerHTML = `<i data-lucide="${iconName}" class="w-[18px] h-[18px] text-black/70 dark:text-white/70 shrink-0"></i><span class="text-[16px] font-semibold text-black dark:text-white text-left flex-1">${title}</span><span class="text-[13px] font-medium text-black/30 dark:text-white/30 mr-2">${items.length}</span><i data-lucide="chevron-${isOpen ? 'up' : 'down'}" class="w-4 h-4 text-black/40 dark:text-white/40 transition-transform duration-300"></i>`;
-                list.appendChild(header);
-                
+                const isOpen = expandedLocationSection === id; const header = document.createElement('button');
+                header.className = `w-full flex items-center gap-3 px-5 py-4 border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition rounded-lg`; header.onclick = () => toggleLocationSection(id);
+                header.innerHTML = `<i data-lucide="${iconName}" class="w-[18px] h-[18px] text-black/70 dark:text-white/70 shrink-0"></i><span class="text-[16px] font-semibold text-black dark:text-white text-left flex-1">${title}</span><span class="text-[13px] font-medium text-black/30 dark:text-white/30 mr-2">${items.length}</span><i data-lucide="chevron-${isOpen ? 'up' : 'down'}" class="w-4 h-4 text-black/40 dark:text-white/40 transition-transform duration-300"></i>`; list.appendChild(header);
                 if (isOpen) {
-                    const container = document.createElement('div');
-                    container.className = "animate-fade overflow-hidden bg-black/[0.03] dark:bg-white/[0.03] border-b border-black/5 dark:border-white/5 shadow-inner mb-2 rounded-b-xl";
+                    const container = document.createElement('div'); container.className = "animate-fade overflow-hidden bg-black/[0.03] dark:bg-white/[0.03] border-b border-black/5 dark:border-white/5 shadow-inner mb-2 rounded-b-xl";
                     items.forEach(loc => {
-                        const btn = document.createElement('button');
-                        btn.className = "w-full flex items-center pl-[46px] pr-5 py-3.5 border-b border-black/5 dark:border-white/5 last:border-0 active:bg-black/5 dark:active:bg-white/10 ios-transition";
+                        const btn = document.createElement('button'); btn.className = "w-full flex items-center pl-[46px] pr-5 py-3.5 border-b border-black/5 dark:border-white/5 last:border-0 active:bg-black/5 dark:active:bg-white/10 ios-transition";
                         btn.innerHTML = `<span class="text-[15px] font-medium text-black/80 dark:text-white/80 text-left flex-1">${loc}</span>`;
-                        btn.onclick = () => { updateData(editingDay, editingShift, 'spot', loc); toggleModal('locationPickerModal'); renderSchedule(); };
-                        container.appendChild(btn);
-                    });
-                    list.appendChild(container);
+                        btn.onclick = () => { updateData(editingDay, editingShift, 'spot', loc); toggleModal('locationPickerModal'); renderSchedule(); }; container.appendChild(btn);
+                    }); list.appendChild(container);
                 }
             };
             
             if (casas.length > 0) renderAccordion("Casas y Especiales", "casas", casas.sort(), "home");
-            const singleStreets = [];
-            Object.keys(callesGroups).sort().forEach(mainStreet => {
-                if (callesGroups[mainStreet].length === 1) singleStreets.push(callesGroups[mainStreet][0]);
-                else renderAccordion(mainStreet, "calle_" + mainStreet.replace(/\s/g, ''), callesGroups[mainStreet].sort(), "map");
-            });
-            singleStreets.sort().forEach(loc => renderSingleOption(loc, "map-pin"));
-            lucide.createIcons();
+            const singleStreets = []; Object.keys(callesGroups).sort().forEach(mainStreet => { if (callesGroups[mainStreet].length === 1) singleStreets.push(callesGroups[mainStreet][0]); else renderAccordion(mainStreet, "calle_" + mainStreet.replace(/\s/g, ''), callesGroups[mainStreet].sort(), "map"); });
+            singleStreets.sort().forEach(loc => renderSingleOption(loc, "map-pin")); lucide.createIcons();
         }
 
         function renderDriverOptions() {
-            const list = document.getElementById('driverOptionsList'); list.innerHTML = '';
-            const baseOptions = ["-", "Super"];
+            const list = document.getElementById('driverOptionsList'); list.innerHTML = ''; const baseOptions = ["-", "Super"];
             const sortedDrivers = [...state.drivers].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
-            
             [...baseOptions, ...sortedDrivers].forEach(driver => {
-                const btn = document.createElement('button'); 
-                btn.className = "w-full text-left px-5 py-4 text-[15px] font-medium border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition text-black dark:text-white"; 
-                btn.textContent = driver;
-                btn.onclick = () => { updateData(editingDay, editingShift, 'driver', driver === "-" ? "" : driver); toggleModal('driverPickerModal'); renderSchedule(); }; 
-                list.appendChild(btn);
+                const btn = document.createElement('button'); btn.className = "w-full text-left px-5 py-4 text-[15px] font-medium border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition text-black dark:text-white"; 
+                btn.textContent = driver; btn.onclick = () => { updateData(editingDay, editingShift, 'driver', driver === "-" ? "" : driver); toggleModal('driverPickerModal'); renderSchedule(); }; list.appendChild(btn);
             });
         }
 
-        function updateGlobalTime(field, value) { state[field] = value; saveState(); }
+        function updateGlobalTime(field, value) { state[field] = value; saveState(); renderSchedule(); }
         function updateCleaningTime(weekKey, value) { updateData('SAB', null, 'cleaningTime', value, weekKey); }
 
         function renderSchedule() {
@@ -932,17 +775,19 @@
             const isCampanaActive = isWeekInCampana(state.currentMonth, state.currentWeek);
             
             const globalHeader = document.createElement('div');
-            globalHeader.className = "mb-4 px-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center ios-transition animate-fade";
+            globalHeader.className = "mb-3 px-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center ios-transition animate-fade";
             globalHeader.innerHTML = `
                 <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-black/70 dark:text-white/70">Salidas por la mañana:</span><span contenteditable="true" onblur="updateGlobalTime('morningTime', this.innerText)" class="text-[13px] font-bold text-black dark:text-white outline-none min-w-[30px]" data-placeholder="--:--">${state.morningTime}</span><span class="text-[12px] font-medium text-black/70 dark:text-white/70">hs</span></div>
                 <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-black/70 dark:text-white/70">Salidas por la tarde:</span><span contenteditable="true" onblur="updateGlobalTime('afternoonTime', this.innerText)" class="text-[13px] font-bold text-black dark:text-white outline-none min-w-[30px]" data-placeholder="--:--">${state.afternoonTime}</span><span class="text-[12px] font-medium text-black/70 dark:text-white/70">hs</span></div>
             `;
             container.appendChild(globalHeader);
 
+            const daysWrapper = document.createElement('div');
+            daysWrapper.className = "bg-white dark:bg-[#1C1C1E] rounded-[20px] overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.05)] dark:shadow-none border border-black/5 dark:border-white/5 animate-fade mb-6";
+
             weekStructure.forEach((dayDef, index) => {
                 if (dayDef.id === 'LUN' && !isCampanaActive) return;
                 const dateInfo = dates[index], dayData = weekData[dayDef.id] || {};
-                const depthClass = index % 2 === 0 ? 'ios-card-depth-1' : 'ios-card-depth-2';
                 
                 const getShiftHtml = (shift, defaultSpot = '', compact = false) => {
                     const sData = dayData[shift.id] || {}, spotValue = sData.spot !== undefined ? sData.spot : defaultSpot;
@@ -954,38 +799,62 @@
                     const driverEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'driver')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
                     
                     let addrContent = isManual 
-                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full min-h-[26px] flex items-center px-1 text-[11px] text-black dark:text-white outline-none animate-fade" data-placeholder="Escribir...">${spotValue}</div>`
-                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full min-h-[26px] flex items-center px-1 text-[11px] ${spotValue ? 'text-black dark:text-white' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
+                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full py-0.5 flex items-center px-1 text-[13px] font-medium leading-tight text-black dark:text-white outline-none" data-placeholder="Escribir...">${spotValue}</div>`
+                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full py-0.5 flex items-center px-1 text-[13px] font-medium leading-tight ${spotValue ? 'text-black dark:text-white' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
                     
                     let driverContent = isManualDriver
-                        ? `<div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'driver', this.innerText); renderSchedule();" class="shrink-0 w-[68px] min-h-[26px] flex items-center justify-center bg-black/5 dark:bg-white/10 rounded text-[11px] text-black dark:text-white outline-none text-center animate-fade" data-placeholder="..."> ${currentDriver} </div>`
-                        : `<div onclick="openDriverPicker('${dayDef.id}', '${shift.id}')" class="shrink-0 w-[68px] h-[26px] rounded bg-black/5 dark:bg-white/10 px-1 text-[11px] font-medium flex items-center justify-center cursor-pointer active:scale-95 ios-transition ${currentDriver ? 'text-black dark:text-white' : 'text-black/30 dark:text-white/30'}">${currentDriver || '-'}</div>`;
+                        ? `<div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'driver', this.innerText); renderSchedule();" class="shrink-0 w-[60px] py-[3px] flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-[6px] text-[11px] font-semibold text-black dark:text-white outline-none text-center overflow-hidden whitespace-nowrap text-ellipsis" data-placeholder="..."> ${currentDriver} </div>`
+                        : `<div onclick="openDriverPicker('${dayDef.id}', '${shift.id}')" class="shrink-0 w-[60px] py-[3px] rounded-[6px] bg-black/5 dark:bg-white/10 px-1 text-[11px] font-semibold flex items-center justify-center cursor-pointer active:scale-95 ios-transition overflow-hidden whitespace-nowrap text-ellipsis ${currentDriver ? 'text-black dark:text-white' : 'text-black/30 dark:text-white/30'}">${currentDriver || '-'}</div>`;
 
                     let timeField = "";
                     if (shift.id === 'n') {
-                        timeField = `<input type="text" value="${sData.time || shift.time}" onchange="updateData('${dayDef.id}', '${shift.id}', 'time', this.value); renderSchedule();" class="w-[30px] text-center text-[10px] font-bold text-black dark:text-white bg-transparent border-none outline-none shrink-0">`;
+                        timeField = `<input type="text" value="${sData.time || shift.time}" onchange="updateData('${dayDef.id}', '${shift.id}', 'time', this.value); renderSchedule();" class="w-[34px] text-center text-[11px] font-bold text-black dark:text-white bg-transparent border-none outline-none shrink-0 px-0">`;
                     } else {
-                        let label = (shift.id === 'm' || shift.id === 'g1') ? "M" : "T";
-                        let widthClass = "w-[20px]", colorClass = "text-[#0A84FF]", fontSizeWeight = "text-[12px] font-black";
-                        if (dayDef.id === 'SAB' && sabData.isVisita && shift.id === 't') { label = "19.30"; widthClass = "w-[30px]"; colorClass = "text-black dark:text-white"; fontSizeWeight = "text-[10px] font-bold"; }
-                        timeField = `<span class="${widthClass} text-center ${fontSizeWeight} ${colorClass} shrink-0 select-none">${label}</span>`;
+                        let colorClass = "text-[#0A84FF]";
+                        if (dayDef.id === 'SAB' && sabData.isVisita && shift.id === 't') colorClass = "text-black dark:text-white";
+                        
+                        let tVal = shift.time || '--.--';
+                        let parts = tVal.split(/[:.]/);
+                        let h = parts[0] ? parts[0] + "." : "--.";
+                        let m = parts[1] || "--";
+
+                        timeField = `
+                            <div class="shrink-0 w-[34px] flex flex-col justify-center items-center ${colorClass} select-none leading-none">
+                                <span class="text-[14px] font-black tracking-tight">${h}</span>
+                                <span class="text-[11px] font-bold tracking-tight mt-[1px]">${m}</span>
+                            </div>
+                        `;
                     }
                     const terrColorClass = tArray.length > 0 ? 'text-black dark:text-[#32D74B]' : 'text-black/30 dark:text-white/30';
-                    return `<div class="flex items-center gap-1.5 w-full py-0.5 border-b border-black/5 dark:border-white/5 last:border-0">${!compact ? timeField : ''}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 h-[26px] min-w-[32px] rounded bg-black/5 dark:bg-white/10 px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition">${tArray.length > 0 ? tArray.join(',') : '-'}</button><div class="ios-transition" ${driverEvents}>${driverContent}</div></div>`;
+                    let prefixHtml = shift.prefix ? `<div class="shrink-0 w-[18px] text-[11px] font-black text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-0.5">${shift.prefix}</div>` : '';
+                    return `<div class="flex items-center gap-1 w-full py-0.5 border-b border-black/5 dark:border-white/5 last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-[3px] min-w-[28px] rounded-[6px] bg-black/5 dark:bg-white/10 px-1 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition">${tArray.length > 0 ? tArray.join(',') : '-'}</button><div class="ios-transition" ${driverEvents}>${driverContent}</div></div>`;
                 };
 
                 let content = '';
                 if (dayDef.id === 'SAB' && (dayData.isCleaning || dayData.isAsamblea)) {
                     if (dayData.isCleaning) {
-                        content = `<div class="flex items-center w-full py-2 bg-black/5 dark:bg-[#32D74B]/10 border border-black/10 dark:border-[#32D74B]/20 rounded-[10px] px-2 animate-fade"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[13px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
-                    } else { content = `<div class="flex items-center w-full py-2.5 bg-black dark:bg-[#32D74B] rounded-[10px] animate-fade shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`; }
+                        content = `<div class="flex items-center w-full py-1 bg-black/5 dark:bg-[#32D74B]/10 border border-black/10 dark:border-[#32D74B]/20 rounded-[8px] px-2"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[13px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
+                    } else { content = `<div class="flex items-center w-full py-1.5 bg-black dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`; }
                 } else if (dayDef.id === 'SAB' && dayData.isVisita) {
-                    content = [{time: '09.30', id: 'm'}, {time: '19.30', id: 't'}].map(s => getShiftHtml(s, s.id === 't' ? 'Salón del Reino' : '')).join('');
+                    content = [{time: state.morningTime, id: 'm'}, {time: '19.30', id: 't'}].map(s => getShiftHtml(s, s.id === 't' ? 'Salón del Reino' : '')).join('');
                 } else if (dayDef.id === 'SAB') {
-                    const rows = dayDef.shifts.map(s => getShiftHtml(s, '', true)).join('');
-                    content = `<div class="flex w-full items-stretch animate-fade"><div class="flex flex-col justify-center shrink-0 border-r border-black/5 dark:border-white/5 pr-1.5 mr-1.5"><span class="w-[20px] text-center text-[13px] font-black text-[#0A84FF]">M</span></div><div class="flex-1 flex flex-col justify-center gap-0.5">${rows}</div></div>`;
+                    let shiftsWithTime = dayDef.shifts.map(s => { let t = s.time; if (s.id === 'g1') t = state.morningTime; return { ...s, time: t }; });
+                    const rows = shiftsWithTime.map(s => getShiftHtml(s, '', true)).join('');
+                    
+                    let sabTime = state.morningTime || "10.00";
+                    let parts = sabTime.split(/[:.]/);
+                    let h = parts[0] ? parts[0] + "." : "--.";
+                    let m = parts[1] || "--";
+                    
+                    let sabTimeHtml = `
+                        <div class="flex flex-col items-center justify-center shrink-0 w-[30px] text-[#0A84FF] select-none leading-none">
+                            <span class="text-[14px] font-black tracking-tight">${h}</span>
+                            <span class="text-[11px] font-bold tracking-tight mt-[1px]">${m}</span>
+                        </div>
+                    `;
+                    content = `<div class="flex w-full items-stretch py-0.5"><div class="flex flex-col justify-center shrink-0 border-r border-black/5 dark:border-white/5 pr-1 mr-1">${sabTimeHtml}</div><div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${rows}</div></div>`;
                 } else {
-                    let curShifts = [...dayDef.shifts];
+                    let curShifts = dayDef.shifts.map(s => { let t = s.time; if (s.id === 'm') t = state.morningTime; if (s.id === 't') t = state.afternoonTime; return { ...s, time: t }; });
                     if (sabData.isVisita) {
                         if (dayDef.id === 'MAR') curShifts = curShifts.map(s => s.id === 't' ? { ...s, time: '20.00' } : s);
                         if (dayDef.id === 'MIE' || dayDef.id === 'VIE') curShifts.push({time: '20.00', id: 'n'});
@@ -995,20 +864,25 @@
                         return getShiftHtml(s, spot);
                     }).join('');
                 }
-                const card = document.createElement('div'); card.className = `rounded-[18px] p-2 flex items-center overflow-hidden mb-2.5 ios-transition ${depthClass} animate-fade`;
-                card.innerHTML = `<div class="w-[52px] h-[52px] shrink-0 flex flex-col items-center justify-center mr-3 ios-squircle shadow-sm"><span class="text-[9px] font-bold text-black/60 dark:text-white/60 mb-0.5 leading-none">${dayDef.label}</span><span class="text-[18px] font-bold text-black dark:text-white tracking-[-0.02em] leading-none">${dateInfo.day}</span></div><div class="flex-1 flex flex-col justify-center gap-0">${content}</div>`;
-                container.appendChild(card);
+                
+                const bgClass = index % 2 === 0 ? 'bg-transparent' : 'bg-black/[0.02] dark:bg-white/[0.02]';
+                const dayRow = document.createElement('div');
+                dayRow.className = `py-1.5 px-1.5 flex items-center border-b border-black/5 dark:border-white/5 last:border-0 ios-transition ${bgClass}`;
+                
+                dayRow.innerHTML = `
+                    <div class="w-[42px] h-[42px] shrink-0 flex flex-col items-center justify-center mr-1 rounded-[12px] bg-[#1C1C1E] dark:bg-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.1)] border border-black/10 dark:border-white/5">
+                        <span class="text-[8px] font-bold text-white/70 mb-[1px] leading-none uppercase tracking-wider">${dayDef.label}</span>
+                        <span class="text-[19px] font-black text-white tracking-[-0.02em] leading-none">${dateInfo.day}</span>
+                    </div>
+                    <div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${content}</div>
+                `;
+                daysWrapper.appendChild(dayRow);
             });
+            container.appendChild(daysWrapper);
             lucide.createIcons();
         }
 
-        // --- SISTEMA DE MODALES Y ESTADÍSTICAS ---
-        function toggleModal(id) {
-            const m = document.getElementById(id); if (!m) return;
-            if (m.classList.contains('hidden')) { m.classList.remove('hidden'); setTimeout(() => { if (m.firstElementChild) m.firstElementChild.classList.remove('translate-y-full'); }, 10); } 
-            else { if (m.firstElementChild) m.firstElementChild.classList.add('translate-y-full'); setTimeout(() => m.classList.add('hidden'), 500); }
-        }
-
+        // --- SISTEMA DE ESTADÍSTICAS Y RESUMEN ---
         function openRankingModal() { renderRanking(); toggleModal('statsModal'); }
 
         function renderRanking() {
@@ -1169,14 +1043,31 @@
         function toggleScreenshotMode() { document.getElementById('appBody').classList.add('screenshot-mode'); }
         function exitScreenshotMode() { document.getElementById('appBody').classList.remove('screenshot-mode'); }
         
+        // --- ALERTAS CON ANIMACIÓN DE REBOTE (iOS STYLE) ---
         function showCustomAlert(m) { 
-            document.getElementById('customAlertMsg').textContent = m; document.getElementById('customAlert').classList.remove('hidden'); document.getElementById('customAlert').classList.add('flex'); 
-            void document.getElementById('customAlertBox').offsetWidth; 
-            document.getElementById('customAlertBg').classList.remove('opacity-0'); document.getElementById('customAlertBox').classList.remove('scale-95', 'opacity-0'); 
+            document.getElementById('customAlertMsg').textContent = m; 
+            const alert = document.getElementById('customAlert');
+            const box = document.getElementById('customAlertBox');
+            
+            alert.classList.remove('hidden'); alert.classList.add('flex'); 
+            void box.offsetWidth; // Reflow
+            
+            document.getElementById('customAlertBg').classList.remove('opacity-0'); 
+            box.classList.remove('scale-[1.10]', 'opacity-0');
+            box.classList.add('scale-100', 'opacity-100');
         }
+        
         function closeCustomAlert() { 
-            document.getElementById('customAlertBg').classList.add('opacity-0'); document.getElementById('customAlertBox').classList.add('scale-95', 'opacity-0'); 
-            setTimeout(() => { document.getElementById('customAlert').classList.add('hidden'); document.getElementById('customAlert').classList.remove('flex'); }, 300); 
+            const box = document.getElementById('customAlertBox');
+            document.getElementById('customAlertBg').classList.add('opacity-0'); 
+            
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-[1.10]', 'opacity-0');
+            
+            setTimeout(() => { 
+                document.getElementById('customAlert').classList.add('hidden'); 
+                document.getElementById('customAlert').classList.remove('flex'); 
+            }, 300); 
         }
 
         // Lógica de reseteo rápido al presionar Cámara
@@ -1200,44 +1091,38 @@
             document.getElementById('customConfirmMsg').textContent = "¿Desea borrar todos los datos de esta semana?";
             document.getElementById('customConfirmBtn').onclick = () => {
                 const wk = getWeekKey();
-                
-                // Sobrescribir con estructura de base para borrar en Firebase (merge:true)
                 const empty = { spot: '', driver: '', territories: [], manualMode: false, manualDriverMode: false, time: '' };
                 state.assignments[wk] = {
-                    LUN: { m: {...empty}, t: {...empty} },
-                    MAR: { m: {...empty}, t: {...empty} },
-                    MIE: { m: {...empty}, t: {...empty}, n: {...empty} },
-                    JUE: { m: {...empty}, t: {...empty} },
-                    VIE: { m: {...empty}, t: {...empty}, n: {...empty} },
-                    SAB: { 
-                        m: {...empty}, t: {...empty},
-                        g1: {...empty}, g2: {...empty}, g3: {...empty}, g4: {...empty},
-                        isVisita: false, isAsamblea: false, isCleaning: false, cleaningTime: ''
-                    },
-                    DOM: { m: {...empty} }
+                    LUN: { m: {...empty}, t: {...empty} }, MAR: { m: {...empty}, t: {...empty} }, MIE: { m: {...empty}, t: {...empty}, n: {...empty} }, JUE: { m: {...empty}, t: {...empty} }, VIE: { m: {...empty}, t: {...empty}, n: {...empty} },
+                    SAB: { m: {...empty}, t: {...empty}, g1: {...empty}, g2: {...empty}, g3: {...empty}, g4: {...empty}, isVisita: false, isAsamblea: false, isCleaning: false, cleaningTime: '' }, DOM: { m: {...empty} }
                 };
-                
                 saveState(); renderSchedule(); renderTerritoryGrid(); updateModesToggleState();
                 showCustomAlert("Semana reseteada con éxito.");
                 closeCustomConfirm();
             };
             const modal = document.getElementById('customConfirm');
+            const box = document.getElementById('customConfirmBox');
             modal.classList.remove('hidden'); modal.classList.add('flex'); 
-            void document.getElementById('customConfirmBox').offsetWidth; 
+            void box.offsetWidth; // Reflow
             document.getElementById('customConfirmBg').classList.remove('opacity-0'); 
-            document.getElementById('customConfirmBox').classList.remove('scale-95', 'opacity-0');
+            box.classList.remove('scale-[1.10]', 'opacity-0');
+            box.classList.add('scale-100', 'opacity-100');
         }
 
         function closeCustomConfirm() {
+            const box = document.getElementById('customConfirmBox');
             document.getElementById('customConfirmBg').classList.add('opacity-0'); 
-            document.getElementById('customConfirmBox').classList.add('scale-95', 'opacity-0'); 
-            setTimeout(() => { document.getElementById('customConfirm').classList.add('hidden'); document.getElementById('customConfirm').classList.remove('flex'); }, 300);
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-[1.10]', 'opacity-0');
+            setTimeout(() => { 
+                document.getElementById('customConfirm').classList.add('hidden'); 
+                document.getElementById('customConfirm').classList.remove('flex'); 
+            }, 300);
         }
 
         // Exportar al entorno Global
         Object.assign(window, {
-            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions,
-            handleCameraHoldStart, handleCameraHoldEnd, handleCameraClick, closeCustomConfirm
+            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions, handleCameraHoldStart, handleCameraHoldEnd, handleCameraClick, closeCustomConfirm
         });
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
