@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- Meta tags para PWA en iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Predi">
@@ -13,8 +12,8 @@
     
     <title>Predi 2026</title>
     
-    <!-- Librerías Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         tailwind.config = { darkMode: 'class' };
         // Inicializar tema antes de renderizar para evitar destellos (FOUC)
@@ -45,34 +44,12 @@
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(45px) saturate(250%);
             -webkit-backdrop-filter: blur(45px) saturate(250%);
-            border-bottom: 0.5px solid rgba(0, 0, 0, 0.1); 
+            border-bottom: 0.5px solid rgba(0, 0, 0, 0.05); 
         }
         .dark .ios-blur {
             background: rgba(18, 18, 18, 0.65);
             border-bottom: 0.5px solid rgba(255, 255, 255, 0.08); 
         }
-
-        /* Modo Captura de Pantalla */
-        .screenshot-mode header, .screenshot-mode nav { display: none !important; }
-        .screenshot-mode { background-color: #F2F2F7 !important; }
-        html.dark .screenshot-mode { background-color: #000000 !important; }
-        .screenshot-mode #scheduleContainer { 
-            padding-top: calc(env(safe-area-inset-top, 20px) + 60px) !important; 
-            padding-bottom: 40px !important;
-        }
-
-        #btnVolverCaptura {
-            top: calc(env(safe-area-inset-top, 10px) + 10px) !important;
-            right: 16px !important;
-            opacity: 0.5;
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: 9999 !important;
-        }
-        .dark #btnVolverCaptura { background: rgba(44, 44, 46, 0.6); }
-        #btnVolverCaptura:active { opacity: 1; transform: scale(0.9); }
-        .screenshot-mode #btnVolverCaptura { display: flex !important; }
 
         /* Utilidades Estructurales */
         .grid-75 { display: grid; grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); gap: 6px; }
@@ -153,18 +130,21 @@
 </head>
 <body class="flex flex-col h-[100dvh] overflow-x-hidden bg-[#F2F2F7] dark:bg-[#000000] text-black dark:text-white" id="appBody">
 
-    <!-- === PANTALLA DE LOGIN === -->
     <div id="loginScreen" class="fixed inset-0 z-[200] bg-[#F2F2F7] dark:bg-[#000000] flex flex-col items-center justify-center p-6 ios-unlock-transition">
-        <div id="loginContent" class="w-full max-w-[300px] flex flex-col items-center justify-center transform scale-100 opacity-100 ios-unlock-transition">
-            <div class="w-16 h-16 mb-5 rounded-[18px] bg-gradient-to-tr from-black/5 to-transparent dark:from-white/10 dark:to-white/5 flex items-center justify-center shadow-inner border border-black/5 dark:border-white/5">
-                <i data-lucide="lock" class="w-7 h-7 text-black/60 dark:text-white/60"></i>
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-black/5 via-transparent to-transparent dark:from-white/5 pointer-events-none"></div>
+        
+        <div id="loginContent" class="w-full max-w-[320px] flex flex-col items-center justify-center transform scale-100 opacity-100 ios-unlock-transition z-10">
+            <div class="mb-8 relative flex items-center justify-center">
+                <i data-lucide="lock" class="w-9 h-9 text-black/80 dark:text-white/80 transition-all duration-500"></i>
             </div>
-            <h1 class="text-[44px] font-extrabold tracking-[-0.04em] text-black dark:text-white mb-2 leading-none">Pr<span class="text-[#FF00FF]">e</span>di</h1>
-            <p class="text-[14px] text-black/50 dark:text-white/50 font-medium mb-10 text-center tracking-wide">Protegido con contraseña</p>
-            <div class="w-full mb-4 relative">
-                <input type="password" id="accessPassword" placeholder="Contraseña" class="w-full bg-black/5 dark:bg-white/10 text-black dark:text-white text-[17px] px-5 py-4 rounded-[16px] border border-black/5 dark:border-white/5 outline-none focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#0A84FF]/50 focus:ring-4 focus:ring-[#0A84FF]/10 transition-all duration-300 text-center font-semibold placeholder-black/30 dark:placeholder-white/30 backdrop-blur-md" onkeypress="if(event.key === 'Enter') loginWithPassword()">
+            
+            <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-black dark:text-white mb-10 leading-none">Predi</h1>
+            
+            <div class="w-full mb-4 relative group">
+                <input type="password" id="accessPassword" placeholder="Contraseña" class="w-full h-[52px] bg-black/[0.04] dark:bg-white/[0.06] text-black dark:text-white text-[17px] px-5 rounded-[16px] border border-black/[0.05] dark:border-white/[0.05] outline-none focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#0A84FF]/40 focus:shadow-[0_0_0_4px_rgba(10,132,255,0.15)] transition-all duration-300 text-center font-medium placeholder-black/30 dark:placeholder-white/30 backdrop-blur-xl" onkeypress="if(event.key === 'Enter') loginWithPassword()">
             </div>
-            <button onclick="loginWithPassword()" class="w-full bg-black dark:bg-white text-white dark:text-black font-semibold text-[17px] py-4 rounded-[16px] flex items-center justify-center gap-2 active:scale-[0.97] transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.15)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.15)]">
+            
+            <button onclick="loginWithPassword()" class="w-full h-[52px] bg-black dark:bg-white text-white dark:text-black font-semibold text-[17px] rounded-[16px] flex items-center justify-center gap-2 active:scale-[0.96] transition-transform duration-200 shadow-sm">
                 Desbloquear
             </button>
         </div>
@@ -177,16 +157,11 @@
         </div>
     </div>
 
-    <button type="button" id="btnVolverCaptura" onclick="exitScreenshotMode()" class="hidden fixed z-50 w-10 h-10 text-white rounded-full shadow-lg items-center justify-center ios-transition">
-        <i data-lucide="x" class="w-5 h-5"></i>
-    </button>
-
-    <!-- Header Principal -->
     <header class="sticky top-0 z-40 ios-blur px-4 pt-[calc(env(safe-area-inset-top,20px)+6px)] pb-3 flex flex-col ios-transition">
         <div class="flex justify-between items-center mb-3 relative">
             <h1 class="text-[34px] font-extrabold tracking-[-0.04em] text-black dark:text-white leading-none mt-1">Pr<span class="text-[#FF00FF]">e</span>di</h1>
             <div class="flex items-center gap-2.5">
-                <button type="button" onclick="toggleTheme()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/70 dark:text-white/80 active:scale-90 ios-transition">
+                <button type="button" onclick="toggleTheme()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/90 dark:text-white/90 active:scale-90 ios-transition">
                     <i data-lucide="sun" id="themeIcon" class="w-[18px] h-[18px]"></i>
                 </button>
                 <button type="button" 
@@ -197,9 +172,9 @@
                     onpointercancel="handleCameraHoldEnd(event)"
                     oncontextmenu="event.preventDefault();"
                     class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-[#0A84FF] active:scale-90 ios-transition">
-                    <i data-lucide="camera" class="w-[18px] h-[18px]"></i>
+                    <i data-lucide="download" class="w-[18px] h-[18px]"></i>
                 </button>
-                <button type="button" onclick="showSyncStatus()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/70 dark:text-white/80 active:scale-90 ios-transition relative">
+                <button type="button" onclick="showSyncStatus()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/90 dark:text-white/90 active:scale-90 ios-transition relative">
                     <i data-lucide="cloud" id="cloudIcon" class="w-[18px] h-[18px] transition-colors duration-500"></i>
                 </button>
             </div>
@@ -207,49 +182,46 @@
         
         <div class="flex items-center justify-between w-full mb-1 gap-1.5 relative z-50">
             <div class="relative">
-                <button type="button" onclick="openModesPicker()" id="btnToggleModes" class="flex items-center gap-1 bg-black/5 dark:bg-white/10 border border-black/5 dark:border-white/5 text-black/80 dark:text-white/80 px-3 py-2 rounded-full text-[12px] font-medium active:scale-95 ios-transition shrink-0">
+                <button type="button" onclick="openModesPicker()" id="btnToggleModes" class="flex items-center gap-1 bg-black/5 dark:bg-white/10 border border-black/5 dark:border-white/5 text-black/90 dark:text-white/90 px-3 py-2 rounded-full text-[12px] font-semibold active:scale-95 ios-transition shrink-0">
                     <span id="modesToggleText">Modos</span>
                     <i data-lucide="chevron-down" id="modesChevron" class="w-3.5 h-3.5 transition-transform duration-500"></i>
                 </button>
             </div>
             <div class="flex items-center gap-1.5 flex-1 justify-end">
                 <div onclick="openMonthPicker()" class="relative flex-1 max-w-[110px] h-[34px] bg-black/5 dark:bg-white/10 rounded-full flex items-center px-3 border border-black/5 dark:border-white/5 cursor-pointer active:scale-95 ios-transition">
-                    <span id="monthDisplay" class="text-black dark:text-white font-medium text-[12px] pointer-events-none truncate">Enero</span>
+                    <span id="monthDisplay" class="text-black dark:text-white font-semibold text-[12px] pointer-events-none truncate">Enero</span>
                     <i data-lucide="chevron-down" class="w-3 h-3 text-black/40 dark:text-white/40 ml-auto pointer-events-none shrink-0"></i>
                 </div>
                 <div onclick="openWeekPicker()" class="relative w-[100px] h-[34px] bg-black/5 dark:bg-white/10 rounded-full flex items-center px-3 border border-black/5 dark:border-white/5 cursor-pointer active:scale-95 ios-transition">
-                    <span id="weekDisplay" class="text-black dark:text-white font-medium text-[12px] pointer-events-none truncate">Semana 1</span>
+                    <span id="weekDisplay" class="text-black dark:text-white font-semibold text-[12px] pointer-events-none truncate">Semana 1</span>
                     <i data-lucide="chevron-down" class="w-3 h-3 text-black/40 dark:text-white/40 ml-auto pointer-events-none shrink-0"></i>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Contenedor Principal (Planilla) -->
     <main class="flex-1 p-3 overflow-y-auto pb-[100px] no-scrollbar" id="scheduleContainer"></main>
 
-    <!-- Barra Inferior -->
-    <nav class="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto ios-blur border-t border-black/10 dark:border-white/10 flex justify-around items-stretch z-40 h-[calc(60px+env(safe-area-inset-bottom,20px))] ios-transition">
-        <button type="button" onclick="openSummaryModal()" class="flex-1 h-full flex flex-col items-center justify-center pb-[env(safe-area-inset-bottom,20px)] text-black/40 dark:text-white/40 hover:text-[#0A84FF] active:scale-90 group ios-transition">
+    <nav class="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto ios-blur border-t border-black/[0.05] dark:border-white/10 flex justify-around items-stretch z-40 h-[calc(60px+env(safe-area-inset-bottom,20px))] ios-transition">
+        <button type="button" onclick="openSummaryModal()" class="flex-1 h-full flex flex-col items-center justify-center pb-[env(safe-area-inset-bottom,20px)] text-[#AF52DE] dark:text-[#CDA4FF] active:opacity-70 active:scale-90 group ios-transition">
             <i data-lucide="clipboard-list" class="w-6 h-6 mb-1"></i>
-            <span class="text-[10px] font-medium">Resumen</span>
+            <span class="text-[10px] font-semibold">Resumen</span>
         </button>
-        <button type="button" onclick="toggleModal('territoryModal')" class="flex-1 h-full flex flex-col items-center justify-center pb-[env(safe-area-inset-bottom,20px)] text-black/40 dark:text-white/40 hover:text-[#0A84FF] active:scale-90 group ios-transition">
+        <button type="button" onclick="toggleModal('territoryModal')" class="flex-1 h-full flex flex-col items-center justify-center pb-[env(safe-area-inset-bottom,20px)] text-[#AF52DE] dark:text-[#CDA4FF] active:opacity-70 active:scale-90 group ios-transition">
             <i data-lucide="map" class="w-6 h-6 mb-1"></i>
-            <span class="text-[10px] font-medium">Territorios</span>
+            <span class="text-[10px] font-semibold">Territorios</span>
         </button>
-        <button type="button" onclick="openRankingModal()" class="flex-1 h-full flex flex-col items-center justify-center pb-[env(safe-area-inset-bottom,20px)] text-black/40 dark:text-white/40 hover:text-[#0A84FF] active:scale-90 group ios-transition">
+        <button type="button" onclick="openRankingModal()" class="flex-1 h-full flex flex-col items-center justify-center pb-[env(safe-area-inset-bottom,20px)] text-[#AF52DE] dark:text-[#CDA4FF] active:opacity-70 active:scale-90 group ios-transition">
             <i data-lucide="bar-chart-2" class="w-6 h-6 mb-1"></i>
-            <span class="text-[10px] font-medium">Ranking</span>
+            <span class="text-[10px] font-semibold">Ranking</span>
         </button>
     </nav>
 
-    <!-- === MODALES === -->
     <div id="modesPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('modesPickerModal')">
-        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-black dark:text-white tracking-[-0.01em]">Seleccionar Modo</h2>
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Seleccionar Modo</h2>
                 <button onclick="toggleModal('modesPickerModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <div id="modesOptionsList" class="max-h-[50vh] overflow-y-auto space-y-1 no-scrollbar"></div>
@@ -257,10 +229,10 @@
     </div>
 
     <div id="campanaModal" class="fixed inset-0 z-[80] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('campanaModal')">
-        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-black dark:text-white tracking-[-0.01em]">Configurar Campaña</h2>
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Configurar Campaña</h2>
                 <button onclick="toggleModal('campanaModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <div class="space-y-4 mb-6">
@@ -279,10 +251,10 @@
     </div>
 
     <div id="monthPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('monthPickerModal')">
-        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-black dark:text-white tracking-[-0.01em]">Seleccionar Mes</h2>
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Seleccionar Mes</h2>
                 <button onclick="toggleModal('monthPickerModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <div id="monthOptionsList" class="max-h-[50vh] overflow-y-auto space-y-1 no-scrollbar"></div>
@@ -290,10 +262,10 @@
     </div>
 
     <div id="weekPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('weekPickerModal')">
-        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-black dark:text-white tracking-[-0.01em]">Seleccionar Semana</h2>
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Seleccionar Semana</h2>
                 <button onclick="toggleModal('weekPickerModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <div id="weekOptionsList" class="max-h-[50vh] overflow-y-auto space-y-1 no-scrollbar"></div>
@@ -301,10 +273,10 @@
     </div>
 
     <div id="locationPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('locationPickerModal')">
-        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-black dark:text-white tracking-[-0.01em]">Seleccionar Ubicación</h2>
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Seleccionar Ubicación</h2>
                 <button onclick="toggleModal('locationPickerModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <div class="mb-4 relative flex items-center bg-black/5 dark:bg-white/10 rounded-[12px] px-3 py-2.5">
@@ -316,10 +288,10 @@
     </div>
 
     <div id="driverPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('driverPickerModal')">
-        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-black dark:text-white tracking-[-0.01em]">Seleccionar Conductor</h2>
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Seleccionar Conductor</h2>
                 <button onclick="toggleModal('driverPickerModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <div id="driverOptionsList" class="max-h-[50vh] overflow-y-auto space-y-1 no-scrollbar"></div>
@@ -327,10 +299,10 @@
     </div>
 
     <div id="summaryModal" class="fixed inset-0 z-[60] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('summaryModal')">
-        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-black dark:text-white tracking-[-0.01em]">Resumen Anual</h2>
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Resumen Anual</h2>
                 <button onclick="toggleModal('summaryModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <div id="summaryContent" class="max-h-[60vh] overflow-y-auto mt-2 no-scrollbar pb-6"></div>
@@ -338,20 +310,20 @@
     </div>
 
     <div id="shiftTerritoryModal" class="fixed inset-0 z-[60] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('shiftTerritoryModal')">
-        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
-            <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold text-black dark:text-white tracking-[-0.01em]">Territorios</h2><button onclick="toggleModal('shiftTerritoryModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+            <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Territorios</h2><button onclick="toggleModal('shiftTerritoryModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button></div>
             <div class="grid-75 overflow-y-auto max-h-[70vh] no-scrollbar" id="shiftTerritoryGrid"></div>
             <button onclick="saveShiftTerritories()" class="w-full py-4 mt-6 text-[15px] font-semibold text-white dark:text-black bg-black dark:bg-[#32D74B] rounded-[14px] active:scale-95 ios-transition shadow-lg shadow-black/20 dark:shadow-[#32D74B]/20">Confirmar</button>
         </div>
     </div>
 
     <div id="territoryModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('territoryModal')">
-        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-start mb-6">
                 <div>
-                    <h2 id="territoryModalTitle" class="text-[18px] font-bold text-black dark:text-white tracking-[-0.01em]">Territorios trabajados</h2>
+                    <h2 id="territoryModalTitle" class="text-[18px] font-semibold text-black dark:text-white tracking-[-0.01em]">Territorios trabajados</h2>
                     <p id="territoryModalSubtitle" class="text-[13px] text-black/50 dark:text-white/50 mt-1 font-medium"></p>
                 </div>
                 <button onclick="toggleModal('territoryModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition shrink-0"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -361,17 +333,16 @@
     </div>
 
     <div id="statsModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('statsModal')">
-        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/10 dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
             <div class="flex justify-between items-center mb-6">
-                <h2 id="statsModalTitle" class="text-xl font-bold text-black dark:text-white tracking-[-0.01em]">Conductores</h2>
+                <h2 id="statsModalTitle" class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Conductores</h2>
                 <button onclick="toggleModal('statsModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <div id="statsContent" class="space-y-2 max-h-[50vh] overflow-y-auto no-scrollbar pb-6"></div>
         </div>
     </div>
 
-    <!-- POPUPS CENTRALES -->
     <div id="customAlert" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
         <div id="customAlertBg" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
         <div id="customAlertBox" class="relative bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(30,30,30,0.95)] backdrop-blur-xl border border-black/10 dark:border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-[1.10] opacity-0 ios-spring shadow-2xl">
@@ -391,7 +362,6 @@
         </div>
     </div>
 
-    <!-- === MOTOR DE LÓGICA Y FIREBASE === -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -629,7 +599,7 @@
             monthNames.forEach((name, index) => {
                 const isActive = state.currentMonth === index;
                 const btn = document.createElement('button');
-                btn.className = `w-full text-left px-5 py-4 text-[15px] font-medium border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition ${isActive ? 'text-[#0A84FF] font-semibold' : 'text-black dark:text-white'}`;
+                btn.className = `w-full text-left px-5 py-4 text-[15px] font-medium border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition ${isActive ? 'text-[#0A84FF] font-semibold' : 'text-black dark:text-white'}`;
                 btn.textContent = name;
                 btn.onclick = () => {
                     state.currentMonth = index; 
@@ -647,7 +617,7 @@
             if (datesWeek5[0].fullDate.getMonth() === state.currentMonth) availableWeeks.push(5);
             availableWeeks.forEach(weekNum => {
                 const isActive = state.currentWeek === weekNum; const btn = document.createElement('button');
-                btn.className = `w-full text-left px-5 py-4 text-[15px] font-medium border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition ${isActive ? 'text-[#0A84FF] font-semibold' : 'text-black dark:text-white'}`;
+                btn.className = `w-full text-left px-5 py-4 text-[15px] font-medium border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition ${isActive ? 'text-[#0A84FF] font-semibold' : 'text-black dark:text-white'}`;
                 btn.textContent = "Semana " + weekNum;
                 btn.onclick = () => { state.currentWeek = weekNum; updateSelectDisplays(); renderSchedule(); saveState(); showWeekIndicator(); toggleModal('weekPickerModal'); };
                 list.appendChild(btn);
@@ -660,7 +630,7 @@
             const modes = [ { id: 'normal', name: 'Normal', active: !isCampActive && !sabData.isVisita && !sabData.isAsamblea && !sabData.isCleaning }, { id: 'campana', name: 'Campaña', active: isCampActive }, { id: 'visita', name: 'Visita', active: sabData.isVisita }, { id: 'asamblea', name: 'Asamblea', active: sabData.isAsamblea }, { id: 'limpieza', name: 'Limpieza', active: sabData.isCleaning } ];
             list.innerHTML = modes.map(m => {
                 const isSpecial = m.id === 'campana' && m.active; const activeColor = isSpecial ? 'text-[#CDA4FF] font-semibold' : 'text-[#32D74B] font-semibold';
-                return `<button type="button" onclick="handleModeSelection('${m.id}')" class="w-full text-left px-5 py-4 text-[15px] font-medium ios-transition border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ${m.active ? activeColor : 'text-black/80 dark:text-white/80'}">${m.name}</button>`;
+                return `<button type="button" onclick="handleModeSelection('${m.id}')" class="w-full text-left px-5 py-4 text-[15px] font-medium ios-transition border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ${m.active ? activeColor : 'text-black/80 dark:text-white/80'}">${m.name}</button>`;
             }).join('');
             toggleModal('modesPickerModal');
         }
@@ -682,10 +652,10 @@
             if (isWeekInCampana(state.currentMonth, state.currentWeek)) activeModes.push('Campaña'); if (sabData.isVisita) activeModes.push('Visita'); if (sabData.isAsamblea) activeModes.push('Asamblea'); if (sabData.isCleaning) activeModes.push('Limpieza');
             if (activeModes.length > 0) {
                 textSpan.textContent = `Modo: ${activeModes.join(' + ')}`;
-                if (activeModes.includes('Campaña') && activeModes.length === 1) { btn.classList.add('bg-[#CDA4FF]/20', 'text-[#CDA4FF]', 'border-[#CDA4FF]/30'); btn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-black/80', 'dark:text-white/80', 'bg-[#32D74B]/20', 'text-[#32D74B]', 'border-[#32D74B]/30'); } 
-                else { btn.classList.add('bg-[#32D74B]/20', 'text-[#32D74B]', 'border-[#32D74B]/30'); btn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-black/80', 'dark:text-white/80', 'bg-[#CDA4FF]/20', 'text-[#CDA4FF]', 'border-[#CDA4FF]/30'); }
+                if (activeModes.includes('Campaña') && activeModes.length === 1) { btn.classList.add('bg-[#CDA4FF]/20', 'text-[#CDA4FF]', 'border-[#CDA4FF]/30'); btn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-black/90', 'dark:text-white/90', 'bg-[#32D74B]/20', 'text-[#32D74B]', 'border-[#32D74B]/30'); } 
+                else { btn.classList.add('bg-[#32D74B]/20', 'text-[#32D74B]', 'border-[#32D74B]/30'); btn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-black/90', 'dark:text-white/90', 'bg-[#CDA4FF]/20', 'text-[#CDA4FF]', 'border-[#CDA4FF]/30'); }
             } else {
-                textSpan.textContent = `Modos`; btn.className = "flex items-center gap-1 bg-black/5 dark:bg-white/10 border border-black/5 dark:border-white/5 text-black/80 dark:text-white/80 px-3 py-2 rounded-full text-[12px] font-medium active:scale-95 ios-transition shrink-0";
+                textSpan.textContent = `Modos`; btn.className = "flex items-center gap-1 bg-black/5 dark:bg-white/10 border border-black/5 dark:border-white/5 text-black/90 dark:text-white/90 px-3 py-2 rounded-full text-[12px] font-semibold active:scale-95 ios-transition shrink-0";
             }
         }
 
@@ -719,7 +689,7 @@
             });
 
             const renderSingleOption = (loc, iconName) => {
-                const btn = document.createElement('button'); btn.className = "w-full flex items-center gap-3 px-5 py-4 border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition";
+                const btn = document.createElement('button'); btn.className = "w-full flex items-center gap-3 px-5 py-4 border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition";
                 btn.innerHTML = `<i data-lucide="${iconName}" class="w-[18px] h-[18px] text-black/50 dark:text-white/50 shrink-0"></i><span class="text-[16px] font-medium text-black dark:text-white text-left flex-1">${loc}</span>`;
                 btn.onclick = () => { updateData(editingDay, editingShift, 'spot', loc); toggleModal('locationPickerModal'); renderSchedule(); }; list.appendChild(btn);
             };
@@ -732,19 +702,19 @@
             }
 
             const emptyBtn = document.createElement('button'); 
-            emptyBtn.className = "w-full flex items-center gap-3 px-5 py-4 border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition";
+            emptyBtn.className = "w-full flex items-center gap-3 px-5 py-4 border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition";
             emptyBtn.innerHTML = `<i data-lucide="minus" class="w-[18px] h-[18px] text-black/50 dark:text-white/50 shrink-0"></i><span class="text-[16px] font-medium text-black dark:text-white text-left flex-1">-</span>`;
             emptyBtn.onclick = () => { updateData(editingDay, editingShift, 'spot', ''); toggleModal('locationPickerModal'); renderSchedule(); }; 
             list.appendChild(emptyBtn);
 
             const renderAccordion = (title, id, items, iconName) => {
                 const isOpen = expandedLocationSection === id; const header = document.createElement('button');
-                header.className = `w-full flex items-center gap-3 px-5 py-4 border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition rounded-lg`; header.onclick = () => toggleLocationSection(id);
+                header.className = `w-full flex items-center gap-3 px-5 py-4 border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition rounded-lg`; header.onclick = () => toggleLocationSection(id);
                 header.innerHTML = `<i data-lucide="${iconName}" class="w-[18px] h-[18px] text-black/70 dark:text-white/70 shrink-0"></i><span class="text-[16px] font-semibold text-black dark:text-white text-left flex-1">${title}</span><span class="text-[13px] font-medium text-black/30 dark:text-white/30 mr-2">${items.length}</span><i data-lucide="chevron-${isOpen ? 'up' : 'down'}" class="w-4 h-4 text-black/40 dark:text-white/40 transition-transform duration-300"></i>`; list.appendChild(header);
                 if (isOpen) {
-                    const container = document.createElement('div'); container.className = "animate-fade overflow-hidden bg-black/[0.03] dark:bg-white/[0.03] border-b border-black/5 dark:border-white/5 shadow-inner mb-2 rounded-b-xl";
+                    const container = document.createElement('div'); container.className = "animate-fade overflow-hidden bg-black/[0.03] dark:bg-white/[0.03] border-b border-gray-300 dark:border-white/5 shadow-inner mb-2 rounded-b-xl";
                     items.forEach(loc => {
-                        const btn = document.createElement('button'); btn.className = "w-full flex items-center pl-[46px] pr-5 py-3.5 border-b border-black/5 dark:border-white/5 last:border-0 active:bg-black/5 dark:active:bg-white/10 ios-transition";
+                        const btn = document.createElement('button'); btn.className = "w-full flex items-center pl-[46px] pr-5 py-3.5 border-b border-gray-300 dark:border-white/5 last:border-0 active:bg-black/5 dark:active:bg-white/10 ios-transition";
                         btn.innerHTML = `<span class="text-[15px] font-medium text-black/80 dark:text-white/80 text-left flex-1">${loc}</span>`;
                         btn.onclick = () => { updateData(editingDay, editingShift, 'spot', loc); toggleModal('locationPickerModal'); renderSchedule(); }; container.appendChild(btn);
                     }); list.appendChild(container);
@@ -760,7 +730,7 @@
             const list = document.getElementById('driverOptionsList'); list.innerHTML = ''; const baseOptions = ["-", "Super"];
             const sortedDrivers = [...state.drivers].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
             [...baseOptions, ...sortedDrivers].forEach(driver => {
-                const btn = document.createElement('button'); btn.className = "w-full text-left px-5 py-4 text-[15px] font-medium border-b border-black/5 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition text-black dark:text-white"; 
+                const btn = document.createElement('button'); btn.className = "w-full text-left px-5 py-4 text-[15px] font-medium border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition text-black dark:text-white"; 
                 btn.textContent = driver; btn.onclick = () => { updateData(editingDay, editingShift, 'driver', driver === "-" ? "" : driver); toggleModal('driverPickerModal'); renderSchedule(); }; list.appendChild(btn);
             });
         }
@@ -777,102 +747,102 @@
             const globalHeader = document.createElement('div');
             globalHeader.className = "mb-3 px-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center ios-transition animate-fade";
             globalHeader.innerHTML = `
-                <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-black/70 dark:text-white/70">Salidas por la mañana:</span><span contenteditable="true" onblur="updateGlobalTime('morningTime', this.innerText)" class="text-[13px] font-bold text-black dark:text-white outline-none min-w-[30px]" data-placeholder="--:--">${state.morningTime}</span><span class="text-[12px] font-medium text-black/70 dark:text-white/70">hs</span></div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-black/70 dark:text-white/70">Salidas por la tarde:</span><span contenteditable="true" onblur="updateGlobalTime('afternoonTime', this.innerText)" class="text-[13px] font-bold text-black dark:text-white outline-none min-w-[30px]" data-placeholder="--:--">${state.afternoonTime}</span><span class="text-[12px] font-medium text-black/70 dark:text-white/70">hs</span></div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-black/50 dark:text-white/50">Salidas por la mañana:</span><span contenteditable="true" onblur="updateGlobalTime('morningTime', this.innerText)" class="text-[13px] font-bold text-black/80 dark:text-white/90 outline-none min-w-[30px]" data-placeholder="--:--">${state.morningTime}</span><span class="text-[12px] font-medium text-black/50 dark:text-white/50">hs</span></div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-black/50 dark:text-white/50">Salidas por la tarde:</span><span contenteditable="true" onblur="updateGlobalTime('afternoonTime', this.innerText)" class="text-[13px] font-bold text-black/80 dark:text-white/90 outline-none min-w-[30px]" data-placeholder="--:--">${state.afternoonTime}</span><span class="text-[12px] font-medium text-black/50 dark:text-white/50">hs</span></div>
             `;
             container.appendChild(globalHeader);
 
             const daysWrapper = document.createElement('div');
-            daysWrapper.className = "bg-white dark:bg-[#1C1C1E] rounded-[20px] overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.05)] dark:shadow-none border border-black/5 dark:border-white/5 animate-fade mb-6";
+            daysWrapper.className = "bg-white dark:bg-[#1C1C1E] rounded-[24px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-300 dark:border-white/[0.05] animate-fade mb-6";
 
             weekStructure.forEach((dayDef, index) => {
                 if (dayDef.id === 'LUN' && !isCampanaActive) return;
                 const dateInfo = dates[index], dayData = weekData[dayDef.id] || {};
                 
                 const getShiftHtml = (shift, defaultSpot = '', compact = false) => {
-                    const sData = dayData[shift.id] || {}, spotValue = sData.spot !== undefined ? sData.spot : defaultSpot;
+                    const sData = dayData[shift.id] || {};
+                    const spotValue = sData.spot ? sData.spot : defaultSpot;
                     const isManual = sData.manualMode === true, isManualDriver = sData.manualDriverMode === true;
                     const defDriver = sabData.isVisita ? (dayDef.id === 'MAR' ? '' : 'Super') : '';
                     const currentDriver = sData.driver !== undefined ? sData.driver : defDriver, tArray = sData.territories || [];
+                    const hasTerr = tArray.length > 0;
                     
                     const cellEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'spot')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
                     const driverEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'driver')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
                     
                     let addrContent = isManual 
-                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full py-0.5 flex items-center px-1 text-[13px] font-medium leading-tight text-black dark:text-white outline-none" data-placeholder="Escribir...">${spotValue}</div>`
-                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full py-0.5 flex items-center px-1 text-[13px] font-medium leading-tight ${spotValue ? 'text-black dark:text-white' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
+                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full py-1 flex items-center px-1 text-[14px] font-medium leading-snug text-black dark:text-white/90 outline-none" data-placeholder="Escribir...">${spotValue}</div>`
+                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full py-1 flex items-center px-1 text-[14px] font-medium leading-snug ${spotValue ? 'text-black dark:text-white/90' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
                     
-                    let driverContent = isManualDriver
-                        ? `<div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'driver', this.innerText); renderSchedule();" class="shrink-0 w-[60px] py-[3px] flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-[6px] text-[11px] font-semibold text-black dark:text-white outline-none text-center overflow-hidden whitespace-nowrap text-ellipsis" data-placeholder="..."> ${currentDriver} </div>`
-                        : `<div onclick="openDriverPicker('${dayDef.id}', '${shift.id}')" class="shrink-0 w-[60px] py-[3px] rounded-[6px] bg-black/5 dark:bg-white/10 px-1 text-[11px] font-semibold flex items-center justify-center cursor-pointer active:scale-95 ios-transition overflow-hidden whitespace-nowrap text-ellipsis ${currentDriver ? 'text-black dark:text-white' : 'text-black/30 dark:text-white/30'}">${currentDriver || '-'}</div>`;
+                    const driverClass = currentDriver 
+                        ? 'bg-black/[0.04] dark:bg-white/[0.06] text-black/70 dark:text-white/70' 
+                        : 'bg-black/[0.02] dark:bg-white/[0.02] text-black/30 dark:text-white/30';
+                        
+                    let driverContentHtml = isManualDriver
+                        ? `<div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'driver', this.innerText); renderSchedule();" class="shrink-0 w-[64px] py-1 flex items-center justify-center rounded-[8px] text-[11px] font-semibold outline-none text-center overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}" data-placeholder="..."> ${currentDriver} </div>`
+                        : `<div onclick="openDriverPicker('${dayDef.id}', '${shift.id}')" class="shrink-0 w-[64px] py-1 rounded-[8px] px-1 text-[11px] font-semibold flex items-center justify-center cursor-pointer active:scale-95 ios-transition overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}">${currentDriver || '-'}</div>`;
 
                     let timeField = "";
                     if (shift.id === 'n') {
-                        timeField = `<input type="text" value="${sData.time || shift.time}" onchange="updateData('${dayDef.id}', '${shift.id}', 'time', this.value); renderSchedule();" class="w-[34px] text-center text-[11px] font-bold text-black dark:text-white bg-transparent border-none outline-none shrink-0 px-0">`;
+                        timeField = `<input type="text" value="${sData.time || shift.time}" onchange="updateData('${dayDef.id}', '${shift.id}', 'time', this.value); renderSchedule();" class="w-[36px] text-center text-[10px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] bg-transparent border-none outline-none shrink-0 px-0 mr-2">`;
                     } else {
-                        let colorClass = "text-[#0A84FF]";
-                        if (dayDef.id === 'SAB' && sabData.isVisita && shift.id === 't') colorClass = "text-black dark:text-white";
-                        
                         let tVal = shift.time || '--.--';
-                        let parts = tVal.split(/[:.]/);
-                        let h = parts[0] ? parts[0] + "." : "--.";
-                        let m = parts[1] || "--";
 
                         timeField = `
-                            <div class="shrink-0 w-[34px] flex flex-col justify-center items-center ${colorClass} select-none leading-none">
-                                <span class="text-[14px] font-black tracking-tight">${h}</span>
-                                <span class="text-[11px] font-bold tracking-tight mt-[1px]">${m}</span>
+                            <div class="shrink-0 w-[38px] flex justify-center items-center text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-2 border-r border-black/[0.06] dark:border-white/[0.06] mr-2">
+                                <span class="text-[10px] font-bold tracking-tight">${tVal}</span>
                             </div>
                         `;
                     }
-                    const terrColorClass = tArray.length > 0 ? 'text-black dark:text-[#32D74B]' : 'text-black/30 dark:text-white/30';
-                    let prefixHtml = shift.prefix ? `<div class="shrink-0 w-[18px] text-[11px] font-black text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-0.5">${shift.prefix}</div>` : '';
-                    return `<div class="flex items-center gap-1 w-full py-0.5 border-b border-black/5 dark:border-white/5 last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-[3px] min-w-[28px] rounded-[6px] bg-black/5 dark:bg-white/10 px-1 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition">${tArray.length > 0 ? tArray.join(',') : '-'}</button><div class="ios-transition" ${driverEvents}>${driverContent}</div></div>`;
+                    
+                    const terrColorClass = hasTerr 
+                        ? 'bg-[#34C759]/15 text-[#28A745] dark:bg-[#32D74B]/20 dark:text-[#32D74B]' 
+                        : 'bg-black/[0.04] dark:bg-white/[0.06] text-black/30 dark:text-white/30';
+                    let prefixHtml = shift.prefix ? `<div class="shrink-0 w-[18px] text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-1">${shift.prefix}</div>` : '';
+                    
+                    return `<div class="flex items-center gap-1 w-full py-1.5 border-b border-black/[0.04] dark:border-white/[0.04] last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-1 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
                 };
 
                 let content = '';
                 if (dayDef.id === 'SAB' && (dayData.isCleaning || dayData.isAsamblea)) {
                     if (dayData.isCleaning) {
-                        content = `<div class="flex items-center w-full py-1 bg-black/5 dark:bg-[#32D74B]/10 border border-black/10 dark:border-[#32D74B]/20 rounded-[8px] px-2"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[13px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
-                    } else { content = `<div class="flex items-center w-full py-1.5 bg-black dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`; }
-                } else if (dayDef.id === 'SAB' && dayData.isVisita) {
+                        content = `<div class="flex items-center w-full py-1 bg-black/5 dark:bg-[#32D74B]/10 border border-black/[0.06] dark:border-[#32D74B]/20 rounded-[8px] px-2"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[13px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
+                    } else { content = `<div class="flex items-center w-full py-1.5 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`; }
+                } else if (dayDef.id === 'SAB' && sabData.isVisita) {
                     content = [{time: state.morningTime, id: 'm'}, {time: '19.30', id: 't'}].map(s => getShiftHtml(s, s.id === 't' ? 'Salón del Reino' : '')).join('');
                 } else if (dayDef.id === 'SAB') {
                     let shiftsWithTime = dayDef.shifts.map(s => { let t = s.time; if (s.id === 'g1') t = state.morningTime; return { ...s, time: t }; });
                     const rows = shiftsWithTime.map(s => getShiftHtml(s, '', true)).join('');
                     
                     let sabTime = state.morningTime || "10.00";
-                    let parts = sabTime.split(/[:.]/);
-                    let h = parts[0] ? parts[0] + "." : "--.";
-                    let m = parts[1] || "--";
                     
                     let sabTimeHtml = `
-                        <div class="flex flex-col items-center justify-center shrink-0 w-[30px] text-[#0A84FF] select-none leading-none">
-                            <span class="text-[14px] font-black tracking-tight">${h}</span>
-                            <span class="text-[11px] font-bold tracking-tight mt-[1px]">${m}</span>
+                        <div class="flex justify-center items-center shrink-0 w-[38px] text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-2 border-r border-black/[0.06] dark:border-white/[0.06] mr-2">
+                            <span class="text-[10px] font-bold tracking-tight">${sabTime}</span>
                         </div>
                     `;
-                    content = `<div class="flex w-full items-stretch py-0.5"><div class="flex flex-col justify-center shrink-0 border-r border-black/5 dark:border-white/5 pr-1 mr-1">${sabTimeHtml}</div><div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${rows}</div></div>`;
+                    content = `<div class="flex w-full items-stretch py-0.5"><div class="flex flex-col justify-center shrink-0">${sabTimeHtml}</div><div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${rows}</div></div>`;
                 } else {
                     let curShifts = dayDef.shifts.map(s => { let t = s.time; if (s.id === 'm') t = state.morningTime; if (s.id === 't') t = state.afternoonTime; return { ...s, time: t }; });
                     if (sabData.isVisita) {
                         if (dayDef.id === 'MAR') curShifts = curShifts.map(s => s.id === 't' ? { ...s, time: '20.00' } : s);
                         if (dayDef.id === 'MIE' || dayDef.id === 'VIE') curShifts.push({time: '20.00', id: 'n'});
+                    } else {
+                        if (dayDef.id === 'JUE') curShifts = curShifts.filter(s => s.id === 'm');
                     }
                     content = curShifts.map(s => {
-                        let spot = sabData.isVisita ? (dayDef.id === 'MAR' && s.id === 't' ? 'Reunión' : (dayDef.id === 'MIE' && s.id === 'n' ? 'Reunión PR/AUX' : (dayDef.id === 'VIE' && s.id === 'n' ? 'Reunión Anc/SM' : ''))) : '';
+                        let spot = sabData.isVisita ? (dayDef.id === 'MAR' && s.id === 't' ? 'Reunión' : (dayDef.id === 'MIE' && s.id === 'n' ? 'Reu. PR y Aux. (Salón del Reino)' : (dayDef.id === 'VIE' && s.id === 'n' ? 'Reu. Anc. y SM (Salón del Reino)' : ''))) : '';
                         return getShiftHtml(s, spot);
                     }).join('');
                 }
                 
-                const bgClass = index % 2 === 0 ? 'bg-transparent' : 'bg-black/[0.02] dark:bg-white/[0.02]';
                 const dayRow = document.createElement('div');
-                dayRow.className = `py-1.5 px-1.5 flex items-center border-b border-black/5 dark:border-white/5 last:border-0 ios-transition ${bgClass}`;
+                dayRow.className = `py-2.5 px-3 flex items-center border-b border-gray-300 dark:border-white/[0.08] last:border-0 ios-transition bg-white dark:bg-[#1C1C1E]`;
                 
                 dayRow.innerHTML = `
-                    <div class="w-[42px] h-[42px] shrink-0 flex flex-col items-center justify-center mr-1 rounded-[12px] bg-[#1C1C1E] dark:bg-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.1)] border border-black/10 dark:border-white/5">
-                        <span class="text-[8px] font-bold text-white/70 mb-[1px] leading-none uppercase tracking-wider">${dayDef.label}</span>
-                        <span class="text-[19px] font-black text-white tracking-[-0.02em] leading-none">${dateInfo.day}</span>
+                    <div class="w-[46px] h-[46px] shrink-0 flex flex-col items-center justify-center mr-3 rounded-[14px] bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-black/[0.04] dark:border-white/[0.05]">
+                        <span class="text-[9px] font-bold text-black dark:text-white/40 mb-[1px] leading-none uppercase tracking-widest">${dayDef.label}</span>
+                        <span class="text-[20px] font-semibold text-black dark:text-white/90 tracking-tight leading-none">${dateInfo.day}</span>
                     </div>
                     <div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${content}</div>
                 `;
@@ -897,12 +867,12 @@
             });
             const sortedDrivers = Object.entries(driverCounts).sort((a, b) => b[1] - a[1]); let html = '';
             if (sortedDrivers.length > 0) {
-                html += `<div class="bg-gray-100 dark:bg-[#2C2C2E]/60 border border-black/5 dark:border-white/5 rounded-[16px] overflow-hidden shadow-sm animate-fade">`;
+                html += `<div class="bg-[#F2F2F7] dark:bg-[#2C2C2E]/60 border border-gray-300 dark:border-white/5 rounded-[16px] overflow-hidden shadow-sm animate-fade">`;
                 sortedDrivers.forEach((item, index) => {
-                    const [driver, count] = item; const borderClass = index === sortedDrivers.length - 1 ? '' : 'border-b border-black/5 dark:border-white/5';
+                    const [driver, count] = item; const borderClass = index === sortedDrivers.length - 1 ? '' : 'border-b border-gray-300 dark:border-white/5';
                     let medalIcon = `<span class="w-6 text-center text-[15px] font-bold text-black/30 dark:text-white/30">${index + 1}</span>`;
                     if (index === 0) medalIcon = `<i data-lucide="trophy" class="w-5 h-5 text-[#FFD700] mx-0.5"></i>`; else if (index === 1) medalIcon = `<i data-lucide="medal" class="w-5 h-5 text-[#C0C0C0] mx-0.5"></i>`; else if (index === 2) medalIcon = `<i data-lucide="medal" class="w-5 h-5 text-[#CD7F32] mx-0.5"></i>`; 
-                    html += `<div class="flex items-center justify-between p-4 ${borderClass} bg-black/5 dark:bg-white/5"><div class="flex items-center gap-3">${medalIcon}<span class="text-[16px] font-medium text-black dark:text-white">${driver}</span></div><span class="bg-[#0A84FF]/20 text-[#0A84FF] px-2.5 py-1 rounded-full text-[13px] font-bold border border-[#0A84FF]/30">${count}</span></div>`;
+                    html += `<div class="flex items-center justify-between p-4 ${borderClass} bg-white dark:bg-white/5"><div class="flex items-center gap-3">${medalIcon}<span class="text-[16px] font-medium text-black dark:text-white">${driver}</span></div><span class="bg-[#0A84FF]/10 text-[#0A84FF] px-2.5 py-1 rounded-full text-[13px] font-bold border border-[#0A84FF]/20">${count}</span></div>`;
                 });
                 html += `</div><p class="text-[12px] text-black/40 dark:text-white/40 text-center mt-3">Total de salidas válidas: ${totalOutputs}</p>`;
             } else {
@@ -940,18 +910,18 @@
                 if (totalAssigned > 0) {
                     hasData = true; const sortedTerrs = Object.entries(monthlyCounts).sort((a, b) => b[1] - a[1]);
                     const repetidos = sortedTerrs.filter(t => t[1] > 1); const unicos = sortedTerrs.filter(t => t[1] === 1);
-                    let html = `<div class="bg-gray-100 dark:bg-[#2C2C2E]/60 border border-black/5 dark:border-white/5 p-4 rounded-[16px] mb-3 shadow-sm animate-fade"><div class="flex justify-between items-center mb-3"><h3 class="text-[17px] font-bold text-black dark:text-white tracking-tight">${monthNames[m]}</h3><span class="text-[12px] text-black/50 dark:text-white/50 font-medium">${totalAssigned} asig.</span></div><div class="space-y-3">`;
+                    let html = `<div class="bg-[#F2F2F7] dark:bg-[#2C2C2E]/60 border border-gray-300 dark:border-white/5 p-4 rounded-[16px] mb-3 shadow-sm animate-fade"><div class="flex justify-between items-center mb-3"><h3 class="text-[17px] font-bold text-black dark:text-white tracking-tight">${monthNames[m]}</h3><span class="text-[12px] text-black/50 dark:text-white/50 font-medium">${totalAssigned} asig.</span></div><div class="space-y-3">`;
                     if (repetidos.length > 0) {
                         html += `<div><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest block mb-1.5 flex items-center gap-1"><i data-lucide="flame" class="w-3 h-3 text-[#FF453A]"></i> Más Hechos (Repetidos)</span><div class="flex flex-wrap gap-1.5">
-                            ${repetidos.map(t => { const isCamp = campanaTerrs.has(t[0]); const colorCls = isCamp ? 'bg-[#CDA4FF]/20 text-[#CDA4FF] border border-[#CDA4FF]/30' : 'bg-[#0A84FF]/20 text-[#0A84FF] border border-[#0A84FF]/30'; return `<span class="px-2 py-1 rounded-md text-[13px] font-medium ${colorCls}">${t[0]} <span class="opacity-70 text-[10px] ml-0.5">x${t[1]}</span></span>`; }).join('')}
+                            ${repetidos.map(t => { const isCamp = campanaTerrs.has(t[0]); const colorCls = isCamp ? 'bg-[#CDA4FF]/20 text-[#CDA4FF] border border-[#CDA4FF]/30' : 'bg-[#0A84FF]/10 text-[#0A84FF] border border-[#0A84FF]/20'; return `<span class="px-2 py-1 rounded-md text-[13px] font-medium ${colorCls}">${t[0]} <span class="opacity-70 text-[10px] ml-0.5">x${t[1]}</span></span>`; }).join('')}
                         </div></div>`;
                     }
                     if (unicos.length > 0) {
-                        html += `<div><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest block mb-1.5 flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3 text-black dark:text-[#32D74B]"></i> Realizados 1 vez</span><div class="flex flex-wrap gap-1.5">
-                            ${unicos.map(t => { const isCamp = campanaTerrs.has(t[0]); const colorCls = isCamp ? 'bg-[#CDA4FF]/10 text-[#CDA4FF] border border-[#CDA4FF]/20' : 'bg-black/10 dark:bg-white/10 text-black/80 dark:text-white/80 border border-black/10 dark:border-white/10'; return `<span class="px-2 py-1 rounded-md text-[13px] font-medium ${colorCls}">${t[0]}</span>`; }).join('')}
+                        html += `<div><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest block mb-1.5 flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3 text-[#34C759] dark:text-[#32D74B]"></i> Realizados 1 vez</span><div class="flex flex-wrap gap-1.5">
+                            ${unicos.map(t => { const isCamp = campanaTerrs.has(t[0]); const colorCls = isCamp ? 'bg-[#CDA4FF]/10 text-[#CDA4FF] border border-[#CDA4FF]/20' : 'bg-black/[0.05] dark:bg-white/10 text-black/80 dark:text-white/80 border border-black/[0.05] dark:border-white/10'; return `<span class="px-2 py-1 rounded-md text-[13px] font-medium ${colorCls}">${t[0]}</span>`; }).join('')}
                         </div></div>`;
                     }
-                    if (campanaTerrs.size > 0) { html += `<div class="mt-3 pt-3 border-t border-black/5 dark:border-white/5 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#CDA4FF] shadow-[0_0_8px_rgba(205,164,255,0.6)]"></span><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest">Abarcados en Campaña</span></div>`; }
+                    if (campanaTerrs.size > 0) { html += `<div class="mt-3 pt-3 border-t border-gray-300 dark:border-white/5 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#CDA4FF] shadow-[0_0_8px_rgba(205,164,255,0.6)]"></span><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest">Abarcados en Campaña</span></div>`; }
                     html += `</div></div>`; container.innerHTML += html;
                 }
             }
@@ -993,10 +963,10 @@
             allTerrs.forEach(tStr => {
                 const sel = tempTerritories.indexOf(tStr) > -1; const warning = territoryWarnings[tStr];
                 let bgClass = 'bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70';
-                if (sel) bgClass = 'bg-black text-white dark:bg-[#32D74B] dark:text-black font-semibold shadow-md dark:shadow-[#32D74B]/20';
+                if (sel) bgClass = 'bg-[#34C759] text-white dark:bg-[#32D74B] dark:text-black font-semibold shadow-md dark:shadow-[#32D74B]/20';
                 else if (warning) {
-                    if (warning.color === 'red') bgClass = 'bg-[#FF453A]/20 text-[#FF453A] border border-[#FF453A]/30 font-semibold shadow-sm';
-                    else if (warning.color === 'orange') bgClass = 'bg-[#FF9F0A]/20 text-[#FF9F0A] border border-[#FF9F0A]/30 font-medium shadow-sm';
+                    if (warning.color === 'red') bgClass = 'bg-[#FF453A]/10 text-[#FF453A] border border-[#FF453A]/20 font-semibold shadow-sm';
+                    else if (warning.color === 'orange') bgClass = 'bg-[#FF9F0A]/10 text-[#FF9F0A] border border-[#FF9F0A]/20 font-medium shadow-sm';
                 }
                 const btn = document.createElement('button'); btn.className = `h-8 text-[12px] rounded-md flex items-center justify-center ios-transition active:scale-90 ${bgClass}`; btn.textContent = tStr; 
                 btn.onclick = () => { if (!sel && warning && tStr !== 'Rev.') showCustomAlert(`El territorio ${tStr} ya fue asignado el día ${warning.dateStr}.`); toggleShiftTerritory(tStr); }; 
@@ -1019,12 +989,12 @@
             const remainingCount = 76 - workedCount;
             const subtitleEl = document.getElementById('territoryModalSubtitle');
             if (subtitleEl) {
-                if (remainingCount === 0) subtitleEl.innerHTML = `<span class="text-black dark:text-[#32D74B] font-bold">¡Todos los territorios abarcados!</span>`;
-                else subtitleEl.innerHTML = `Quedan <span class="text-black dark:text-[#32D74B] font-bold">${remainingCount}</span> territorios por terminar`;
+                if (remainingCount === 0) subtitleEl.innerHTML = `<span class="text-[#34C759] dark:text-[#32D74B] font-bold">¡Todos los territorios abarcados!</span>`;
+                else subtitleEl.innerHTML = `Quedan <span class="text-[#34C759] dark:text-[#32D74B] font-bold">${remainingCount}</span> territorios por terminar`;
             }
             allTerrs.forEach(tStr => {
                 const isAuto = monthlyAssigned.has(tStr); const div = document.createElement('div'); 
-                div.className = `h-8 text-[11px] font-medium rounded-md flex items-center justify-center ios-transition ${isAuto ? 'bg-black/10 text-black border border-black/20 dark:bg-[#32D74B]/20 dark:text-[#32D74B] dark:border-[#32D74B]/30 shadow-sm' : 'bg-black/5 dark:bg-white/5 text-black/30 dark:text-white/30'}`;
+                div.className = `h-8 text-[11px] font-medium rounded-md flex items-center justify-center ios-transition ${isAuto ? 'bg-[#34C759]/10 text-[#34C759] border border-[#34C759]/20 dark:bg-[#32D74B]/20 dark:text-[#32D74B] dark:border-[#32D74B]/30 shadow-sm' : 'bg-black/[0.04] dark:bg-white/5 text-black/30 dark:text-white/30'}`;
                 div.textContent = tStr; grid.appendChild(div);
             });
         }
@@ -1070,7 +1040,65 @@
             }, 300); 
         }
 
-        // Lógica de reseteo rápido al presionar Cámara
+        // --- SISTEMA DE CAPTURA HD ---
+        async function handleCameraClick() {
+            if (cameraPreventClick) return;
+            if (typeof html2canvas === 'undefined') {
+                showCustomAlert("Cargando motor de imágenes...");
+                return;
+            }
+
+            const container = document.getElementById('scheduleContainer');
+            
+            // Guardar estado actual
+            const originalOverflow = container.style.overflow;
+            const originalHeight = container.style.height;
+            const originalMaxHeight = container.style.maxHeight;
+            
+            // Forzar contenedor para mostrar todo el contenido sin barras de scroll
+            container.classList.remove('overflow-y-auto', 'pb-[100px]');
+            container.style.overflow = 'visible';
+            container.style.height = 'auto';
+            container.style.maxHeight = 'none';
+            container.style.paddingBottom = '20px';
+            
+            // Ocultar cabeceras y elementos no deseados en la captura
+            document.querySelector('header').style.display = 'none';
+            document.querySelector('nav').style.display = 'none';
+            document.getElementById('weekIndicator').style.display = 'none';
+
+            // Tiempo para que el DOM aplique los estilos antes del render
+            setTimeout(async () => {
+                try {
+                    const canvas = await html2canvas(container, {
+                        scale: 3, // Altísima calidad para evitar pixeles
+                        useCORS: true,
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#000000' : '#F2F2F7',
+                    });
+                    
+                    const link = document.createElement('a');
+                    link.download = `Cronograma_S${state.currentWeek}.png`;
+                    link.href = canvas.toDataURL('image/png', 1.0);
+                    link.click();
+                    
+                    showCustomAlert("Imagen HD generada y descargada con éxito.");
+                } catch (error) {
+                    console.error(error);
+                    showCustomAlert("Error al generar la imagen.");
+                } finally {
+                    // Restaurar todo a la normalidad
+                    container.classList.add('overflow-y-auto', 'pb-[100px]');
+                    container.style.overflow = originalOverflow;
+                    container.style.height = originalHeight;
+                    container.style.maxHeight = originalMaxHeight;
+                    container.style.paddingBottom = '';
+                    
+                    document.querySelector('header').style.display = '';
+                    document.querySelector('nav').style.display = '';
+                }
+            }, 300);
+        }
+
         function handleCameraHoldStart(e) {
             clearTimeout(cameraHoldTimer); cameraPreventClick = false;
             cameraHoldTimer = setTimeout(() => {
@@ -1081,11 +1109,6 @@
         }
 
         function handleCameraHoldEnd(e) { clearTimeout(cameraHoldTimer); }
-
-        function handleCameraClick() {
-            if (cameraPreventClick) return;
-            toggleScreenshotMode();
-        }
 
         function showConfirmResetWeek() {
             document.getElementById('customConfirmMsg').textContent = "¿Desea borrar todos los datos de esta semana?";
