@@ -12,7 +12,6 @@
     
     <title>Predi 2026</title>
     
-    <!-- Librerías Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' };
@@ -50,6 +49,30 @@
             background: rgba(18, 18, 18, 0.65);
             border-bottom: 0.5px solid rgba(255, 255, 255, 0.08); 
         }
+
+        /* Modo Captura de Pantalla */
+        .screenshot-mode header, .screenshot-mode nav { display: none !important; }
+        .screenshot-mode { background-color: #F2F2F7 !important; }
+        html.dark .screenshot-mode { background-color: #000000 !important; }
+        .screenshot-mode #scheduleContainer { 
+            padding-top: calc(env(safe-area-inset-top, 5px) + 5px) !important; 
+            padding-bottom: 15px !important;
+        }
+
+        #btnVolverCaptura {
+            top: env(safe-area-inset-top, 4px) !important;
+            right: 4px !important;
+            transform: scale(0.8);
+            transform-origin: top right;
+            opacity: 0.5;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 9999 !important;
+        }
+        .dark #btnVolverCaptura { background: rgba(44, 44, 46, 0.6); }
+        #btnVolverCaptura:active { opacity: 1; transform: scale(0.7) !important; transform-origin: top right; }
+        .screenshot-mode #btnVolverCaptura { display: flex !important; }
 
         /* Utilidades Estructurales */
         .grid-75 { display: grid; grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); gap: 6px; }
@@ -156,6 +179,10 @@
             <span id="indicatorMonth" class="text-[12px] font-semibold uppercase tracking-[0.2em] text-black/70 dark:text-white/70">Enero</span>
         </div>
     </div>
+    
+    <button type="button" id="btnVolverCaptura" onclick="exitScreenshotMode()" class="hidden fixed z-50 w-10 h-10 text-white rounded-full shadow-lg items-center justify-center ios-transition">
+        <i data-lucide="x" class="w-5 h-5"></i>
+    </button>
 
     <header class="sticky top-0 z-40 ios-blur px-4 pt-[calc(env(safe-area-inset-top,20px)+6px)] pb-3 flex flex-col ios-transition">
         <div class="flex justify-between items-center mb-3 relative">
@@ -436,7 +463,6 @@
         }
         if (!state.drivers) state.drivers = [...defaultDrivers];
 
-        // --- AUTENTICACIÓN ---
         async function loginWithPassword() {
             const input = document.getElementById('accessPassword');
             const content = document.getElementById('loginContent');
@@ -471,7 +497,6 @@
             }
         });
 
-        // --- SINCRONIZACIÓN FIREBASE ---
         function setupRealtimeSync() {
             if (!currentUser) return;
             const docRef = doc(db, 'artifacts', uniqueAppId, 'public', 'data', 'schedule', 'main');
@@ -502,7 +527,6 @@
             else showCustomAlert("Conectando a los servidores... Por favor, espera.");
         }
 
-        // --- THEME ---
         function toggleTheme() {
             const doc = document.documentElement;
             if (doc.classList.contains('dark')) { doc.classList.remove('dark'); localStorage.setItem('theme', 'light'); }
@@ -517,17 +541,14 @@
         }
 
         function generateDynamicAppIcon() {
-            // Genera un ícono perfecto de 512x512 en tiempo real para evitar recortes en iOS/Android
             const canvas = document.createElement('canvas');
             canvas.width = 512;
             canvas.height = 512;
             const ctx = canvas.getContext('2d');
 
-            // Fondo oscuro sólido (evita problemas de transparencia en iOS)
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, 512, 512);
 
-            // Tipografía estilo Apple
             ctx.font = '800 130px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
             ctx.textBaseline = 'middle';
             
@@ -538,19 +559,16 @@
             const totalW = w1 + w2 + w3;
             const startX = (512 - totalW) / 2;
 
-            // Dibujar texto perfectamente centrado con margen seguro
             ctx.textAlign = 'left';
             ctx.fillStyle = '#FFFFFF'; ctx.fillText(t1, startX, 260);
-            ctx.fillStyle = '#FF00FF'; ctx.fillText(t2, startX + w1, 260); // La 'e' en magenta
+            ctx.fillStyle = '#FF00FF'; ctx.fillText(t2, startX + w1, 260); 
             ctx.fillStyle = '#FFFFFF'; ctx.fillText(t3, startX + w1 + w2, 260);
 
             const dataURL = canvas.toDataURL('image/png');
 
-            // 1. Reemplazar icono de iOS
             let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
             if (appleIcon) appleIcon.href = dataURL;
 
-            // 2. Reemplazar favicon estándar
             let stdIcon = document.querySelector('link[rel="icon"]');
             if (!stdIcon) {
                 stdIcon = document.createElement('link');
@@ -559,7 +577,6 @@
             }
             stdIcon.href = dataURL;
 
-            // 3. Reemplazar Manifest dinámico (Soluciona el recorte circular en Android)
             const manifest = {
                 name: "Predi 2026",
                 short_name: "Predi",
@@ -572,7 +589,7 @@
                         src: dataURL,
                         sizes: "512x512",
                         type: "image/png",
-                        purpose: "any maskable" // Crucial para adaptar a Android
+                        purpose: "any maskable" 
                     }
                 ]
             };
@@ -669,7 +686,7 @@
                 btn.textContent = name;
                 btn.onclick = () => {
                     state.currentMonth = index; 
-                    state.currentWeek = 1; // Al cambiar el mes, volvemos siempre a la semana 1
+                    state.currentWeek = 1; 
                     updateSelectDisplays(); renderSchedule(); saveState(); renderTerritoryGrid(); showWeekIndicator(); toggleModal('monthPickerModal');
                 };
                 list.appendChild(btn);
@@ -811,7 +828,7 @@
             const isCampanaActive = isWeekInCampana(state.currentMonth, state.currentWeek);
             
             const globalHeader = document.createElement('div');
-            globalHeader.className = "mb-2 px-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center ios-transition animate-fade";
+            globalHeader.className = "mb-1 px-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5 text-center ios-transition animate-fade";
             globalHeader.innerHTML = `
                 <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-black/50 dark:text-white/50">Salidas por la mañana:</span><span contenteditable="true" onblur="updateGlobalTime('morningTime', this.innerText)" class="text-[13px] font-bold text-black/80 dark:text-white/90 outline-none min-w-[30px]" data-placeholder="--:--">${state.morningTime}</span><span class="text-[12px] font-medium text-black/50 dark:text-white/50">hs</span></div>
                 <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-black/50 dark:text-white/50">Salidas por la tarde:</span><span contenteditable="true" onblur="updateGlobalTime('afternoonTime', this.innerText)" class="text-[13px] font-bold text-black/80 dark:text-white/90 outline-none min-w-[30px]" data-placeholder="--:--">${state.afternoonTime}</span><span class="text-[12px] font-medium text-black/50 dark:text-white/50">hs</span></div>
@@ -819,7 +836,7 @@
             container.appendChild(globalHeader);
 
             const daysWrapper = document.createElement('div');
-            daysWrapper.className = "bg-white dark:bg-[#1C1C1E] rounded-[24px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-300 dark:border-white/[0.05] animate-fade mb-4";
+            daysWrapper.className = "bg-white dark:bg-[#1C1C1E] rounded-[24px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-300 dark:border-white/[0.05] animate-fade mb-2";
 
             weekStructure.forEach((dayDef, index) => {
                 if (dayDef.id === 'LUN' && !isCampanaActive) return;
@@ -837,16 +854,16 @@
                     const driverEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'driver')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
                     
                     let addrContent = isManual 
-                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full py-0.5 flex items-center px-1 text-[14px] font-medium leading-snug text-black dark:text-white/90 outline-none" data-placeholder="Escribir...">${spotValue}</div>`
-                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full py-0.5 flex items-center px-1 text-[14px] font-medium leading-snug ${spotValue ? 'text-black dark:text-white/90' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
+                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full py-0 flex items-center px-1 text-[14px] font-medium leading-tight text-black dark:text-white/90 outline-none" data-placeholder="Escribir...">${spotValue}</div>`
+                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full py-0 flex items-center px-1 text-[14px] font-medium leading-tight ${spotValue ? 'text-black dark:text-white/90' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
                     
                     const driverClass = currentDriver 
                         ? 'bg-black/[0.04] dark:bg-white/[0.06] text-black/70 dark:text-white/70' 
                         : 'bg-black/[0.02] dark:bg-white/[0.02] text-black/30 dark:text-white/30';
                         
                     let driverContentHtml = isManualDriver
-                        ? `<div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'driver', this.innerText); renderSchedule();" class="shrink-0 w-[64px] py-0.5 flex items-center justify-center rounded-[8px] text-[11px] font-semibold outline-none text-center overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}" data-placeholder="..."> ${currentDriver} </div>`
-                        : `<div onclick="openDriverPicker('${dayDef.id}', '${shift.id}')" class="shrink-0 w-[64px] py-0.5 rounded-[8px] px-1 text-[11px] font-semibold flex items-center justify-center cursor-pointer active:scale-95 ios-transition overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}">${currentDriver || '-'}</div>`;
+                        ? `<div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'driver', this.innerText); renderSchedule();" class="shrink-0 w-[64px] py-0 flex items-center justify-center rounded-[8px] text-[11px] font-semibold outline-none text-center overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}" data-placeholder="..."> ${currentDriver} </div>`
+                        : `<div onclick="openDriverPicker('${dayDef.id}', '${shift.id}')" class="shrink-0 w-[64px] py-0 rounded-[8px] px-1 text-[11px] font-semibold flex items-center justify-center cursor-pointer active:scale-95 ios-transition overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}">${currentDriver || '-'}</div>`;
 
                     let timeField = "";
                     if (shift.id === 'n') {
@@ -865,12 +882,11 @@
                         ? 'bg-[#34C759]/15 text-[#28A745] dark:bg-[#32D74B]/20 dark:text-[#32D74B]' 
                         : 'bg-black/[0.04] dark:bg-white/[0.06] text-black/30 dark:text-white/30';
                     
-                    /* SOLUCIÓN DE ALINEACIÓN: Si no hay 'G1', ponemos un recuadro vacío del mismo ancho */
                     let prefixHtml = shift.prefix 
                         ? `<div class="shrink-0 w-[20px] text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-1.5">${shift.prefix}</div>` 
                         : `<div class="shrink-0 w-[20px] mr-1.5"></div>`;
                     
-                    return `<div class="flex items-center gap-1 w-full py-1 border-b border-black/[0.04] dark:border-white/[0.04] last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-0.5 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
+                    return `<div class="flex items-center gap-1 w-full py-0.5 border-b border-black/[0.04] dark:border-white/[0.04] last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-0 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
                 };
 
                 let content = '';
@@ -907,12 +923,12 @@
                 }
                 
                 const dayRow = document.createElement('div');
-                dayRow.className = `py-1.5 px-2 flex items-center border-b border-gray-300 dark:border-white/[0.08] last:border-0 ios-transition bg-white dark:bg-[#1C1C1E]`;
+                dayRow.className = `py-1 px-1.5 flex items-center border-b border-gray-300 dark:border-white/[0.08] last:border-0 ios-transition bg-white dark:bg-[#1C1C1E]`;
                 
                 dayRow.innerHTML = `
-                    <div class="w-[40px] h-[40px] shrink-0 flex flex-col items-center justify-center mr-2 rounded-[12px] bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-black/[0.04] dark:border-white/[0.05]">
+                    <div class="w-[36px] h-[36px] shrink-0 flex flex-col items-center justify-center mr-1.5 rounded-[12px] bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-black/[0.04] dark:border-white/[0.05]">
                         <span class="text-[8px] font-bold text-black dark:text-white/40 mb-[1px] leading-none uppercase tracking-widest">${dayDef.label}</span>
-                        <span class="text-[18px] font-semibold text-black dark:text-white/90 tracking-tight leading-none">${dateInfo.day}</span>
+                        <span class="text-[16px] font-semibold text-black dark:text-white/90 tracking-tight leading-none">${dateInfo.day}</span>
                     </div>
                     <div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${content}</div>
                 `;
@@ -922,7 +938,6 @@
             lucide.createIcons();
         }
 
-        // --- SISTEMA DE ESTADÍSTICAS Y RESUMEN ---
         function openRankingModal() { renderRanking(); toggleModal('statsModal'); }
 
         function renderRanking() {
@@ -999,7 +1014,6 @@
             lucide.createIcons();
         }
 
-        // --- MANEJO DE TERRITORIOS ---
         function getRelativeWeekData(m, w, offset) {
             let newW = w + offset; let newM = m;
             while (newW < 1) { newM -= 1; newW += 5; }
@@ -1089,14 +1103,13 @@
             document.getElementById('weekIndicator').style.display = '';
         }
         
-        // --- ALERTAS CON ANIMACIÓN DE REBOTE (iOS STYLE) ---
         function showCustomAlert(m) { 
             document.getElementById('customAlertMsg').textContent = m; 
             const alert = document.getElementById('customAlert');
             const box = document.getElementById('customAlertBox');
             
             alert.classList.remove('hidden'); alert.classList.add('flex'); 
-            void box.offsetWidth; // Reflow
+            void box.offsetWidth; 
             
             document.getElementById('customAlertBg').classList.remove('opacity-0'); 
             box.classList.remove('scale-[1.10]', 'opacity-0');
@@ -1149,7 +1162,7 @@
             const modal = document.getElementById('customConfirm');
             const box = document.getElementById('customConfirmBox');
             modal.classList.remove('hidden'); modal.classList.add('flex'); 
-            void box.offsetWidth; // Reflow
+            void box.offsetWidth; 
             document.getElementById('customConfirmBg').classList.remove('opacity-0'); 
             box.classList.remove('scale-[1.10]', 'opacity-0');
             box.classList.add('scale-100', 'opacity-100');
