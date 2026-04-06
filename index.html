@@ -12,8 +12,8 @@
     
     <title>Predi 2026</title>
     
+    <!-- Librerías Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         tailwind.config = { darkMode: 'class' };
         // Inicializar tema antes de renderizar para evitar destellos (FOUC)
@@ -172,7 +172,7 @@
                     onpointercancel="handleCameraHoldEnd(event)"
                     oncontextmenu="event.preventDefault();"
                     class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-[#0A84FF] active:scale-90 ios-transition">
-                    <i data-lucide="download" class="w-[18px] h-[18px]"></i>
+                    <i data-lucide="camera" class="w-[18px] h-[18px]"></i>
                 </button>
                 <button type="button" onclick="showSyncStatus()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/90 dark:text-white/90 active:scale-90 ios-transition relative">
                     <i data-lucide="cloud" id="cloudIcon" class="w-[18px] h-[18px] transition-colors duration-500"></i>
@@ -1080,8 +1080,14 @@
             saveState(); 
         }
         
-        function toggleScreenshotMode() { document.getElementById('appBody').classList.add('screenshot-mode'); }
-        function exitScreenshotMode() { document.getElementById('appBody').classList.remove('screenshot-mode'); }
+        function toggleScreenshotMode() { 
+            document.getElementById('appBody').classList.add('screenshot-mode'); 
+            document.getElementById('weekIndicator').style.display = 'none';
+        }
+        function exitScreenshotMode() { 
+            document.getElementById('appBody').classList.remove('screenshot-mode'); 
+            document.getElementById('weekIndicator').style.display = '';
+        }
         
         // --- ALERTAS CON ANIMACIÓN DE REBOTE (iOS STYLE) ---
         function showCustomAlert(m) { 
@@ -1110,62 +1116,10 @@
             }, 300); 
         }
 
-        // --- SISTEMA DE CAPTURA HD ---
-        async function handleCameraClick() {
+        // --- SISTEMA DE CAPTURA MANUAL ---
+        function handleCameraClick() {
             if (cameraPreventClick) return;
-            if (typeof html2canvas === 'undefined') {
-                showCustomAlert("Cargando motor de imágenes...");
-                return;
-            }
-
-            const container = document.getElementById('scheduleContainer');
-            const targetWidth = container.offsetWidth; // Guardamos el ancho exacto para evitar que los textos se muevan
-            
-            showCustomAlert("Generando captura exacta...");
-
-            // Un pequeño delay para permitir que la alerta de "Generando..." aparezca en pantalla
-            setTimeout(async () => {
-                try {
-                    const canvas = await html2canvas(container, {
-                        scale: 3, // Altísima calidad
-                        useCORS: true,
-                        backgroundColor: document.documentElement.classList.contains('dark') ? '#000000' : '#F2F2F7',
-                        width: targetWidth,
-                        windowWidth: targetWidth,
-                        onclone: (clonedDoc) => {
-                            // Trabajamos sobre un clon invisible para no deformar la pantalla real
-                            const clonedContainer = clonedDoc.getElementById('scheduleContainer');
-                            
-                            // Eliminamos las restricciones de scroll y flex para que tome el tamaño natural
-                            clonedContainer.classList.remove('flex-1', 'overflow-y-auto', 'pb-[100px]');
-                            clonedContainer.style.flex = 'none';
-                            clonedContainer.style.height = 'max-content';
-                            clonedContainer.style.maxHeight = 'none';
-                            clonedContainer.style.overflow = 'visible';
-                            clonedContainer.style.paddingBottom = '20px';
-                            clonedContainer.style.width = targetWidth + 'px';
-                            
-                            // Ajustamos el body clonado para que no restrinja la altura
-                            const clonedBody = clonedDoc.getElementById('appBody');
-                            if (clonedBody) {
-                                clonedBody.style.height = 'auto';
-                                clonedBody.classList.remove('h-[100dvh]');
-                            }
-                        }
-                    });
-                    
-                    const link = document.createElement('a');
-                    link.download = `Cronograma_S${state.currentWeek}.png`;
-                    link.href = canvas.toDataURL('image/png', 1.0);
-                    link.click();
-                    
-                    closeCustomAlert();
-                } catch (error) {
-                    console.error(error);
-                    closeCustomAlert();
-                    setTimeout(() => showCustomAlert("Error al generar la imagen."), 400);
-                }
-            }, 150);
+            toggleScreenshotMode();
         }
 
         function handleCameraHoldStart(e) {
