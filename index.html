@@ -864,7 +864,11 @@
                     const terrColorClass = hasTerr 
                         ? 'bg-[#34C759]/15 text-[#28A745] dark:bg-[#32D74B]/20 dark:text-[#32D74B]' 
                         : 'bg-black/[0.04] dark:bg-white/[0.06] text-black/30 dark:text-white/30';
-                    let prefixHtml = shift.prefix ? `<div class="shrink-0 w-[18px] text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-1">${shift.prefix}</div>` : '';
+                    
+                    /* SOLUCIÓN DE ALINEACIÓN: Si no hay 'G1', ponemos un recuadro vacío del mismo ancho */
+                    let prefixHtml = shift.prefix 
+                        ? `<div class="shrink-0 w-[20px] text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-1.5">${shift.prefix}</div>` 
+                        : `<div class="shrink-0 w-[20px] mr-1.5"></div>`;
                     
                     return `<div class="flex items-center gap-1 w-full py-1 border-b border-black/[0.04] dark:border-white/[0.04] last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-0.5 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
                 };
