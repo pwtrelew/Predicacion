@@ -1115,31 +1115,39 @@
             }
 
             const container = document.getElementById('scheduleContainer');
+            const targetWidth = container.offsetWidth; // Guardamos el ancho exacto para evitar que los textos se muevan
             
-            // Guardar estado actual
-            const originalOverflow = container.style.overflow;
-            const originalHeight = container.style.height;
-            const originalMaxHeight = container.style.maxHeight;
-            
-            // Forzar contenedor para mostrar todo el contenido sin barras de scroll
-            container.classList.remove('overflow-y-auto', 'pb-[100px]');
-            container.style.overflow = 'visible';
-            container.style.height = 'auto';
-            container.style.maxHeight = 'none';
-            container.style.paddingBottom = '20px';
-            
-            // Ocultar cabeceras y elementos no deseados en la captura
-            document.querySelector('header').style.display = 'none';
-            document.querySelector('nav').style.display = 'none';
-            document.getElementById('weekIndicator').style.display = 'none';
+            showCustomAlert("Generando captura exacta...");
 
-            // Tiempo para que el DOM aplique los estilos antes del render
+            // Un pequeño delay para permitir que la alerta de "Generando..." aparezca en pantalla
             setTimeout(async () => {
                 try {
                     const canvas = await html2canvas(container, {
-                        scale: 3, // Altísima calidad para evitar pixeles
+                        scale: 3, // Altísima calidad
                         useCORS: true,
                         backgroundColor: document.documentElement.classList.contains('dark') ? '#000000' : '#F2F2F7',
+                        width: targetWidth,
+                        windowWidth: targetWidth,
+                        onclone: (clonedDoc) => {
+                            // Trabajamos sobre un clon invisible para no deformar la pantalla real
+                            const clonedContainer = clonedDoc.getElementById('scheduleContainer');
+                            
+                            // Eliminamos las restricciones de scroll y flex para que tome el tamaño natural
+                            clonedContainer.classList.remove('flex-1', 'overflow-y-auto', 'pb-[100px]');
+                            clonedContainer.style.flex = 'none';
+                            clonedContainer.style.height = 'max-content';
+                            clonedContainer.style.maxHeight = 'none';
+                            clonedContainer.style.overflow = 'visible';
+                            clonedContainer.style.paddingBottom = '20px';
+                            clonedContainer.style.width = targetWidth + 'px';
+                            
+                            // Ajustamos el body clonado para que no restrinja la altura
+                            const clonedBody = clonedDoc.getElementById('appBody');
+                            if (clonedBody) {
+                                clonedBody.style.height = 'auto';
+                                clonedBody.classList.remove('h-[100dvh]');
+                            }
+                        }
                     });
                     
                     const link = document.createElement('a');
@@ -1147,22 +1155,13 @@
                     link.href = canvas.toDataURL('image/png', 1.0);
                     link.click();
                     
-                    showCustomAlert("Imagen HD generada y descargada con éxito.");
+                    closeCustomAlert();
                 } catch (error) {
                     console.error(error);
-                    showCustomAlert("Error al generar la imagen.");
-                } finally {
-                    // Restaurar todo a la normalidad
-                    container.classList.add('overflow-y-auto', 'pb-[100px]');
-                    container.style.overflow = originalOverflow;
-                    container.style.height = originalHeight;
-                    container.style.maxHeight = originalMaxHeight;
-                    container.style.paddingBottom = '';
-                    
-                    document.querySelector('header').style.display = '';
-                    document.querySelector('nav').style.display = '';
+                    closeCustomAlert();
+                    setTimeout(() => showCustomAlert("Error al generar la imagen."), 400);
                 }
-            }, 300);
+            }, 150);
         }
 
         function handleCameraHoldStart(e) {
