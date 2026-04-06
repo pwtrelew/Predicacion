@@ -1,52 +1,1226 @@
-// === REGLA DE ORO: Cambia este número de versión cada vez que modifiques tu index.html ===
-const CACHE_NAME = 'predicacion-v12'; 
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Predi">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <title>Predi 2026</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' };
+        // Inicializar tema antes de renderizar para evitar destellos (FOUC)
+        if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+        else document.documentElement.classList.add('dark');
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* === ESTÉTICA PREMIUM iOS === */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            max-width: 430px; 
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            overscroll-behavior-y: none;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
 
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './manifest.json'
-];
+        /* Efectos Cristalinos (Glassmorphism) */
+        .ios-blur {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(45px) saturate(250%);
+            -webkit-backdrop-filter: blur(45px) saturate(250%);
+            border-bottom: 0.5px solid rgba(0, 0, 0, 0.05); 
+        }
+        .dark .ios-blur {
+            background: rgba(18, 18, 18, 0.65);
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.08); 
+        }
 
-// Instalación: Guardamos la app y forzamos la actualización inmediata
-self.addEventListener('install', event => {
-  self.skipWaiting(); // Obliga al celular a instalar la nueva versión sin esperar
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Cache actualizado a', CACHE_NAME);
-        return cache.addAll(ASSETS_TO_CACHE);
-      })
-  );
-});
+        /* Utilidades Estructurales */
+        .grid-75 { display: grid; grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); gap: 6px; }
 
-// Activación: Tomamos el control y limpiamos la basura vieja
-self.addEventListener('activate', event => {
-  event.waitUntil(clients.claim()); // Aplica los cambios a todas las pestañas abiertas
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Borrando caché antiguo:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-});
+        .ios-transition { transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+        .ios-unlock-transition { transition: all 0.6s cubic-bezier(0.32, 0.72, 0, 1); }
+        .ios-spring { transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1); } 
 
-// Intercepción de red: Estrategia "Network First" (Red primero, luego Caché)
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Si hay internet, obtenemos la versión más fresca de GitHub
-        return response;
-      })
-      .catch(() => {
-        // Si NO hay internet (modo avión o sin señal), servimos la versión guardada
-        return caches.match(event.request);
-      })
-  );
-});
+        #scheduleContainer { will-change: transform, opacity; }
+
+        /* Indicador de Semana Flotante */
+        #weekIndicator {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            padding: 20px 32px; border-radius: 28px;
+            border: 0.5px solid rgba(0, 0, 0, 0.1);
+            z-index: 200; opacity: 0; pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        }
+        .dark #weekIndicator {
+            background: rgba(0, 0, 0, 0.75);
+            border: 0.5px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        #weekIndicator.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+        /* Animaciones */
+        @keyframes fadeInPremium {
+            from { opacity: 0; transform: scale(0.97) translateY(4px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-fade { animation: fadeInPremium 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-8px); }
+            80% { transform: translateX(8px); }
+        }
+        .animate-shake { animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+
+        /* Interacciones */
+        .holding {
+            transform: scale(0.95);
+            background-color: rgba(10, 132, 255, 0.15) !important;
+            transition: all 0.15s cubic-bezier(0.3, 0, 0.2, 1);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .modal-grabber {
+            width: 36px; height: 5px;
+            background-color: #D1D1D6; border-radius: 2.5px;
+            margin: 0 auto 16px auto;
+        }
+        .dark .modal-grabber { background-color: #5C5C5E; }
+
+        [contenteditable], input { -webkit-user-select: text; user-select: text; }
+
+        [contenteditable]:empty:before {
+            content: attr(data-placeholder);
+            color: rgba(0, 0, 0, 0.3); pointer-events: none; display: block;
+        }
+        .dark [contenteditable]:empty:before { color: rgba(255, 255, 255, 0.25); }
+
+        .manual-edit-active {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+            border-radius: 8px; box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.4);
+        }
+        .dark .manual-edit-active { background-color: rgba(255, 255, 255, 0.12) !important; }
+    </style>
+</head>
+<body class="flex flex-col h-[100dvh] overflow-x-hidden bg-[#F2F2F7] dark:bg-[#000000] text-black dark:text-white" id="appBody">
+
+    <div id="loginScreen" class="fixed inset-0 z-[200] bg-[#F2F2F7] dark:bg-[#000000] flex flex-col items-center justify-center p-6 ios-unlock-transition">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-black/5 via-transparent to-transparent dark:from-white/5 pointer-events-none"></div>
+        
+        <div id="loginContent" class="w-full max-w-[320px] flex flex-col items-center justify-center transform scale-100 opacity-100 ios-unlock-transition z-10">
+            <div class="mb-8 relative flex items-center justify-center">
+                <i data-lucide="lock" class="w-9 h-9 text-black/80 dark:text-white/80 transition-all duration-500"></i>
+            </div>
+            
+            <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-black dark:text-white mb-10 leading-none">Predi</h1>
+            
+            <div class="w-full mb-4 relative group">
+                <input type="password" id="accessPassword" placeholder="Contraseña" class="w-full h-[52px] bg-black/[0.04] dark:bg-white/[0.06] text-black dark:text-white text-[17px] px-5 rounded-[16px] border border-black/[0.05] dark:border-white/[0.05] outline-none focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#0A84FF]/40 focus:shadow-[0_0_0_4px_rgba(10,132,255,0.15)] transition-all duration-300 text-center font-medium placeholder-black/30 dark:placeholder-white/30 backdrop-blur-xl" onkeypress="if(event.key === 'Enter') loginWithPassword()">
+            </div>
+            
+            <button onclick="loginWithPassword()" class="w-full h-[52px] bg-black dark:bg-white text-white dark:text-black font-semibold text-[17px] rounded-[16px] flex items-center justify-center gap-2 active:scale-[0.96] transition-transform duration-200 shadow-sm">
+                Desbloquear
+            </button>
+        </div>
+    </div>
+
+    <div id="weekIndicator">
+        <div class="flex flex-col items-center text-center">
+            <span id="indicatorWeek" class="text-[22px] font-bold tracking-tight mb-1 text-black dark:text-white">Semana 1</span>
+            <span id="indicatorMonth" class="text-[12px] font-semibold uppercase tracking-[0.2em] text-black/70 dark:text-white/70">Enero</span>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-40 ios-blur px-4 pt-[calc(env(safe-area-inset-top,20px)+6px)] pb-3 flex flex-col ios-transition">
+        <div class="flex justify-between items-center mb-3 relative">
+            <h1 class="text-[34px] font-extrabold tracking-[-0.04em] text-black dark:text-white leading-none mt-1">Pr<span class="text-[#FF00FF]">e</span>di</h1>
+            <div class="flex items-center gap-2.5">
+                <button type="button" onclick="toggleTheme()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/90 dark:text-white/90 active:scale-90 ios-transition">
+                    <i data-lucide="sun" id="themeIcon" class="w-[18px] h-[18px]"></i>
+                </button>
+                <button type="button" 
+                    onclick="handleCameraClick()" 
+                    onpointerdown="handleCameraHoldStart(event)" 
+                    onpointerup="handleCameraHoldEnd(event)" 
+                    onpointerleave="handleCameraHoldEnd(event)"
+                    onpointercancel="handleCameraHoldEnd(event)"
+                    oncontextmenu="event.preventDefault();"
+                    class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-[#0A84FF] active:scale-90 ios-transition">
+                    <i data-lucide="download" class="w-[18px] h-[18px]"></i>
+                </button>
+                <button type="button" onclick="showSyncStatus()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/90 dark:text-white/90 active:scale-90 ios-transition relative">
+                    <i data-lucide="cloud" id="cloudIcon" class="w-[18px] h-[18px] transition-colors duration-500"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="flex items-center justify-between w-full mb-1 gap-1.5 relative z-50">
+            <div class="relative">
+                <button type="button" onclick="openModesPicker()" id="btnToggleModes" class="flex items-center gap-1 bg-black/5 dark:bg-white/10 border border-black/5 dark:border-white/5 text-black/90 dark:text-white/90 px-3 py-2 rounded-full text-[12px] font-semibold active:scale-95 ios-transition shrink-0">
+                    <span id="modesToggleText">Modos</span>
+                    <i data-lucide="chevron-down" id="modesChevron" class="w-3.5 h-3.5 transition-transform duration-500"></i>
+                </button>
+            </div>
+            <div class="flex items-center gap-1.5 flex-1 justify-end">
+                <div onclick="openMonthPicker()" class="relative flex-1 max-w-[110px] h-[34px] bg-black/5 dark:bg-white/10 rounded-full flex items-center px-3 border border-black/5 dark:border-white/5 cursor-pointer active:scale-95 ios-transition">
+                    <span id="monthDisplay" class="text-black dark:text-white font-semibold text-[12px] pointer-events-none truncate">Enero</span>
+                    <i data-lucide="chevron-down" class="w-3 h-3 text-black/40 dark:text-white/40 ml-auto pointer-events-none shrink-0"></i>
+                </div>
+                <div onclick="openWeekPicker()" class="relative w-[100px] h-[34px] bg-black/5 dark:bg-white/10 rounded-full flex items-center px-3 border border-black/5 dark:border-white/5 cursor-pointer active:scale-95 ios-transition">
+                    <span id="weekDisplay" class="text-black dark:text-white font-semibold text-[12px] pointer-events-none truncate">Semana 1</span>
+                    <i data-lucide="chevron-down" class="w-3 h-3 text-black/40 dark:text-white/40 ml-auto pointer-events-none shrink-0"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 p-3 overflow-y-auto pb-[100px] no-scrollbar" id="scheduleContainer"></main>
+
+    <nav class="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto ios-blur border-t border-black/[0.05] dark:border-white/10 flex justify-around items-stretch z-40 h-[calc(60px+env(safe-area-inset-bottom,20px))] ios-transition">
+        <button type="button" onclick="openSummaryModal()" class="flex-1 h-full flex flex-col items-center justify-center pb-[env(safe-area-inset-bottom,20px)] text-[#AF52DE] dark:text-[#CDA4FF] active:opacity-70 active:scale-90 group ios-transition">
+            <i data-lucide="clipboard-list" class="w-6 h-6 mb-1"></i>
+            <span class="text-[10px] font-semibold">Resumen</span>
+        </button>
+        <button type="button" onclick="toggleModal('territoryModal')" class="flex-1 h-full flex flex-col items-center justify-center pb-[env(safe-area-inset-bottom,20px)] text-[#AF52DE] dark:text-[#CDA4FF] active:opacity-70 active:scale-90 group ios-transition">
+            <i data-lucide="map" class="w-6 h-6 mb-1"></i>
+            <span class="text-[10px] font-semibold">Territorios</span>
+        </button>
+        <button type="button" onclick="openRankingModal()" class="flex-1 h-full flex flex-col items-center justify-center pb-[env(safe-area-inset-bottom,20px)] text-[#AF52DE] dark:text-[#CDA4FF] active:opacity-70 active:scale-90 group ios-transition">
+            <i data-lucide="bar-chart-2" class="w-6 h-6 mb-1"></i>
+            <span class="text-[10px] font-semibold">Ranking</span>
+        </button>
+    </nav>
+
+    <div id="modesPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('modesPickerModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Seleccionar Modo</h2>
+                <button onclick="toggleModal('modesPickerModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div id="modesOptionsList" class="max-h-[50vh] overflow-y-auto space-y-1 no-scrollbar"></div>
+        </div>
+    </div>
+
+    <div id="campanaModal" class="fixed inset-0 z-[80] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('campanaModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Configurar Campaña</h2>
+                <button onclick="toggleModal('campanaModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="space-y-4 mb-6">
+                <div class="bg-black/5 dark:bg-white/5 p-4 rounded-[16px] border border-black/5 dark:border-white/5">
+                    <label class="block text-[12px] font-bold text-[#CDA4FF] uppercase tracking-widest mb-2">Fecha de inicio</label>
+                    <input type="date" id="campanaStartDate" class="w-full bg-transparent text-black dark:text-white text-[17px] outline-none font-medium [color-scheme:light] dark:[color-scheme:dark]">
+                </div>
+                <div class="bg-black/5 dark:bg-white/5 p-4 rounded-[16px] border border-black/5 dark:border-white/5">
+                    <label class="block text-[12px] font-bold text-[#CDA4FF] uppercase tracking-widest mb-2">Fecha de finalización</label>
+                    <input type="date" id="campanaEndDate" class="w-full bg-transparent text-black dark:text-white text-[17px] outline-none font-medium [color-scheme:light] dark:[color-scheme:dark]">
+                </div>
+            </div>
+            <button onclick="saveCampana()" class="w-full py-4 text-[15px] font-semibold text-white bg-black dark:bg-[#CDA4FF] dark:text-black rounded-[14px] active:scale-95 ios-transition shadow-lg shadow-black/20 dark:shadow-[#CDA4FF]/20 mb-3">Guardar Fechas</button>
+            <button onclick="disableCampana()" id="btnDisableCampana" class="w-full py-4 text-[15px] font-medium text-[#FF453A] bg-[#FF453A]/10 rounded-[14px] active:scale-95 ios-transition hidden">Desactivar Campaña</button>
+        </div>
+    </div>
+
+    <div id="monthPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('monthPickerModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Seleccionar Mes</h2>
+                <button onclick="toggleModal('monthPickerModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div id="monthOptionsList" class="max-h-[50vh] overflow-y-auto space-y-1 no-scrollbar"></div>
+        </div>
+    </div>
+
+    <div id="weekPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('weekPickerModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Seleccionar Semana</h2>
+                <button onclick="toggleModal('weekPickerModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div id="weekOptionsList" class="max-h-[50vh] overflow-y-auto space-y-1 no-scrollbar"></div>
+        </div>
+    </div>
+
+    <div id="locationPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('locationPickerModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Seleccionar Ubicación</h2>
+                <button onclick="toggleModal('locationPickerModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="mb-4 relative flex items-center bg-black/5 dark:bg-white/10 rounded-[12px] px-3 py-2.5">
+                <i data-lucide="search" class="w-5 h-5 text-black/40 dark:text-white/40 shrink-0"></i>
+                <input type="text" id="locationSearchInput" placeholder="Buscar calle o familia..." class="w-full bg-transparent text-black dark:text-white text-[15px] font-medium ml-2 outline-none placeholder-black/40 dark:placeholder-white/40" oninput="renderLocationOptions(this.value)">
+            </div>
+            <div id="locationOptionsList" class="max-h-[60vh] overflow-y-auto space-y-1 no-scrollbar pb-10"></div>
+        </div>
+    </div>
+
+    <div id="driverPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('driverPickerModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Seleccionar Conductor</h2>
+                <button onclick="toggleModal('driverPickerModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div id="driverOptionsList" class="max-h-[50vh] overflow-y-auto space-y-1 no-scrollbar"></div>
+        </div>
+    </div>
+
+    <div id="summaryModal" class="fixed inset-0 z-[60] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('summaryModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Resumen Anual</h2>
+                <button onclick="toggleModal('summaryModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div id="summaryContent" class="max-h-[60vh] overflow-y-auto mt-2 no-scrollbar pb-6"></div>
+        </div>
+    </div>
+
+    <div id="shiftTerritoryModal" class="fixed inset-0 z-[60] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('shiftTerritoryModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Territorios</h2><button onclick="toggleModal('shiftTerritoryModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+            <div class="grid-75 overflow-y-auto max-h-[70vh] no-scrollbar" id="shiftTerritoryGrid"></div>
+            <button onclick="saveShiftTerritories()" class="w-full py-4 mt-6 text-[15px] font-semibold text-white dark:text-black bg-black dark:bg-[#32D74B] rounded-[14px] active:scale-95 ios-transition shadow-lg shadow-black/20 dark:shadow-[#32D74B]/20">Confirmar</button>
+        </div>
+    </div>
+
+    <div id="territoryModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('territoryModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 id="territoryModalTitle" class="text-[18px] font-semibold text-black dark:text-white tracking-[-0.01em]">Territorios trabajados</h2>
+                    <p id="territoryModalSubtitle" class="text-[13px] text-black/50 dark:text-white/50 mt-1 font-medium"></p>
+                </div>
+                <button onclick="toggleModal('territoryModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition shrink-0"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="grid-75 overflow-y-auto max-h-[70vh] no-scrollbar" id="territoryGrid"></div>
+        </div>
+    </div>
+
+    <div id="statsModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('statsModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="statsModalTitle" class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Conductores</h2>
+                <button onclick="toggleModal('statsModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div id="statsContent" class="space-y-2 max-h-[50vh] overflow-y-auto no-scrollbar pb-6"></div>
+        </div>
+    </div>
+
+    <div id="customAlert" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div id="customAlertBg" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="customAlertBox" class="relative bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(30,30,30,0.95)] backdrop-blur-xl border border-black/10 dark:border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-[1.10] opacity-0 ios-spring shadow-2xl">
+            <p id="customAlertMsg" class="text-[15px] font-medium text-black dark:text-white mb-5 leading-relaxed"></p>
+            <button onclick="closeCustomAlert()" class="w-full py-3 text-[#0A84FF] font-semibold text-[16px] border-t border-black/10 dark:border-white/10 active:opacity-70 ios-transition">OK</button>
+        </div>
+    </div>
+
+    <div id="customConfirm" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div id="customConfirmBg" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="customConfirmBox" class="relative bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(30,30,30,0.95)] backdrop-blur-xl border border-black/10 dark:border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-[1.10] opacity-0 ios-spring shadow-2xl">
+            <p id="customConfirmMsg" class="text-[16px] font-medium text-black dark:text-white mb-6 leading-relaxed"></p>
+            <div class="flex gap-3">
+                <button onclick="closeCustomConfirm()" class="flex-1 py-3 text-black/60 dark:text-white/60 font-medium text-[15px] bg-black/5 dark:bg-white/10 rounded-xl active:scale-95 ios-transition">Cancelar</button>
+                <button id="customConfirmBtn" class="flex-1 py-3 text-white font-semibold text-[15px] bg-[#FF453A] rounded-xl shadow-lg shadow-[#FF453A]/20 active:scale-95 ios-transition">Resetear</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Configuración Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDm4lYig4JJR7DlKj5kdFKYtNiVMpYgUZo",
+            authDomain: "predicacion-60930.firebaseapp.com",
+            projectId: "predicacion-60930",
+            storageBucket: "predicacion-60930.firebasestorage.app",
+            messagingSenderId: "11914959444",
+            appId: "1:11914959444:web:061ef375f382bed74c2bc1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const uniqueAppId = 'predicacion-60930'; 
+        const SHARED_PASSWORD = "trelew";
+        
+        let isFirebaseReady = false;
+        let currentUser = null;
+
+        const defaultDrivers = ["Darío", "Diego", "E. García", "E. Gauna", "Enzo", "Jeremías", "Jorge", "Julio", "Leonardo", "Luis", "Marcelo", "Miguel", "Pablo F.", "Ramón S."];
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        
+        const userLocations = [
+            "P.J. Muzio y Cutillo", "Galina y Las Heras", "J. Berreta y J. Marmol", "Saavedra y Roque Gonzalez", 
+            "Crucero Gral. Belgrano y J. Ingenieros", "Cutillo y Urquiza", "Galina y 2 de Abril", "P.J. Muzio y Pje. Los Andes", 
+            "J. Ingenieros y Juan Evans", "P.J. Muzio y Alem", "13 de Julio y Jorge Montes", "Av. Cristobal Colon y Nahuelpan", 
+            "Arturo Robert y 13 de Julio", "Saavedra y J. Ingenieros", "Salon del Reino", "Nahuelpan y Maria Humphreys", 
+            "Maestros Puntanos y Love Parry", "Carrasco y Lezana", "J.A de Padilla y Alderete", "Arturo Robert y Nahuelpan", 
+            "Conesa y Martin Fierro", "Maria Humphreys y Annie Jones", "Nahuelpan y A. Jenkins", "Cutillo y Moreno", 
+            "Velero Mimosa y Hann", "Acceso a Base y Nahuelpan", "Galina y Nahuelpan", "Saavedra y Nahuelpan", "Escuela 744", 
+            "Alem y P.J. Muzio", "Galina y Loyd Jones", "Italia y Alem", "J.A de Padilla y Jose Hernandez", "J.A de Padilla y Cutillo", 
+            "Lezana y 13 de Julio", "Las Heras y L. Novaro", "Alem y Alberdi", "Roque Gonzalez y W. Davies", "Nahuelpan y Velero Mimosa", 
+            "Flia. Ferrin (Dario)", "Flia. Ferrin (Pablo)", "Flia. Sanchez", "Flia. Velazquez", "Flia. Garcia", "Flia. Echegaray", 
+            "Flia. Quirulef", "Flia. Cicchitti", "Flia. Perales", "Flia. Molina", "Maria Ch.", "Carmen S.", "Cleri J.", 
+            "Maestros Puntanos y J. Murray Thomas", "Conesa y J. Jones"
+        ];
+
+        const weekStructure = [
+            { id: 'LUN', label: 'LUN', shifts: [{time: '10.00', id: 'm'}, {time: '17.30', id: 't'}] },
+            { id: 'MAR', label: 'MAR', shifts: [{time: '10.00', id: 'm'}, {time: '17.30', id: 't'}] },
+            { id: 'MIE', label: 'MIE', shifts: [{time: '10.00', id: 'm'}, {time: '17.30', id: 't'}] },
+            { id: 'JUE', label: 'JUE', shifts: [{time: '10.00', id: 'm'}, {time: '17.30', id: 't'}] },
+            { id: 'VIE', label: 'VIE', shifts: [{time: '10.00', id: 'm'}, {time: '17.30', id: 't'}] },
+            { id: 'SAB', label: 'SAB', shifts: [{time: '10.00', id: 'g1', prefix: 'G1'}, {time: '', id: 'g2', prefix: 'G2'}, {time: '', id: 'g3', prefix: 'G3'}, {time: '', id: 'g4', prefix: 'G4'}]},
+            { id: 'DOM', label: 'DOM', shifts: [{time: '10.00', id: 'm'}] }
+        ];
+
+        let state = { 
+            currentMonth: 0, currentWeek: 1, assignments: {}, drivers: [...defaultDrivers],
+            morningTime: "10.00", afternoonTime: "17.30", campanaConfig: { active: false, start: '', end: '' }
+        };
+        
+        let editingDay, editingShift, tempTerritories = [], holdTimer, isHolding = false, indicatorTimer = null;
+        let expandedLocationSection = null; 
+        let territoryWarnings = {}; 
+        let cameraHoldTimer = null;
+        let cameraPreventClick = false;
+
+        const savedState = localStorage.getItem('app_horario_2026_v2');
+        if (savedState) {
+            const parsed = JSON.parse(savedState);
+            if (parsed.isCampana !== undefined) {
+                parsed.campanaConfig = { active: parsed.isCampana, start: '', end: '' };
+                delete parsed.isCampana;
+            }
+            state = Object.assign(state, parsed);
+        }
+        if (!state.drivers) state.drivers = [...defaultDrivers];
+
+        // --- AUTENTICACIÓN ---
+        async function loginWithPassword() {
+            const input = document.getElementById('accessPassword');
+            const content = document.getElementById('loginContent');
+            if (input.value === SHARED_PASSWORD) {
+                try { await signInAnonymously(auth); } catch (error) { showCustomAlert("Error al conectar con la base de datos."); }
+            } else {
+                content.classList.add('animate-shake');
+                if ("vibrate" in navigator) navigator.vibrate([50, 50, 50]);
+                setTimeout(() => content.classList.remove('animate-shake'), 400);
+                input.value = ''; input.placeholder = 'Contraseña incorrecta';
+                input.classList.add('placeholder-[#FF453A]', 'border-[#FF453A]/50');
+                setTimeout(() => { input.placeholder = 'Contraseña'; input.classList.remove('placeholder-[#FF453A]', 'border-[#FF453A]/50'); }, 2000);
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            const loginScreen = document.getElementById('loginScreen');
+            const loginContent = document.getElementById('loginContent');
+            if (user) {
+                loginContent.style.transform = 'scale(1.05) translateY(-15px)'; loginContent.style.opacity = '0';
+                setTimeout(() => { loginScreen.style.opacity = '0'; loginScreen.style.backdropFilter = 'blur(0px)'; }, 100); 
+                setTimeout(() => {
+                    loginScreen.classList.add('hidden');
+                    loginContent.style.transform = ''; loginContent.style.opacity = '';
+                    loginScreen.style.opacity = ''; loginScreen.style.backdropFilter = '';
+                }, 700); 
+                document.getElementById('accessPassword').value = ''; 
+                setupRealtimeSync();
+            } else {
+                loginScreen.classList.remove('hidden');
+            }
+        });
+
+        // --- SINCRONIZACIÓN FIREBASE ---
+        function setupRealtimeSync() {
+            if (!currentUser) return;
+            const docRef = doc(db, 'artifacts', uniqueAppId, 'public', 'data', 'schedule', 'main');
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const remoteData = docSnap.data(); state = Object.assign(state, remoteData);
+                    if (!state.drivers) state.drivers = [];
+                    const missingDrivers = defaultDrivers.filter(d => !state.drivers.includes(d));
+                    if (missingDrivers.length > 0) { state.drivers.push(...missingDrivers); setDoc(docRef, { drivers: state.drivers }, { merge: true }); }
+                    localStorage.setItem('app_horario_2026_v2', JSON.stringify(state));
+                    updateSelectDisplays(); renderSchedule(); renderTerritoryGrid(); renderShiftTerritoryGrid();
+                } else { setDoc(docRef, state, { merge: true }); }
+                isFirebaseReady = true; const cloudIcon = document.getElementById('cloudIcon');
+                if(cloudIcon) { cloudIcon.outerHTML = '<i data-lucide="cloud-check" id="cloudIcon" class="w-[18px] h-[18px] text-black dark:text-[#32D74B] transition-colors duration-500"></i>'; lucide.createIcons(); }
+            }, (error) => { document.getElementById('cloudIcon').classList.add('text-[#FF453A]'); });
+        }
+
+        function saveState() { 
+            localStorage.setItem('app_horario_2026_v2', JSON.stringify(state)); 
+            if (isFirebaseReady && currentUser) {
+                const docRef = doc(db, 'artifacts', uniqueAppId, 'public', 'data', 'schedule', 'main');
+                setDoc(docRef, state, { merge: true }).catch(e => console.error(e));
+            }
+        }
+        
+        function showSyncStatus() {
+            if (isFirebaseReady) showCustomAlert("Sincronización activa. Tus cambios se guardan en la nube en tiempo real.");
+            else showCustomAlert("Conectando a los servidores... Por favor, espera.");
+        }
+
+        // --- THEME ---
+        function toggleTheme() {
+            const doc = document.documentElement;
+            if (doc.classList.contains('dark')) { doc.classList.remove('dark'); localStorage.setItem('theme', 'light'); }
+            else { doc.classList.add('dark'); localStorage.setItem('theme', 'dark'); }
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const doc = document.documentElement; const icon = document.getElementById('themeIcon');
+            if (icon) icon.setAttribute('data-lucide', doc.classList.contains('dark') ? 'sun' : 'moon');
+            lucide.createIcons();
+        }
+
+        function generateDynamicAppIcon() {
+            // Genera un ícono perfecto de 512x512 en tiempo real para evitar recortes en iOS/Android
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            // Fondo oscuro sólido (evita problemas de transparencia en iOS)
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, 512, 512);
+
+            // Tipografía estilo Apple
+            ctx.font = '800 130px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
+            ctx.textBaseline = 'middle';
+            
+            const t1 = "Pr", t2 = "e", t3 = "di";
+            const w1 = ctx.measureText(t1).width;
+            const w2 = ctx.measureText(t2).width;
+            const w3 = ctx.measureText(t3).width;
+            const totalW = w1 + w2 + w3;
+            const startX = (512 - totalW) / 2;
+
+            // Dibujar texto perfectamente centrado con margen seguro
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#FFFFFF'; ctx.fillText(t1, startX, 260);
+            ctx.fillStyle = '#FF00FF'; ctx.fillText(t2, startX + w1, 260); // La 'e' en magenta
+            ctx.fillStyle = '#FFFFFF'; ctx.fillText(t3, startX + w1 + w2, 260);
+
+            const dataURL = canvas.toDataURL('image/png');
+
+            // 1. Reemplazar icono de iOS
+            let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+            if (appleIcon) appleIcon.href = dataURL;
+
+            // 2. Reemplazar favicon estándar
+            let stdIcon = document.querySelector('link[rel="icon"]');
+            if (!stdIcon) {
+                stdIcon = document.createElement('link');
+                stdIcon.rel = 'icon';
+                document.head.appendChild(stdIcon);
+            }
+            stdIcon.href = dataURL;
+
+            // 3. Reemplazar Manifest dinámico (Soluciona el recorte circular en Android)
+            const manifest = {
+                name: "Predi 2026",
+                short_name: "Predi",
+                start_url: ".",
+                display: "standalone",
+                background_color: "#000000",
+                theme_color: "#000000",
+                icons: [
+                    {
+                        src: dataURL,
+                        sizes: "512x512",
+                        type: "image/png",
+                        purpose: "any maskable" // Crucial para adaptar a Android
+                    }
+                ]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+            let manifestLink = document.querySelector('link[rel="manifest"]');
+            if (manifestLink) manifestLink.href = URL.createObjectURL(manifestBlob);
+        }
+
+        function init() {
+            generateDynamicAppIcon();
+            updateThemeIcon(); updateSelectDisplays(); renderSchedule(); renderTerritoryGrid(); renderShiftTerritoryGrid(); lucide.createIcons();
+        }
+
+        function updateSelectDisplays() {
+            document.getElementById('monthDisplay').textContent = monthNames[state.currentMonth];
+            document.getElementById('weekDisplay').textContent = "Semana " + state.currentWeek;
+            updateModesToggleState();
+        }
+
+        function showWeekIndicator() {
+            const indicator = document.getElementById('weekIndicator'); const weekSpan = document.getElementById('indicatorWeek');
+            document.getElementById('indicatorMonth').textContent = monthNames[state.currentMonth];
+            weekSpan.textContent = `Semana ${state.currentWeek}`;
+            const isDark = document.documentElement.classList.contains('dark');
+            const weekColors = { 1: isDark ? "#FFFFFF" : "#000000", 2: "#0A84FF", 3: "#32D74B", 4: "#FF00FF", 5: "#FF9F0A" };
+            weekSpan.style.color = weekColors[state.currentWeek] || (isDark ? "#FFFFFF" : "#000000");
+            indicator.classList.remove('visible'); void indicator.offsetWidth; indicator.classList.add('visible');
+            if (indicatorTimer) clearTimeout(indicatorTimer);
+            indicatorTimer = setTimeout(() => indicator.classList.remove('visible'), 1200);
+            if ("vibrate" in navigator) navigator.vibrate(10);
+        }
+
+        function getDatesForMonthWeek(month, weekNum) {
+            let firstDayOfMonth = new Date(2026, month, 1); let dayOfWeek = firstDayOfMonth.getDay(); 
+            let daysToFirstTuesday = (2 - dayOfWeek + 7) % 7; 
+            let firstTuesdayDate = new Date(2026, month, 1 + daysToFirstTuesday);
+            let targetMonday = new Date(firstTuesdayDate); targetMonday.setDate(firstTuesdayDate.getDate() - 1); targetMonday.setDate(targetMonday.getDate() + (weekNum - 1) * 7);
+            let dates = [];
+            for(let i = 0; i < 7; i++) {
+                let d = new Date(targetMonday); d.setDate(targetMonday.getDate() + i); dates.push({ day: d.getDate(), fullDate: d });
+            }
+            return dates;
+        }
+
+        function isWeekInCampana(month, week) {
+            if (!state.campanaConfig?.active || !state.campanaConfig.start || !state.campanaConfig.end) return false;
+            const dates = getDatesForMonthWeek(month, week);
+            const start = new Date(state.campanaConfig.start + "T00:00:00"); const end = new Date(state.campanaConfig.end + "T23:59:59");
+            return dates.some(d => d.fullDate >= start && d.fullDate <= end);
+        }
+
+        function toggleModal(id) {
+            const m = document.getElementById(id); if (!m) return;
+            if (m.classList.contains('hidden')) { 
+                m.classList.remove('hidden'); void m.offsetWidth; m.classList.remove('opacity-0'); m.classList.add('opacity-100');
+                setTimeout(() => { if (m.firstElementChild) m.firstElementChild.classList.remove('translate-y-full'); }, 10); 
+            } else { 
+                if (m.firstElementChild) m.firstElementChild.classList.add('translate-y-full'); 
+                m.classList.remove('opacity-100'); m.classList.add('opacity-0');
+                setTimeout(() => m.classList.add('hidden'), 400); 
+            }
+        }
+
+        function openCampanaModal() {
+            toggleModal('modesPickerModal'); 
+            setTimeout(() => {
+                const startInput = document.getElementById('campanaStartDate'); const endInput = document.getElementById('campanaEndDate'); const disableBtn = document.getElementById('btnDisableCampana');
+                if (state.campanaConfig?.active) { startInput.value = state.campanaConfig.start; endInput.value = state.campanaConfig.end; disableBtn.classList.remove('hidden'); } 
+                else { startInput.value = ''; endInput.value = ''; disableBtn.classList.add('hidden'); }
+                toggleModal('campanaModal');
+            }, 300);
+        }
+
+        function saveCampana() {
+            const start = document.getElementById('campanaStartDate').value; const end = document.getElementById('campanaEndDate').value;
+            if (!start || !end) { showCustomAlert("Por favor, selecciona fechas de inicio y fin."); return; }
+            if (new Date(start) > new Date(end)) { showCustomAlert("La fecha de inicio no puede ser posterior al final."); return; }
+            state.campanaConfig = { active: true, start, end }; const wk = getWeekKey();
+            if (state.assignments[wk]?.['SAB']) { state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isAsamblea = false; }
+            saveState(); renderSchedule(); updateModesToggleState(); toggleModal('campanaModal');
+        }
+
+        function disableCampana() {
+            state.campanaConfig = { active: false, start: '', end: '' };
+            saveState(); renderSchedule(); updateModesToggleState(); toggleModal('campanaModal');
+        }
+
+        function openMonthPicker() {
+            const list = document.getElementById('monthOptionsList'); list.innerHTML = '';
+            monthNames.forEach((name, index) => {
+                const isActive = state.currentMonth === index;
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-5 py-4 text-[15px] font-medium border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition ${isActive ? 'text-[#0A84FF] font-semibold' : 'text-black dark:text-white'}`;
+                btn.textContent = name;
+                btn.onclick = () => {
+                    state.currentMonth = index; 
+                    state.currentWeek = 1; // Al cambiar el mes, volvemos siempre a la semana 1
+                    updateSelectDisplays(); renderSchedule(); saveState(); renderTerritoryGrid(); showWeekIndicator(); toggleModal('monthPickerModal');
+                };
+                list.appendChild(btn);
+            });
+            toggleModal('monthPickerModal');
+        }
+
+        function openWeekPicker() {
+            const list = document.getElementById('weekOptionsList'); list.innerHTML = '';
+            let availableWeeks = [1, 2, 3, 4]; let datesWeek5 = getDatesForMonthWeek(state.currentMonth, 5);
+            if (datesWeek5[0].fullDate.getMonth() === state.currentMonth) availableWeeks.push(5);
+            availableWeeks.forEach(weekNum => {
+                const isActive = state.currentWeek === weekNum; const btn = document.createElement('button');
+                btn.className = `w-full text-left px-5 py-4 text-[15px] font-medium border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition ${isActive ? 'text-[#0A84FF] font-semibold' : 'text-black dark:text-white'}`;
+                btn.textContent = "Semana " + weekNum;
+                btn.onclick = () => { state.currentWeek = weekNum; updateSelectDisplays(); renderSchedule(); saveState(); showWeekIndicator(); toggleModal('weekPickerModal'); };
+                list.appendChild(btn);
+            });
+            toggleModal('weekPickerModal');
+        }
+
+        function openModesPicker() {
+            const list = document.getElementById('modesOptionsList'); const wk = getWeekKey(), sabData = state.assignments[wk]?.['SAB'] || {}; const isCampActive = state.campanaConfig?.active;
+            const modes = [ { id: 'normal', name: 'Normal', active: !isCampActive && !sabData.isVisita && !sabData.isAsamblea && !sabData.isCleaning }, { id: 'campana', name: 'Campaña', active: isCampActive }, { id: 'visita', name: 'Visita', active: sabData.isVisita }, { id: 'asamblea', name: 'Asamblea', active: sabData.isAsamblea }, { id: 'limpieza', name: 'Limpieza', active: sabData.isCleaning } ];
+            list.innerHTML = modes.map(m => {
+                const isSpecial = m.id === 'campana' && m.active; const activeColor = isSpecial ? 'text-[#CDA4FF] font-semibold' : 'text-[#32D74B] font-semibold';
+                return `<button type="button" onclick="handleModeSelection('${m.id}')" class="w-full text-left px-5 py-4 text-[15px] font-medium ios-transition border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ${m.active ? activeColor : 'text-black/80 dark:text-white/80'}">${m.name}</button>`;
+            }).join('');
+            toggleModal('modesPickerModal');
+        }
+
+        function handleModeSelection(modeId) {
+            if (modeId === 'normal') resetModes(); else if (modeId === 'campana') openCampanaModal(); else if (modeId === 'visita') toggleVisita(); else if (modeId === 'asamblea') toggleAsamblea(); else if (modeId === 'limpieza') toggleCleaning();
+            if (modeId !== 'campana') toggleModal('modesPickerModal');
+        }
+
+        function getWeekKey() { return `${state.currentMonth}-${state.currentWeek}`; }
+
+        function resetModes() { const wk = getWeekKey(); if (state.assignments[wk]?.['SAB']) { state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleVisita() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isVisita = !state.assignments[wk]['SAB'].isVisita; if (state.assignments[wk]['SAB'].isVisita) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleAsamblea() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isAsamblea = !state.assignments[wk]['SAB'].isAsamblea; if (state.assignments[wk]['SAB'].isAsamblea) { state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isVisita = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleCleaning() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isCleaning = !state.assignments[wk]['SAB'].isCleaning; if (state.assignments[wk]['SAB'].isCleaning) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isVisita = false; if (!state.assignments[wk]['SAB'].cleaningTime) state.assignments[wk]['SAB'].cleaningTime = "9.00"; } saveState(); renderSchedule(); updateModesToggleState(); }
+
+        function updateModesToggleState() {
+            const wk = getWeekKey(), sabData = state.assignments[wk]?.['SAB'] || {}; const btn = document.getElementById('btnToggleModes'), textSpan = document.getElementById('modesToggleText'); let activeModes = [];
+            if (isWeekInCampana(state.currentMonth, state.currentWeek)) activeModes.push('Campaña'); if (sabData.isVisita) activeModes.push('Visita'); if (sabData.isAsamblea) activeModes.push('Asamblea'); if (sabData.isCleaning) activeModes.push('Limpieza');
+            if (activeModes.length > 0) {
+                textSpan.textContent = `Modo: ${activeModes.join(' + ')}`;
+                if (activeModes.includes('Campaña') && activeModes.length === 1) { btn.classList.add('bg-[#CDA4FF]/20', 'text-[#CDA4FF]', 'border-[#CDA4FF]/30'); btn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-black/90', 'dark:text-white/90', 'bg-[#32D74B]/20', 'text-[#32D74B]', 'border-[#32D74B]/30'); } 
+                else { btn.classList.add('bg-[#32D74B]/20', 'text-[#32D74B]', 'border-[#32D74B]/30'); btn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-black/90', 'dark:text-white/90', 'bg-[#CDA4FF]/20', 'text-[#CDA4FF]', 'border-[#CDA4FF]/30'); }
+            } else {
+                textSpan.textContent = `Modos`; btn.className = "flex items-center gap-1 bg-black/5 dark:bg-white/10 border border-black/5 dark:border-white/5 text-black/90 dark:text-white/90 px-3 py-2 rounded-full text-[12px] font-semibold active:scale-95 ios-transition shrink-0";
+            }
+        }
+
+        // --- SISTEMA EDICIÓN PLANILLA ---
+        function handleHoldStart(e, day, shift, type = 'spot') {
+            clearTimeout(holdTimer); isHolding = false; const el = e.currentTarget; el.classList.add('holding');
+            holdTimer = setTimeout(() => {
+                isHolding = true; const wk = getWeekKey(), field = type === 'spot' ? 'manualMode' : 'manualDriverMode';
+                const currentMode = state.assignments[wk]?.[day]?.[shift]?.[field] || false;
+                updateData(day, shift, field, !currentMode); renderSchedule();
+                if ("vibrate" in navigator) navigator.vibrate([15, 30, 15]); el.classList.remove('holding');
+            }, 600); 
+        }
+        function handleHoldEnd(e) { clearTimeout(holdTimer); e.currentTarget.classList.remove('holding'); }
+
+        function openLocationPicker(day, shift) { 
+            if (isHolding) return; editingDay = day; editingShift = shift; expandedLocationSection = null; 
+            const searchInput = document.getElementById('locationSearchInput'); if (searchInput) searchInput.value = '';
+            renderLocationOptions(); toggleModal('locationPickerModal'); 
+        }
+
+        function openDriverPicker(day, shift) { if (isHolding) return; editingDay = day; editingShift = shift; renderDriverOptions(); toggleModal('driverPickerModal'); }
+        function toggleLocationSection(section) { expandedLocationSection = (expandedLocationSection === section) ? null : section; renderLocationOptions(); if ("vibrate" in navigator) navigator.vibrate(10); }
+
+        function renderLocationOptions(searchTerm = '') {
+            const list = document.getElementById('locationOptionsList'); list.innerHTML = '';
+            const casas = [], callesGroups = {}; const term = searchTerm.toLowerCase().trim();
+            userLocations.forEach(loc => {
+                const isCasa = loc.toLowerCase().includes("flia.") || ["Maria Ch.", "Carmen S.", "Cleri J.", "Salon del Reino", "Escuela 744"].includes(loc);
+                if (isCasa) casas.push(loc); else { let mainStreet = loc.split(" y ")[0].trim(); if (!callesGroups[mainStreet]) callesGroups[mainStreet] = []; callesGroups[mainStreet].push(loc); }
+            });
+
+            const renderSingleOption = (loc, iconName) => {
+                const btn = document.createElement('button'); btn.className = "w-full flex items-center gap-3 px-5 py-4 border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition";
+                btn.innerHTML = `<i data-lucide="${iconName}" class="w-[18px] h-[18px] text-black/50 dark:text-white/50 shrink-0"></i><span class="text-[16px] font-medium text-black dark:text-white text-left flex-1">${loc}</span>`;
+                btn.onclick = () => { updateData(editingDay, editingShift, 'spot', loc); toggleModal('locationPickerModal'); renderSchedule(); }; list.appendChild(btn);
+            };
+
+            if (term) {
+                const filtered = userLocations.filter(loc => loc.toLowerCase().includes(term));
+                if (filtered.length === 0) { list.innerHTML = `<div class="py-8 text-center text-[15px] text-black/50 dark:text-white/50 font-medium">No se encontraron resultados</div>`; } 
+                else { filtered.sort().forEach(loc => { const isCasa = loc.toLowerCase().includes("flia.") || ["Maria Ch.", "Carmen S.", "Cleri J.", "Salon del Reino", "Escuela 744"].includes(loc); renderSingleOption(loc, isCasa ? "home" : "map-pin"); }); }
+                lucide.createIcons(); return;
+            }
+
+            const emptyBtn = document.createElement('button'); 
+            emptyBtn.className = "w-full flex items-center gap-3 px-5 py-4 border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition";
+            emptyBtn.innerHTML = `<i data-lucide="minus" class="w-[18px] h-[18px] text-black/50 dark:text-white/50 shrink-0"></i><span class="text-[16px] font-medium text-black dark:text-white text-left flex-1">-</span>`;
+            emptyBtn.onclick = () => { updateData(editingDay, editingShift, 'spot', ''); toggleModal('locationPickerModal'); renderSchedule(); }; 
+            list.appendChild(emptyBtn);
+
+            const renderAccordion = (title, id, items, iconName) => {
+                const isOpen = expandedLocationSection === id; const header = document.createElement('button');
+                header.className = `w-full flex items-center gap-3 px-5 py-4 border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition rounded-lg`; header.onclick = () => toggleLocationSection(id);
+                header.innerHTML = `<i data-lucide="${iconName}" class="w-[18px] h-[18px] text-black/70 dark:text-white/70 shrink-0"></i><span class="text-[16px] font-semibold text-black dark:text-white text-left flex-1">${title}</span><span class="text-[13px] font-medium text-black/30 dark:text-white/30 mr-2">${items.length}</span><i data-lucide="chevron-${isOpen ? 'up' : 'down'}" class="w-4 h-4 text-black/40 dark:text-white/40 transition-transform duration-300"></i>`; list.appendChild(header);
+                if (isOpen) {
+                    const container = document.createElement('div'); container.className = "animate-fade overflow-hidden bg-black/[0.03] dark:bg-white/[0.03] border-b border-gray-300 dark:border-white/5 shadow-inner mb-2 rounded-b-xl";
+                    items.forEach(loc => {
+                        const btn = document.createElement('button'); btn.className = "w-full flex items-center pl-[46px] pr-5 py-3.5 border-b border-gray-300 dark:border-white/5 last:border-0 active:bg-black/5 dark:active:bg-white/10 ios-transition";
+                        btn.innerHTML = `<span class="text-[15px] font-medium text-black/80 dark:text-white/80 text-left flex-1">${loc}</span>`;
+                        btn.onclick = () => { updateData(editingDay, editingShift, 'spot', loc); toggleModal('locationPickerModal'); renderSchedule(); }; container.appendChild(btn);
+                    }); list.appendChild(container);
+                }
+            };
+            
+            if (casas.length > 0) renderAccordion("Casas y Especiales", "casas", casas.sort(), "home");
+            const singleStreets = []; Object.keys(callesGroups).sort().forEach(mainStreet => { if (callesGroups[mainStreet].length === 1) singleStreets.push(callesGroups[mainStreet][0]); else renderAccordion(mainStreet, "calle_" + mainStreet.replace(/\s/g, ''), callesGroups[mainStreet].sort(), "map"); });
+            singleStreets.sort().forEach(loc => renderSingleOption(loc, "map-pin")); lucide.createIcons();
+        }
+
+        function renderDriverOptions() {
+            const list = document.getElementById('driverOptionsList'); list.innerHTML = ''; const baseOptions = ["-", "Super"];
+            const sortedDrivers = [...state.drivers].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+            [...baseOptions, ...sortedDrivers].forEach(driver => {
+                const btn = document.createElement('button'); btn.className = "w-full text-left px-5 py-4 text-[15px] font-medium border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition text-black dark:text-white"; 
+                btn.textContent = driver; btn.onclick = () => { updateData(editingDay, editingShift, 'driver', driver === "-" ? "" : driver); toggleModal('driverPickerModal'); renderSchedule(); }; list.appendChild(btn);
+            });
+        }
+
+        function updateGlobalTime(field, value) { state[field] = value; saveState(); renderSchedule(); }
+        function updateCleaningTime(weekKey, value) { updateData('SAB', null, 'cleaningTime', value, weekKey); }
+
+        function renderSchedule() {
+            const container = document.getElementById('scheduleContainer'); container.innerHTML = '';
+            const weekKey = getWeekKey(), weekData = state.assignments[weekKey] || {}, sabData = weekData['SAB'] || {};
+            const dates = getDatesForMonthWeek(state.currentMonth, state.currentWeek);
+            const isCampanaActive = isWeekInCampana(state.currentMonth, state.currentWeek);
+            
+            const globalHeader = document.createElement('div');
+            globalHeader.className = "mb-2 px-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center ios-transition animate-fade";
+            globalHeader.innerHTML = `
+                <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-black/50 dark:text-white/50">Salidas por la mañana:</span><span contenteditable="true" onblur="updateGlobalTime('morningTime', this.innerText)" class="text-[13px] font-bold text-black/80 dark:text-white/90 outline-none min-w-[30px]" data-placeholder="--:--">${state.morningTime}</span><span class="text-[12px] font-medium text-black/50 dark:text-white/50">hs</span></div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-black/50 dark:text-white/50">Salidas por la tarde:</span><span contenteditable="true" onblur="updateGlobalTime('afternoonTime', this.innerText)" class="text-[13px] font-bold text-black/80 dark:text-white/90 outline-none min-w-[30px]" data-placeholder="--:--">${state.afternoonTime}</span><span class="text-[12px] font-medium text-black/50 dark:text-white/50">hs</span></div>
+            `;
+            container.appendChild(globalHeader);
+
+            const daysWrapper = document.createElement('div');
+            daysWrapper.className = "bg-white dark:bg-[#1C1C1E] rounded-[24px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-300 dark:border-white/[0.05] animate-fade mb-4";
+
+            weekStructure.forEach((dayDef, index) => {
+                if (dayDef.id === 'LUN' && !isCampanaActive) return;
+                const dateInfo = dates[index], dayData = weekData[dayDef.id] || {};
+                
+                const getShiftHtml = (shift, defaultSpot = '', compact = false) => {
+                    const sData = dayData[shift.id] || {};
+                    const spotValue = sData.spot ? sData.spot : defaultSpot;
+                    const isManual = sData.manualMode === true, isManualDriver = sData.manualDriverMode === true;
+                    const defDriver = sabData.isVisita ? (dayDef.id === 'MAR' ? '' : 'Super') : '';
+                    const currentDriver = sData.driver !== undefined ? sData.driver : defDriver, tArray = sData.territories || [];
+                    const hasTerr = tArray.length > 0;
+                    
+                    const cellEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'spot')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
+                    const driverEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'driver')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
+                    
+                    let addrContent = isManual 
+                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full py-0.5 flex items-center px-1 text-[14px] font-medium leading-snug text-black dark:text-white/90 outline-none" data-placeholder="Escribir...">${spotValue}</div>`
+                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full py-0.5 flex items-center px-1 text-[14px] font-medium leading-snug ${spotValue ? 'text-black dark:text-white/90' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
+                    
+                    const driverClass = currentDriver 
+                        ? 'bg-black/[0.04] dark:bg-white/[0.06] text-black/70 dark:text-white/70' 
+                        : 'bg-black/[0.02] dark:bg-white/[0.02] text-black/30 dark:text-white/30';
+                        
+                    let driverContentHtml = isManualDriver
+                        ? `<div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'driver', this.innerText); renderSchedule();" class="shrink-0 w-[64px] py-0.5 flex items-center justify-center rounded-[8px] text-[11px] font-semibold outline-none text-center overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}" data-placeholder="..."> ${currentDriver} </div>`
+                        : `<div onclick="openDriverPicker('${dayDef.id}', '${shift.id}')" class="shrink-0 w-[64px] py-0.5 rounded-[8px] px-1 text-[11px] font-semibold flex items-center justify-center cursor-pointer active:scale-95 ios-transition overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}">${currentDriver || '-'}</div>`;
+
+                    let timeField = "";
+                    if (shift.id === 'n') {
+                        timeField = `<input type="text" value="${sData.time || shift.time}" onchange="updateData('${dayDef.id}', '${shift.id}', 'time', this.value); renderSchedule();" class="w-[36px] text-center text-[10px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] bg-transparent border-none outline-none shrink-0 px-0 mr-2">`;
+                    } else {
+                        let tVal = shift.time || '--.--';
+
+                        timeField = `
+                            <div class="shrink-0 w-[38px] flex justify-center items-center text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-2 border-r border-black/[0.06] dark:border-white/[0.06] mr-2">
+                                <span class="text-[10px] font-bold tracking-tight">${tVal}</span>
+                            </div>
+                        `;
+                    }
+                    
+                    const terrColorClass = hasTerr 
+                        ? 'bg-[#34C759]/15 text-[#28A745] dark:bg-[#32D74B]/20 dark:text-[#32D74B]' 
+                        : 'bg-black/[0.04] dark:bg-white/[0.06] text-black/30 dark:text-white/30';
+                    
+                    /* SOLUCIÓN DE ALINEACIÓN: Si no hay 'G1', ponemos un recuadro vacío del mismo ancho */
+                    let prefixHtml = shift.prefix 
+                        ? `<div class="shrink-0 w-[20px] text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-1.5">${shift.prefix}</div>` 
+                        : `<div class="shrink-0 w-[20px] mr-1.5"></div>`;
+                    
+                    return `<div class="flex items-center gap-1 w-full py-1 border-b border-black/[0.04] dark:border-white/[0.04] last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-0.5 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
+                };
+
+                let content = '';
+                if (dayDef.id === 'SAB' && (dayData.isCleaning || dayData.isAsamblea)) {
+                    if (dayData.isCleaning) {
+                        content = `<div class="flex items-center w-full py-0.5 bg-black/5 dark:bg-[#32D74B]/10 border border-black/[0.06] dark:border-[#32D74B]/20 rounded-[8px] px-2"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[13px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
+                    } else { content = `<div class="flex items-center w-full py-1 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`; }
+                } else if (dayDef.id === 'SAB' && sabData.isVisita) {
+                    content = [{time: state.morningTime, id: 'm'}, {time: '19.30', id: 't'}].map(s => getShiftHtml(s, s.id === 't' ? 'Salón del Reino' : '')).join('');
+                } else if (dayDef.id === 'SAB') {
+                    let shiftsWithTime = dayDef.shifts.map(s => { let t = s.time; if (s.id === 'g1') t = state.morningTime; return { ...s, time: t }; });
+                    const rows = shiftsWithTime.map(s => getShiftHtml(s, '', true)).join('');
+                    
+                    let sabTime = state.morningTime || "10.00";
+                    
+                    let sabTimeHtml = `
+                        <div class="flex justify-center items-center shrink-0 w-[38px] text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-2 border-r border-black/[0.06] dark:border-white/[0.06] mr-2">
+                            <span class="text-[10px] font-bold tracking-tight">${sabTime}</span>
+                        </div>
+                    `;
+                    content = `<div class="flex w-full items-stretch py-0.5"><div class="flex flex-col justify-center shrink-0">${sabTimeHtml}</div><div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${rows}</div></div>`;
+                } else {
+                    let curShifts = dayDef.shifts.map(s => { let t = s.time; if (s.id === 'm') t = state.morningTime; if (s.id === 't') t = state.afternoonTime; return { ...s, time: t }; });
+                    if (sabData.isVisita) {
+                        if (dayDef.id === 'MAR') curShifts = curShifts.map(s => s.id === 't' ? { ...s, time: '20.00' } : s);
+                        if (dayDef.id === 'MIE' || dayDef.id === 'VIE') curShifts.push({time: '20.00', id: 'n'});
+                    } else {
+                        if (dayDef.id === 'JUE') curShifts = curShifts.filter(s => s.id === 'm');
+                    }
+                    content = curShifts.map(s => {
+                        let spot = sabData.isVisita ? (dayDef.id === 'MAR' && s.id === 't' ? 'Reunión' : (dayDef.id === 'MIE' && s.id === 'n' ? 'Reu. PR y Aux. (Salón del Reino)' : (dayDef.id === 'VIE' && s.id === 'n' ? 'Reu. Anc. y SM (Salón del Reino)' : ''))) : '';
+                        return getShiftHtml(s, spot);
+                    }).join('');
+                }
+                
+                const dayRow = document.createElement('div');
+                dayRow.className = `py-1.5 px-2 flex items-center border-b border-gray-300 dark:border-white/[0.08] last:border-0 ios-transition bg-white dark:bg-[#1C1C1E]`;
+                
+                dayRow.innerHTML = `
+                    <div class="w-[40px] h-[40px] shrink-0 flex flex-col items-center justify-center mr-2 rounded-[12px] bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-black/[0.04] dark:border-white/[0.05]">
+                        <span class="text-[8px] font-bold text-black dark:text-white/40 mb-[1px] leading-none uppercase tracking-widest">${dayDef.label}</span>
+                        <span class="text-[18px] font-semibold text-black dark:text-white/90 tracking-tight leading-none">${dateInfo.day}</span>
+                    </div>
+                    <div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${content}</div>
+                `;
+                daysWrapper.appendChild(dayRow);
+            });
+            container.appendChild(daysWrapper);
+            lucide.createIcons();
+        }
+
+        // --- SISTEMA DE ESTADÍSTICAS Y RESUMEN ---
+        function openRankingModal() { renderRanking(); toggleModal('statsModal'); }
+
+        function renderRanking() {
+            const container = document.getElementById('statsContent'); document.getElementById('statsModalTitle').textContent = `Ranking de ${monthNames[state.currentMonth]}`; container.innerHTML = '';
+            const driverCounts = {}; let totalOutputs = 0;
+            Object.keys(state.assignments).forEach(key => {
+                if (key.startsWith(`${state.currentMonth}-`)) {
+                    Object.values(state.assignments[key]).forEach(dayData => Object.values(dayData).forEach(shiftData => {
+                        const drv = shiftData.driver; if (drv && drv !== "Super" && drv !== "-") { driverCounts[drv] = (driverCounts[drv] || 0) + 1; totalOutputs++; }
+                    }));
+                }
+            });
+            const sortedDrivers = Object.entries(driverCounts).sort((a, b) => b[1] - a[1]); let html = '';
+            if (sortedDrivers.length > 0) {
+                html += `<div class="bg-[#F2F2F7] dark:bg-[#2C2C2E]/60 border border-gray-300 dark:border-white/5 rounded-[16px] overflow-hidden shadow-sm animate-fade">`;
+                sortedDrivers.forEach((item, index) => {
+                    const [driver, count] = item; const borderClass = index === sortedDrivers.length - 1 ? '' : 'border-b border-gray-300 dark:border-white/5';
+                    let medalIcon = `<span class="w-6 text-center text-[15px] font-bold text-black/30 dark:text-white/30">${index + 1}</span>`;
+                    if (index === 0) medalIcon = `<i data-lucide="trophy" class="w-5 h-5 text-[#FFD700] mx-0.5"></i>`; else if (index === 1) medalIcon = `<i data-lucide="medal" class="w-5 h-5 text-[#C0C0C0] mx-0.5"></i>`; else if (index === 2) medalIcon = `<i data-lucide="medal" class="w-5 h-5 text-[#CD7F32] mx-0.5"></i>`; 
+                    html += `<div class="flex items-center justify-between p-4 ${borderClass} bg-white dark:bg-white/5"><div class="flex items-center gap-3">${medalIcon}<span class="text-[16px] font-medium text-black dark:text-white">${driver}</span></div><span class="bg-[#0A84FF]/10 text-[#0A84FF] px-2.5 py-1 rounded-full text-[13px] font-bold border border-[#0A84FF]/20">${count}</span></div>`;
+                });
+                html += `</div><p class="text-[12px] text-black/40 dark:text-white/40 text-center mt-3">Total de salidas válidas: ${totalOutputs}</p>`;
+            } else {
+                html += `<div class="flex flex-col items-center justify-center text-center py-10 opacity-60"><i data-lucide="user" class="w-12 h-12 text-black/40 dark:text-white/40 mb-3"></i><span class="text-[15px] text-black dark:text-white font-medium">No conductores asignados.</span></div>`;
+            }
+            container.innerHTML = html; lucide.createIcons();
+        }
+
+        function openSummaryModal() { renderSummary(); toggleModal('summaryModal'); }
+
+        function renderSummary() {
+            const container = document.getElementById('summaryContent'); container.innerHTML = ''; let hasData = false;
+            for (let m = 0; m < 12; m++) {
+                const monthlyCounts = {}; let totalAssigned = 0; let campanaTerrs = new Set(); 
+                Object.keys(state.assignments).forEach(key => {
+                    if (key.startsWith(`${m}-`)) {
+                        const [mm, ww] = key.split('-'); const weekDates = getDatesForMonthWeek(parseInt(mm), parseInt(ww));
+                        Object.keys(state.assignments[key]).forEach(dayId => {
+                            const dayIndex = weekStructure.findIndex(ds => ds.id === dayId); let shiftFullDate = weekDates[dayIndex]?.fullDate;
+                            let isShiftCampana = false;
+                            if (state.campanaConfig?.active && shiftFullDate) {
+                                const shiftDateNorm = new Date(shiftFullDate.getFullYear(), shiftFullDate.getMonth(), shiftFullDate.getDate());
+                                const startParts = state.campanaConfig.start.split('-'); const startDateNorm = new Date(startParts[0], startParts[1] - 1, startParts[2]);
+                                const endParts = state.campanaConfig.end.split('-'); const endDateNorm = new Date(endParts[0], endParts[1] - 1, endParts[2]);
+                                isShiftCampana = shiftDateNorm >= startDateNorm && shiftDateNorm <= endDateNorm;
+                            }
+                            Object.values(state.assignments[key][dayId]).forEach(s => {
+                                if (s.territories && s.territories.length > 0) {
+                                    s.territories.forEach(t => { if (t !== 'Rev.') { monthlyCounts[t] = (monthlyCounts[t] || 0) + 1; totalAssigned++; if (isShiftCampana) campanaTerrs.add(t); } });
+                                }
+                            });
+                        });
+                    }
+                });
+                if (totalAssigned > 0) {
+                    hasData = true; const sortedTerrs = Object.entries(monthlyCounts).sort((a, b) => b[1] - a[1]);
+                    const repetidos = sortedTerrs.filter(t => t[1] > 1); const unicos = sortedTerrs.filter(t => t[1] === 1);
+                    let html = `<div class="bg-[#F2F2F7] dark:bg-[#2C2C2E]/60 border border-gray-300 dark:border-white/5 p-4 rounded-[16px] mb-3 shadow-sm animate-fade"><div class="flex justify-between items-center mb-3"><h3 class="text-[17px] font-bold text-black dark:text-white tracking-tight">${monthNames[m]}</h3><span class="text-[12px] text-black/50 dark:text-white/50 font-medium">${totalAssigned} asig.</span></div><div class="space-y-3">`;
+                    if (repetidos.length > 0) {
+                        html += `<div><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest block mb-1.5 flex items-center gap-1"><i data-lucide="flame" class="w-3 h-3 text-[#FF453A]"></i> Más Hechos (Repetidos)</span><div class="flex flex-wrap gap-1.5">
+                            ${repetidos.map(t => { const isCamp = campanaTerrs.has(t[0]); const colorCls = isCamp ? 'bg-[#CDA4FF]/20 text-[#CDA4FF] border border-[#CDA4FF]/30' : 'bg-[#0A84FF]/10 text-[#0A84FF] border border-[#0A84FF]/20'; return `<span class="px-2 py-1 rounded-md text-[13px] font-medium ${colorCls}">${t[0]} <span class="opacity-70 text-[10px] ml-0.5">x${t[1]}</span></span>`; }).join('')}
+                        </div></div>`;
+                    }
+                    if (unicos.length > 0) {
+                        html += `<div><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest block mb-1.5 flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3 text-[#34C759] dark:text-[#32D74B]"></i> Realizados 1 vez</span><div class="flex flex-wrap gap-1.5">
+                            ${unicos.map(t => { const isCamp = campanaTerrs.has(t[0]); const colorCls = isCamp ? 'bg-[#CDA4FF]/10 text-[#CDA4FF] border border-[#CDA4FF]/20' : 'bg-black/[0.05] dark:bg-white/10 text-black/80 dark:text-white/80 border border-black/[0.05] dark:border-white/10'; return `<span class="px-2 py-1 rounded-md text-[13px] font-medium ${colorCls}">${t[0]}</span>`; }).join('')}
+                        </div></div>`;
+                    }
+                    if (campanaTerrs.size > 0) { html += `<div class="mt-3 pt-3 border-t border-gray-300 dark:border-white/5 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#CDA4FF] shadow-[0_0_8px_rgba(205,164,255,0.6)]"></span><span class="text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest">Abarcados en Campaña</span></div>`; }
+                    html += `</div></div>`; container.innerHTML += html;
+                }
+            }
+            if (!hasData) { container.innerHTML = `<div class="flex flex-col items-center justify-center text-center py-10 opacity-60"><i data-lucide="folder-open" class="w-12 h-12 text-black/40 dark:text-white/40 mb-3"></i><span class="text-[15px] text-black dark:text-white font-medium">No hay datos registrados aún.</span></div>`; }
+            lucide.createIcons();
+        }
+
+        // --- MANEJO DE TERRITORIOS ---
+        function getRelativeWeekData(m, w, offset) {
+            let newW = w + offset; let newM = m;
+            while (newW < 1) { newM -= 1; newW += 5; }
+            return newM < 0 ? null : { month: newM, week: newW };
+        }
+
+        function extractTerritoryWarnings(m, w, colorStatus) {
+            const wk = `${m}-${w}`; const weekData = state.assignments[wk]; if (!weekData) return;
+            const dates = getDatesForMonthWeek(m, w);
+            weekStructure.forEach((dayDef, index) => {
+                if (!weekData[dayDef.id]) return;
+                Object.values(weekData[dayDef.id]).forEach(shiftData => shiftData.territories?.forEach(t => { if (t !== 'Rev.') territoryWarnings[t] = { color: colorStatus, dateStr: `${dates[index].day} de ${monthNames[m]}` }; }));
+            });
+        }
+
+        function openShiftTerritoryModal(day, shift) { 
+            editingDay = day; editingShift = shift; tempTerritories = [...(state.assignments[getWeekKey()]?.[day]?.[shift]?.territories || [])]; territoryWarnings = {};
+            let w2 = getRelativeWeekData(state.currentMonth, state.currentWeek, -2); if (w2) extractTerritoryWarnings(w2.month, w2.week, 'orange');
+            let w1 = getRelativeWeekData(state.currentMonth, state.currentWeek, -1); if (w1) extractTerritoryWarnings(w1.month, w1.week, 'red');
+            renderShiftTerritoryGrid(); toggleModal('shiftTerritoryModal'); 
+        }
+
+        function toggleShiftTerritory(val) { 
+            const i = tempTerritories.indexOf(val); if (i > -1) tempTerritories.splice(i, 1); else if (tempTerritories.length < 4) tempTerritories.push(val); 
+            renderShiftTerritoryGrid(); 
+        }
+        
+        function renderShiftTerritoryGrid() {
+            const g = document.getElementById('shiftTerritoryGrid'); g.innerHTML = '';
+            const allTerrs = ['Rev.']; for(let i=1; i<=75; i++) { allTerrs.push(i.toString()); if(i===4) allTerrs.push('4.1'); }
+            allTerrs.forEach(tStr => {
+                const sel = tempTerritories.indexOf(tStr) > -1; const warning = territoryWarnings[tStr];
+                let bgClass = 'bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70';
+                if (sel) bgClass = 'bg-[#34C759] text-white dark:bg-[#32D74B] dark:text-black font-semibold shadow-md dark:shadow-[#32D74B]/20';
+                else if (warning) {
+                    if (warning.color === 'red') bgClass = 'bg-[#FF453A]/10 text-[#FF453A] border border-[#FF453A]/20 font-semibold shadow-sm';
+                    else if (warning.color === 'orange') bgClass = 'bg-[#FF9F0A]/10 text-[#FF9F0A] border border-[#FF9F0A]/20 font-medium shadow-sm';
+                }
+                const btn = document.createElement('button'); btn.className = `h-8 text-[12px] rounded-md flex items-center justify-center ios-transition active:scale-90 ${bgClass}`; btn.textContent = tStr; 
+                btn.onclick = () => { if (!sel && warning && tStr !== 'Rev.') showCustomAlert(`El territorio ${tStr} ya fue asignado el día ${warning.dateStr}.`); toggleShiftTerritory(tStr); }; 
+                g.appendChild(btn);
+            });
+        }
+
+        function saveShiftTerritories() { updateData(editingDay, editingShift, 'territories', [...tempTerritories]); toggleModal('shiftTerritoryModal'); renderSchedule(); renderTerritoryGrid(); }
+        
+        function renderTerritoryGrid() {
+            document.getElementById('territoryModalTitle').textContent = `Territorios trabajados en ${monthNames[state.currentMonth]}`;
+            const grid = document.getElementById('territoryGrid'); grid.innerHTML = ''; const monthlyAssigned = new Set();
+            Object.keys(state.assignments).forEach(key => { 
+                if (key.startsWith(`${state.currentMonth}-`)) {
+                    Object.values(state.assignments[key]).forEach(d => Object.values(d).forEach(s => s.territories?.forEach(t => { if (t !== 'Rev.') monthlyAssigned.add(t); })));
+                }
+            });
+            const allTerrs = ['Rev.']; for(let i=1; i<=75; i++) { allTerrs.push(i.toString()); if(i===4) allTerrs.push('4.1'); }
+            let workedCount = 0; allTerrs.forEach(tStr => { if (tStr !== 'Rev.' && monthlyAssigned.has(tStr)) workedCount++; });
+            const remainingCount = 76 - workedCount;
+            const subtitleEl = document.getElementById('territoryModalSubtitle');
+            if (subtitleEl) {
+                if (remainingCount === 0) subtitleEl.innerHTML = `<span class="text-[#34C759] dark:text-[#32D74B] font-bold">¡Todos los territorios abarcados!</span>`;
+                else subtitleEl.innerHTML = `Quedan <span class="text-[#34C759] dark:text-[#32D74B] font-bold">${remainingCount}</span> territorios por terminar`;
+            }
+            allTerrs.forEach(tStr => {
+                const isAuto = monthlyAssigned.has(tStr); const div = document.createElement('div'); 
+                div.className = `h-8 text-[11px] font-medium rounded-md flex items-center justify-center ios-transition ${isAuto ? 'bg-[#34C759]/10 text-[#34C759] border border-[#34C759]/20 dark:bg-[#32D74B]/20 dark:text-[#32D74B] dark:border-[#32D74B]/30 shadow-sm' : 'bg-black/[0.04] dark:bg-white/5 text-black/30 dark:text-white/30'}`;
+                div.textContent = tStr; grid.appendChild(div);
+            });
+        }
+
+        function updateData(d, s, f, v, forceWk = null) { 
+            const wk = forceWk || getWeekKey(); 
+            if (!state.assignments[wk]) state.assignments[wk] = {}; 
+            if (d && !state.assignments[wk][d]) state.assignments[wk][d] = {}; 
+            if (d && s && !state.assignments[wk][d][s]) state.assignments[wk][d][s] = {}; 
+            if (f === null) state.assignments[wk][d][s] = v; 
+            else if (d === 'SAB' && s === null) state.assignments[wk]['SAB'][f] = v; 
+            else state.assignments[wk][d][s][f] = v; 
+            saveState(); 
+        }
+        
+        function toggleScreenshotMode() { document.getElementById('appBody').classList.add('screenshot-mode'); }
+        function exitScreenshotMode() { document.getElementById('appBody').classList.remove('screenshot-mode'); }
+        
+        // --- ALERTAS CON ANIMACIÓN DE REBOTE (iOS STYLE) ---
+        function showCustomAlert(m) { 
+            document.getElementById('customAlertMsg').textContent = m; 
+            const alert = document.getElementById('customAlert');
+            const box = document.getElementById('customAlertBox');
+            
+            alert.classList.remove('hidden'); alert.classList.add('flex'); 
+            void box.offsetWidth; // Reflow
+            
+            document.getElementById('customAlertBg').classList.remove('opacity-0'); 
+            box.classList.remove('scale-[1.10]', 'opacity-0');
+            box.classList.add('scale-100', 'opacity-100');
+        }
+        
+        function closeCustomAlert() { 
+            const box = document.getElementById('customAlertBox');
+            document.getElementById('customAlertBg').classList.add('opacity-0'); 
+            
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-[1.10]', 'opacity-0');
+            
+            setTimeout(() => { 
+                document.getElementById('customAlert').classList.add('hidden'); 
+                document.getElementById('customAlert').classList.remove('flex'); 
+            }, 300); 
+        }
+
+        // --- SISTEMA DE CAPTURA HD ---
+        async function handleCameraClick() {
+            if (cameraPreventClick) return;
+            if (typeof html2canvas === 'undefined') {
+                showCustomAlert("Cargando motor de imágenes...");
+                return;
+            }
+
+            const container = document.getElementById('scheduleContainer');
+            const targetWidth = container.offsetWidth; // Guardamos el ancho exacto para evitar que los textos se muevan
+            
+            showCustomAlert("Generando captura exacta...");
+
+            // Un pequeño delay para permitir que la alerta de "Generando..." aparezca en pantalla
+            setTimeout(async () => {
+                try {
+                    const canvas = await html2canvas(container, {
+                        scale: 3, // Altísima calidad
+                        useCORS: true,
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#000000' : '#F2F2F7',
+                        width: targetWidth,
+                        windowWidth: targetWidth,
+                        onclone: (clonedDoc) => {
+                            // Trabajamos sobre un clon invisible para no deformar la pantalla real
+                            const clonedContainer = clonedDoc.getElementById('scheduleContainer');
+                            
+                            // Eliminamos las restricciones de scroll y flex para que tome el tamaño natural
+                            clonedContainer.classList.remove('flex-1', 'overflow-y-auto', 'pb-[100px]');
+                            clonedContainer.style.flex = 'none';
+                            clonedContainer.style.height = 'max-content';
+                            clonedContainer.style.maxHeight = 'none';
+                            clonedContainer.style.overflow = 'visible';
+                            clonedContainer.style.paddingBottom = '20px';
+                            clonedContainer.style.width = targetWidth + 'px';
+                            
+                            // Ajustamos el body clonado para que no restrinja la altura
+                            const clonedBody = clonedDoc.getElementById('appBody');
+                            if (clonedBody) {
+                                clonedBody.style.height = 'auto';
+                                clonedBody.classList.remove('h-[100dvh]');
+                            }
+                        }
+                    });
+                    
+                    const link = document.createElement('a');
+                    link.download = `Cronograma_S${state.currentWeek}.png`;
+                    link.href = canvas.toDataURL('image/png', 1.0);
+                    link.click();
+                    
+                    closeCustomAlert();
+                } catch (error) {
+                    console.error(error);
+                    closeCustomAlert();
+                    setTimeout(() => showCustomAlert("Error al generar la imagen."), 400);
+                }
+            }, 150);
+        }
+
+        function handleCameraHoldStart(e) {
+            clearTimeout(cameraHoldTimer); cameraPreventClick = false;
+            cameraHoldTimer = setTimeout(() => {
+                cameraPreventClick = true;
+                if ("vibrate" in navigator) navigator.vibrate([20, 40, 20]);
+                showConfirmResetWeek();
+            }, 600);
+        }
+
+        function handleCameraHoldEnd(e) { clearTimeout(cameraHoldTimer); }
+
+        function showConfirmResetWeek() {
+            document.getElementById('customConfirmMsg').textContent = "¿Desea borrar todos los datos de esta semana?";
+            document.getElementById('customConfirmBtn').onclick = () => {
+                const wk = getWeekKey();
+                const empty = { spot: '', driver: '', territories: [], manualMode: false, manualDriverMode: false, time: '' };
+                state.assignments[wk] = {
+                    LUN: { m: {...empty}, t: {...empty} }, MAR: { m: {...empty}, t: {...empty} }, MIE: { m: {...empty}, t: {...empty}, n: {...empty} }, JUE: { m: {...empty}, t: {...empty} }, VIE: { m: {...empty}, t: {...empty}, n: {...empty} },
+                    SAB: { m: {...empty}, t: {...empty}, g1: {...empty}, g2: {...empty}, g3: {...empty}, g4: {...empty}, isVisita: false, isAsamblea: false, isCleaning: false, cleaningTime: '' }, DOM: { m: {...empty} }
+                };
+                saveState(); renderSchedule(); renderTerritoryGrid(); updateModesToggleState();
+                showCustomAlert("Semana reseteada con éxito.");
+                closeCustomConfirm();
+            };
+            const modal = document.getElementById('customConfirm');
+            const box = document.getElementById('customConfirmBox');
+            modal.classList.remove('hidden'); modal.classList.add('flex'); 
+            void box.offsetWidth; // Reflow
+            document.getElementById('customConfirmBg').classList.remove('opacity-0'); 
+            box.classList.remove('scale-[1.10]', 'opacity-0');
+            box.classList.add('scale-100', 'opacity-100');
+        }
+
+        function closeCustomConfirm() {
+            const box = document.getElementById('customConfirmBox');
+            document.getElementById('customConfirmBg').classList.add('opacity-0'); 
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-[1.10]', 'opacity-0');
+            setTimeout(() => { 
+                document.getElementById('customConfirm').classList.add('hidden'); 
+                document.getElementById('customConfirm').classList.remove('flex'); 
+            }, 300);
+        }
+
+        // Exportar al entorno Global
+        Object.assign(window, {
+            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions, handleCameraHoldStart, handleCameraHoldEnd, handleCameraClick, closeCustomConfirm
+        });
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+
+        // Registro SW
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(err => console.log('Fallo SW: ', err)); }
+    </script>
+</body>
+</html>
