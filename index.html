@@ -516,7 +516,73 @@
             lucide.createIcons();
         }
 
+        function generateDynamicAppIcon() {
+            // Genera un ícono perfecto de 512x512 en tiempo real para evitar recortes en iOS/Android
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            // Fondo oscuro sólido (evita problemas de transparencia en iOS)
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, 512, 512);
+
+            // Tipografía estilo Apple
+            ctx.font = '800 130px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
+            ctx.textBaseline = 'middle';
+            
+            const t1 = "Pr", t2 = "e", t3 = "di";
+            const w1 = ctx.measureText(t1).width;
+            const w2 = ctx.measureText(t2).width;
+            const w3 = ctx.measureText(t3).width;
+            const totalW = w1 + w2 + w3;
+            const startX = (512 - totalW) / 2;
+
+            // Dibujar texto perfectamente centrado con margen seguro
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#FFFFFF'; ctx.fillText(t1, startX, 260);
+            ctx.fillStyle = '#FF00FF'; ctx.fillText(t2, startX + w1, 260); // La 'e' en magenta
+            ctx.fillStyle = '#FFFFFF'; ctx.fillText(t3, startX + w1 + w2, 260);
+
+            const dataURL = canvas.toDataURL('image/png');
+
+            // 1. Reemplazar icono de iOS
+            let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+            if (appleIcon) appleIcon.href = dataURL;
+
+            // 2. Reemplazar favicon estándar
+            let stdIcon = document.querySelector('link[rel="icon"]');
+            if (!stdIcon) {
+                stdIcon = document.createElement('link');
+                stdIcon.rel = 'icon';
+                document.head.appendChild(stdIcon);
+            }
+            stdIcon.href = dataURL;
+
+            // 3. Reemplazar Manifest dinámico (Soluciona el recorte circular en Android)
+            const manifest = {
+                name: "Predi 2026",
+                short_name: "Predi",
+                start_url: ".",
+                display: "standalone",
+                background_color: "#000000",
+                theme_color: "#000000",
+                icons: [
+                    {
+                        src: dataURL,
+                        sizes: "512x512",
+                        type: "image/png",
+                        purpose: "any maskable" // Crucial para adaptar a Android
+                    }
+                ]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+            let manifestLink = document.querySelector('link[rel="manifest"]');
+            if (manifestLink) manifestLink.href = URL.createObjectURL(manifestBlob);
+        }
+
         function init() {
+            generateDynamicAppIcon();
             updateThemeIcon(); updateSelectDisplays(); renderSchedule(); renderTerritoryGrid(); renderShiftTerritoryGrid(); lucide.createIcons();
         }
 
