@@ -55,23 +55,23 @@
         .screenshot-mode { background-color: #F2F2F7 !important; }
         html.dark .screenshot-mode { background-color: #000000 !important; }
         .screenshot-mode #scheduleContainer { 
-            padding-top: calc(env(safe-area-inset-top, 5px) + 5px) !important; 
-            padding-bottom: 15px !important;
+            padding-top: calc(env(safe-area-inset-top, 20px) + 70px) !important; 
+            padding-bottom: 40px !important;
         }
 
         #btnVolverCaptura {
-            top: env(safe-area-inset-top, 4px) !important;
-            right: 4px !important;
-            transform: scale(0.8);
+            top: calc(env(safe-area-inset-top, 20px) + 10px) !important;
+            right: 16px !important;
+            transform: scale(0.9);
             transform-origin: top right;
-            opacity: 0.5;
+            opacity: 0.6;
             background: rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             z-index: 9999 !important;
         }
         .dark #btnVolverCaptura { background: rgba(44, 44, 46, 0.6); }
-        #btnVolverCaptura:active { opacity: 1; transform: scale(0.7) !important; transform-origin: top right; }
+        #btnVolverCaptura:active { opacity: 1; transform: scale(0.8) !important; transform-origin: top right; }
         .screenshot-mode #btnVolverCaptura { display: flex !important; }
 
         /* Utilidades Estructurales */
@@ -867,12 +867,12 @@
 
                     let timeField = "";
                     if (shift.id === 'n') {
-                        timeField = `<input type="text" value="${sData.time || shift.time}" onchange="updateData('${dayDef.id}', '${shift.id}', 'time', this.value); renderSchedule();" class="w-[36px] text-center text-[10px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] bg-transparent border-none outline-none shrink-0 px-0 mr-2">`;
+                        timeField = `<input type="text" value="${sData.time || shift.time}" onchange="updateData('${dayDef.id}', '${shift.id}', 'time', this.value); renderSchedule();" class="w-[36px] text-center text-[10px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] bg-transparent border-none outline-none shrink-0 px-0 mr-1.5">`;
                     } else {
                         let tVal = shift.time || '--.--';
 
                         timeField = `
-                            <div class="shrink-0 w-[38px] flex justify-center items-center text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-2 border-r border-black/[0.06] dark:border-white/[0.06] mr-2">
+                            <div class="shrink-0 w-[38px] flex justify-center items-center text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5">
                                 <span class="text-[10px] font-bold tracking-tight">${tVal}</span>
                             </div>
                         `;
@@ -882,11 +882,15 @@
                         ? 'bg-[#34C759]/15 text-[#28A745] dark:bg-[#32D74B]/20 dark:text-[#32D74B]' 
                         : 'bg-black/[0.04] dark:bg-white/[0.06] text-black/30 dark:text-white/30';
                     
+                    /* 1. Eliminamos el div vacío para L a V, permitiendo que el texto se pegue al horario.
+                       2. Conservamos el espaciado o el G1, G2 exclusivamente para el Sábado.
+                    */
                     let prefixHtml = shift.prefix 
                         ? `<div class="shrink-0 w-[20px] text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-1.5">${shift.prefix}</div>` 
-                        : `<div class="shrink-0 w-[20px] mr-1.5"></div>`;
+                        : (dayDef.id === 'SAB' ? `<div class="shrink-0 w-[20px] mr-1.5"></div>` : ``);
                     
-                    return `<div class="flex items-center gap-1 w-full py-0.5 border-b border-black/[0.04] dark:border-white/[0.04] last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-0 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
+                    /* Aplicamos la línea lila suave para separar los turnos (border-[#AF52DE]/20) */
+                    return `<div class="flex items-center gap-1 w-full py-0.5 border-b border-[#AF52DE]/20 dark:border-[#CDA4FF]/20 last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-0 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
                 };
 
                 let content = '';
@@ -903,7 +907,7 @@
                     let sabTime = state.morningTime || "10.00";
                     
                     let sabTimeHtml = `
-                        <div class="flex justify-center items-center shrink-0 w-[38px] text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-2 border-r border-black/[0.06] dark:border-white/[0.06] mr-2">
+                        <div class="flex justify-center items-center shrink-0 w-[38px] text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5">
                             <span class="text-[10px] font-bold tracking-tight">${sabTime}</span>
                         </div>
                     `;
@@ -1129,7 +1133,6 @@
             }, 300); 
         }
 
-        // --- SISTEMA DE CAPTURA MANUAL ---
         function handleCameraClick() {
             if (cameraPreventClick) return;
             toggleScreenshotMode();
@@ -1179,14 +1182,12 @@
             }, 300);
         }
 
-        // Exportar al entorno Global
         Object.assign(window, {
             exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions, handleCameraHoldStart, handleCameraHoldEnd, handleCameraClick, closeCustomConfirm
         });
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
-        // Registro SW
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(err => console.log('Fallo SW: ', err)); }
     </script>
 </body>
