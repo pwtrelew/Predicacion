@@ -1,6 +1,6 @@
 {
-  "name": "Predicación 2026",
-  "short_name": "Predicación",
+  "name": "Predicación",
+  "short_name": "Predi",
   "description": "Gestión premium de territorios y cronograma",
   "start_url": "./index.html",
   "display": "standalone",
