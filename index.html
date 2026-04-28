@@ -413,7 +413,7 @@
         let isFirebaseReady = false;
         let currentUser = null;
 
-        const defaultDrivers = ["Darío", "Diego", "E. García", "E. Gauna", "Enzo", "Jeremías", "Jorge", "Julio", "Leonardo", "Luis", "Marcelo", "Miguel", "Pablo F.", "Ramón S."];
+        const defaultDrivers = ["Ariel", "Darío", "Diego", "E. García", "E. Gauna", "Enzo", "Jeremías", "Jorge", "Julio", "Leonardo", "Luis", "Marcelo", "Miguel", "Pablo F.", "Ramón S."];
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         
         const userLocations = [
@@ -710,7 +710,7 @@
 
         function openModesPicker() {
             const list = document.getElementById('modesOptionsList'); const wk = getWeekKey(), sabData = state.assignments[wk]?.['SAB'] || {}; const isCampActive = state.campanaConfig?.active;
-            const modes = [ { id: 'normal', name: 'Normal', active: !isCampActive && !sabData.isVisita && !sabData.isAsamblea && !sabData.isCleaning }, { id: 'campana', name: 'Campaña', active: isCampActive }, { id: 'visita', name: 'Visita', active: sabData.isVisita }, { id: 'asamblea', name: 'Asamblea', active: sabData.isAsamblea }, { id: 'limpieza', name: 'Limpieza', active: sabData.isCleaning } ];
+            const modes = [ { id: 'normal', name: 'Normal', active: !isCampActive && !sabData.isVisita && !sabData.isAsamblea && !sabData.isCleaning && !sabData.isSabCongre }, { id: 'campana', name: 'Campaña', active: isCampActive }, { id: 'visita', name: 'Visita', active: sabData.isVisita }, { id: 'asamblea', name: 'Asamblea', active: sabData.isAsamblea }, { id: 'limpieza', name: 'Limpieza', active: sabData.isCleaning }, { id: 'sabCongre', name: 'Sáb. de Congre.', active: sabData.isSabCongre } ];
             list.innerHTML = modes.map(m => {
                 const isSpecial = m.id === 'campana' && m.active; const activeColor = isSpecial ? 'text-[#CDA4FF] font-semibold' : 'text-[#32D74B] font-semibold';
                 return `<button type="button" onclick="handleModeSelection('${m.id}')" class="w-full text-left px-5 py-4 text-[15px] font-medium ios-transition border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ${m.active ? activeColor : 'text-black/80 dark:text-white/80'}">${m.name}</button>`;
@@ -719,20 +719,21 @@
         }
 
         function handleModeSelection(modeId) {
-            if (modeId === 'normal') resetModes(); else if (modeId === 'campana') openCampanaModal(); else if (modeId === 'visita') toggleVisita(); else if (modeId === 'asamblea') toggleAsamblea(); else if (modeId === 'limpieza') toggleCleaning();
+            if (modeId === 'normal') resetModes(); else if (modeId === 'campana') openCampanaModal(); else if (modeId === 'visita') toggleVisita(); else if (modeId === 'asamblea') toggleAsamblea(); else if (modeId === 'limpieza') toggleCleaning(); else if (modeId === 'sabCongre') toggleSabCongre();
             if (modeId !== 'campana') toggleModal('modesPickerModal');
         }
 
         function getWeekKey() { return `${state.currentMonth}-${state.currentWeek}`; }
 
-        function resetModes() { const wk = getWeekKey(); if (state.assignments[wk]?.['SAB']) { state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; } saveState(); renderSchedule(); updateModesToggleState(); }
-        function toggleVisita() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isVisita = !state.assignments[wk]['SAB'].isVisita; if (state.assignments[wk]['SAB'].isVisita) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; } saveState(); renderSchedule(); updateModesToggleState(); }
-        function toggleAsamblea() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isAsamblea = !state.assignments[wk]['SAB'].isAsamblea; if (state.assignments[wk]['SAB'].isAsamblea) { state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isVisita = false; } saveState(); renderSchedule(); updateModesToggleState(); }
-        function toggleCleaning() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isCleaning = !state.assignments[wk]['SAB'].isCleaning; if (state.assignments[wk]['SAB'].isCleaning) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isVisita = false; if (!state.assignments[wk]['SAB'].cleaningTime) state.assignments[wk]['SAB'].cleaningTime = "9.00"; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function resetModes() { const wk = getWeekKey(); if (state.assignments[wk]?.['SAB']) { state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isSabCongre = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleVisita() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isVisita = !state.assignments[wk]['SAB'].isVisita; if (state.assignments[wk]['SAB'].isVisita) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isSabCongre = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleAsamblea() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isAsamblea = !state.assignments[wk]['SAB'].isAsamblea; if (state.assignments[wk]['SAB'].isAsamblea) { state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isSabCongre = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleCleaning() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isCleaning = !state.assignments[wk]['SAB'].isCleaning; if (state.assignments[wk]['SAB'].isCleaning) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isSabCongre = false; if (!state.assignments[wk]['SAB'].cleaningTime) state.assignments[wk]['SAB'].cleaningTime = "9.00"; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleSabCongre() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isSabCongre = !state.assignments[wk]['SAB'].isSabCongre; if (state.assignments[wk]['SAB'].isSabCongre) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isCleaning = false; } saveState(); renderSchedule(); updateModesToggleState(); }
 
         function updateModesToggleState() {
             const wk = getWeekKey(), sabData = state.assignments[wk]?.['SAB'] || {}; const btn = document.getElementById('btnToggleModes'), textSpan = document.getElementById('modesToggleText'); let activeModes = [];
-            if (isWeekInCampana(state.currentMonth, state.currentWeek)) activeModes.push('Campaña'); if (sabData.isVisita) activeModes.push('Visita'); if (sabData.isAsamblea) activeModes.push('Asamblea'); if (sabData.isCleaning) activeModes.push('Limpieza');
+            if (isWeekInCampana(state.currentMonth, state.currentWeek)) activeModes.push('Campaña'); if (sabData.isVisita) activeModes.push('Visita'); if (sabData.isAsamblea) activeModes.push('Asamblea'); if (sabData.isCleaning) activeModes.push('Limpieza'); if (sabData.isSabCongre) activeModes.push('Sáb. Congre.');
             if (activeModes.length > 0) {
                 textSpan.textContent = `Modo: ${activeModes.join(' + ')}`;
                 if (activeModes.includes('Campaña') && activeModes.length === 1) { btn.classList.add('bg-[#CDA4FF]/20', 'text-[#CDA4FF]', 'border-[#CDA4FF]/30'); btn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-black/90', 'dark:text-white/90', 'bg-[#32D74B]/20', 'text-[#32D74B]', 'border-[#32D74B]/30'); } 
@@ -813,7 +814,7 @@
         }
 
         function renderDriverOptions() {
-            const list = document.getElementById('driverOptionsList'); list.innerHTML = ''; const baseOptions = ["-", "Super"];
+            const list = document.getElementById('driverOptionsList'); list.innerHTML = ''; const baseOptions = ["-", "Abel"];
             const sortedDrivers = [...state.drivers].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
             [...baseOptions, ...sortedDrivers].forEach(driver => {
                 const btn = document.createElement('button'); btn.className = "w-full text-left px-5 py-4 text-[15px] font-medium border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ios-transition text-black dark:text-white"; 
@@ -850,7 +851,7 @@
                     const spotValue = sData.spot ? sData.spot : defaultSpot;
                     const isManual = sData.manualMode === true, isManualDriver = sData.manualDriverMode === true;
                     const isManualTime = sData.manualTimeMode === true;
-                    const defDriver = sabData.isVisita ? (dayDef.id === 'MAR' ? '' : 'Super') : '';
+                    const defDriver = sabData.isVisita ? (dayDef.id === 'MAR' ? '' : 'Abel') : '';
                     const currentDriver = sData.driver !== undefined ? sData.driver : defDriver, tArray = sData.territories || [];
                     const hasTerr = tArray.length > 0;
                     
@@ -896,11 +897,11 @@
                         : 'bg-black/[0.04] dark:bg-white/[0.06] text-black/30 dark:text-white/30';
                     
                     /* 1. Eliminamos el div vacío para L a V, permitiendo que el texto se pegue al horario.
-                       2. Conservamos el espaciado o el G1, G2 exclusivamente para el Sábado.
+                       2. Conservamos el espaciado o el G1, G2 exclusivamente para el Sábado (excepto en Sáb. de Congre).
                     */
                     let prefixHtml = shift.prefix 
                         ? `<div class="shrink-0 w-[20px] text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-1.5">${shift.prefix}</div>` 
-                        : (dayDef.id === 'SAB' ? `<div class="shrink-0 w-[20px] mr-1.5"></div>` : ``);
+                        : (dayDef.id === 'SAB' && !sabData.isSabCongre ? `<div class="shrink-0 w-[20px] mr-1.5"></div>` : ``);
                     
                     /* Aplicamos la línea lila suave para separar los turnos (border-[#AF52DE]/20) */
                     return `<div class="flex items-center gap-1 w-full py-0.5 border-b border-[#AF52DE]/20 dark:border-[#CDA4FF]/20 last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-0 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
@@ -911,6 +912,8 @@
                     if (dayData.isCleaning) {
                         content = `<div class="flex items-center w-full py-0.5 bg-black/5 dark:bg-[#32D74B]/10 border border-black/[0.06] dark:border-[#32D74B]/20 rounded-[8px] px-2"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[13px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
                     } else { content = `<div class="flex items-center w-full py-1 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`; }
+                } else if (dayDef.id === 'SAB' && sabData.isSabCongre) {
+                    content = getShiftHtml({time: state.morningTime, id: 'm'}, '');
                 } else if (dayDef.id === 'SAB' && sabData.isVisita) {
                     content = [{time: state.morningTime, id: 'm'}, {time: '19.30', id: 't'}].map(s => getShiftHtml(s, s.id === 't' ? 'Salón del Reino' : '')).join('');
                 } else if (dayDef.id === 'SAB') {
@@ -969,7 +972,7 @@
             Object.keys(state.assignments).forEach(key => {
                 if (key.startsWith(`${state.currentMonth}-`)) {
                     Object.values(state.assignments[key]).forEach(dayData => Object.values(dayData).forEach(shiftData => {
-                        const drv = shiftData.driver; if (drv && drv !== "Super" && drv !== "-") { driverCounts[drv] = (driverCounts[drv] || 0) + 1; totalOutputs++; }
+                        const drv = shiftData.driver; if (drv && drv !== "Abel" && drv !== "-") { driverCounts[drv] = (driverCounts[drv] || 0) + 1; totalOutputs++; }
                     }));
                 }
             });
@@ -1175,7 +1178,7 @@
                 const empty = { spot: '', driver: '', territories: [], manualMode: false, manualDriverMode: false, time: '' };
                 state.assignments[wk] = {
                     LUN: { m: {...empty}, t: {...empty} }, MAR: { m: {...empty}, t: {...empty} }, MIE: { m: {...empty}, t: {...empty}, n: {...empty} }, JUE: { m: {...empty}, t: {...empty} }, VIE: { m: {...empty}, t: {...empty}, n: {...empty} },
-                    SAB: { m: {...empty}, t: {...empty}, g1: {...empty}, g2: {...empty}, g3: {...empty}, g4: {...empty}, isVisita: false, isAsamblea: false, isCleaning: false, cleaningTime: '' }, DOM: { m: {...empty} }
+                    SAB: { m: {...empty}, t: {...empty}, g1: {...empty}, g2: {...empty}, g3: {...empty}, g4: {...empty}, isVisita: false, isAsamblea: false, isCleaning: false, isSabCongre: false, cleaningTime: '' }, DOM: { m: {...empty} }
                 };
                 saveState(); renderSchedule(); renderTerritoryGrid(); updateModesToggleState();
                 showCustomAlert("Semana reseteada con éxito.");
