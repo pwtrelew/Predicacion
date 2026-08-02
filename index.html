@@ -1036,8 +1036,8 @@
                     const timeEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'time')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
                     
                     let addrContent = isManual 
-                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full py-1.5 flex items-center px-2 text-[15px] font-medium leading-tight text-black dark:text-white/90 outline-none" data-placeholder="Escribir...">${spotValue}</div>`
-                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full py-1.5 flex items-center px-2 text-[15px] font-medium leading-tight ${spotValue ? 'text-black dark:text-white/90' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
+                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full py-1 flex items-center px-1.5 text-[15px] font-medium leading-tight text-black dark:text-white/90 outline-none" data-placeholder="Escribir...">${spotValue}</div>`
+                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full py-1 flex items-center px-1.5 text-[15px] font-medium leading-tight ${spotValue ? 'text-black dark:text-white/90' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
                     
                     const driverClass = currentDriver 
                         ? 'bg-black/[0.04] dark:bg-white/[0.06] text-black/70 dark:text-white/70' 
@@ -1076,7 +1076,8 @@
                         ? `<div class="shrink-0 w-[20px] text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-1.5">${shift.prefix}</div>` 
                         : (dayDef.id === 'SAB' && !sabData.isSabCongre ? `<div class="shrink-0 w-[20px] mr-1.5"></div>` : ``);
                     
-                    return `<div class="flex items-center gap-1 w-full py-1.5 border-b border-[#AF52DE]/20 dark:border-[#CDA4FF]/20 last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-1 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
+                    /* Aplicamos la línea lila suave para separar los turnos (border-[#AF52DE]/20) */
+                    return `<div class="flex items-center gap-1 w-full py-1 border-b border-[#AF52DE]/20 dark:border-[#CDA4FF]/20 last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-1 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
                 };
 
                 let content = '';
@@ -1127,7 +1128,7 @@
                 }
                 
                 const dayRow = document.createElement('div');
-                dayRow.className = `py-2 px-2 flex items-center border-b border-[#AF52DE]/40 dark:border-[#CDA4FF]/30 last:border-0 ios-transition bg-white dark:bg-[#1C1C1E]`;
+                dayRow.className = `py-1.5 px-1.5 flex items-center border-b border-[#AF52DE]/40 dark:border-[#CDA4FF]/30 last:border-0 ios-transition bg-white dark:bg-[#1C1C1E]`;
                 
                 dayRow.innerHTML = `
                     <div class="w-[42px] h-[42px] shrink-0 flex flex-col items-center justify-center mr-2 rounded-[12px] bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-black/[0.04] dark:border-white/[0.05]">
