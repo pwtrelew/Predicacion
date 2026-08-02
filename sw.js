@@ -1,4 +1,4 @@
-const CACHE_NAME = 'predi-cache-v2';
+const CACHE_NAME = 'predi-cache-v3';
 
 // Recursos estáticos iniciales a guardar en memoria
 const ASSETS_TO_CACHE = [
