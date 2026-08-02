@@ -15,7 +15,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' };
-        // Inicializar tema antes de renderizar para evitar destellos (FOUC)
         if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
         else document.documentElement.classList.add('dark');
     </script>
@@ -38,7 +37,6 @@
             transition: background-color 0.4s ease, color 0.4s ease;
         }
 
-        /* Efectos Cristalinos (Glassmorphism) */
         .ios-blur {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(45px) saturate(250%);
@@ -50,31 +48,29 @@
             border-bottom: 0.5px solid rgba(255, 255, 255, 0.08); 
         }
 
-        /* Modo Captura de Pantalla */
         .screenshot-mode header, .screenshot-mode nav { display: none !important; }
         .screenshot-mode { background-color: #F2F2F7 !important; }
         html.dark .screenshot-mode { background-color: #000000 !important; }
         .screenshot-mode #scheduleContainer { 
-            padding-top: calc(env(safe-area-inset-top, 20px) + 70px) !important; 
-            padding-bottom: 40px !important;
+            padding-top: calc(env(safe-area-inset-top, 5px) + 5px) !important; 
+            padding-bottom: 15px !important;
         }
 
         #btnVolverCaptura {
-            top: calc(env(safe-area-inset-top, 20px) + 10px) !important;
-            right: 16px !important;
-            transform: scale(0.9);
+            top: env(safe-area-inset-top, 4px) !important;
+            right: 4px !important;
+            transform: scale(0.8);
             transform-origin: top right;
-            opacity: 0.6;
+            opacity: 0.5;
             background: rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             z-index: 9999 !important;
         }
         .dark #btnVolverCaptura { background: rgba(44, 44, 46, 0.6); }
-        #btnVolverCaptura:active { opacity: 1; transform: scale(0.8) !important; transform-origin: top right; }
+        #btnVolverCaptura:active { opacity: 1; transform: scale(0.7) !important; transform-origin: top right; }
         .screenshot-mode #btnVolverCaptura { display: flex !important; }
 
-        /* Utilidades Estructurales */
         .grid-75 { display: grid; grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); gap: 6px; }
 
         .ios-transition { transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -83,7 +79,6 @@
 
         #scheduleContainer { will-change: transform, opacity; }
 
-        /* Indicador de Semana Flotante */
         #weekIndicator {
             position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%) scale(0.8);
@@ -103,7 +98,6 @@
         }
         #weekIndicator.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-        /* Animaciones */
         @keyframes fadeInPremium {
             from { opacity: 0; transform: scale(0.97) translateY(4px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
@@ -119,7 +113,6 @@
         }
         .animate-shake { animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
 
-        /* Interacciones */
         .holding {
             transform: scale(0.95);
             background-color: rgba(10, 132, 255, 0.15) !important;
@@ -185,8 +178,13 @@
     </button>
 
     <header class="sticky top-0 z-40 ios-blur px-4 pt-[calc(env(safe-area-inset-top,20px)+6px)] pb-3 flex flex-col ios-transition">
-        <div class="flex justify-between items-center mb-3 relative">
-            <h1 class="text-[34px] font-extrabold tracking-[-0.04em] text-black dark:text-white leading-none mt-1">Pr<span class="text-[#FF00FF]">e</span>di</h1>
+        <div class="flex justify-between items-center mb-5 relative">
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="toggleModal('settingsMenuModal')" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/90 dark:text-white/90 active:scale-90 ios-transition">
+                    <i data-lucide="menu" class="w-[20px] h-[20px]"></i>
+                </button>
+                <h1 class="text-[34px] font-extrabold tracking-[-0.04em] text-black dark:text-white leading-none mt-1">Pr<span class="text-[#FF00FF]">e</span>di</h1>
+            </div>
             <div class="flex items-center gap-2.5">
                 <button type="button" onclick="toggleTheme()" class="w-9 h-9 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full text-black/90 dark:text-white/90 active:scale-90 ios-transition">
                     <i data-lucide="sun" id="themeIcon" class="w-[18px] h-[18px]"></i>
@@ -244,6 +242,80 @@
         </button>
     </nav>
 
+    <!-- Modales Principales -->
+    <div id="settingsMenuModal" class="fixed inset-0 z-[60] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('settingsMenuModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Ajustes Generales</h2>
+                <button onclick="toggleModal('settingsMenuModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="space-y-3">
+                <button onclick="openDriversEditor()" class="w-full flex items-center gap-4 p-4 bg-black/5 dark:bg-white/5 rounded-2xl active:scale-95 ios-transition">
+                    <div class="w-10 h-10 rounded-full bg-[#0A84FF]/10 text-[#0A84FF] flex items-center justify-center"><i data-lucide="users" class="w-5 h-5"></i></div>
+                    <span class="text-[16px] font-semibold text-black dark:text-white flex-1 text-left">Conductores</span>
+                    <i data-lucide="chevron-right" class="w-5 h-5 text-black/30 dark:text-white/30"></i>
+                </button>
+                <button onclick="openLocationsEditor()" class="w-full flex items-center gap-4 p-4 bg-black/5 dark:bg-white/5 rounded-2xl active:scale-95 ios-transition">
+                    <div class="w-10 h-10 rounded-full bg-[#FF9F0A]/10 text-[#FF9F0A] flex items-center justify-center"><i data-lucide="map-pin" class="w-5 h-5"></i></div>
+                    <span class="text-[16px] font-semibold text-black dark:text-white flex-1 text-left">Puntos de encuentro</span>
+                    <i data-lucide="chevron-right" class="w-5 h-5 text-black/30 dark:text-white/30"></i>
+                </button>
+                <button onclick="openTimesEditor()" class="w-full flex items-center gap-4 p-4 bg-black/5 dark:bg-white/5 rounded-2xl active:scale-95 ios-transition">
+                    <div class="w-10 h-10 rounded-full bg-[#AF52DE]/10 text-[#AF52DE] dark:text-[#CDA4FF] flex items-center justify-center"><i data-lucide="clock" class="w-5 h-5"></i></div>
+                    <span class="text-[16px] font-semibold text-black dark:text-white flex-1 text-left">Horarios por defecto</span>
+                    <i data-lucide="chevron-right" class="w-5 h-5 text-black/30 dark:text-white/30"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editDriversModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('editDriversModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Editar Conductores</h2>
+                <button onclick="toggleModal('editDriversModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <button onclick="promptAddDriver()" class="w-full mb-4 py-3 text-[15px] font-semibold text-[#0A84FF] bg-[#0A84FF]/10 rounded-xl active:scale-95 ios-transition flex items-center justify-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Agregar Conductor</button>
+            <div id="driversEditList" class="max-h-[50vh] overflow-y-auto space-y-1 no-scrollbar pb-6"></div>
+        </div>
+    </div>
+
+    <div id="editLocationsModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('editLocationsModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Puntos de Encuentro</h2>
+                <button onclick="toggleModal('editLocationsModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <button onclick="promptAddLocation()" class="w-full mb-4 py-3 text-[15px] font-semibold text-[#0A84FF] bg-[#0A84FF]/10 rounded-xl active:scale-95 ios-transition flex items-center justify-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Agregar Ubicación</button>
+            <div id="locationsEditList" class="max-h-[50vh] overflow-y-auto space-y-1 no-scrollbar pb-6"></div>
+        </div>
+    </div>
+
+    <div id="editTimesModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('editTimesModal')">
+        <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
+            <div class="modal-grabber"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-black dark:text-white tracking-[-0.01em]">Horarios por Defecto</h2>
+                <button onclick="toggleModal('editTimesModal')" class="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 active:scale-90 ios-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="space-y-4 mb-6">
+                <div class="bg-black/5 dark:bg-white/5 p-4 rounded-[16px] border border-black/5 dark:border-white/5">
+                    <label class="block text-[12px] font-bold text-[#CDA4FF] uppercase tracking-widest mb-2">Horario de Mañana</label>
+                    <input type="text" id="editMorningTime" class="w-full bg-transparent text-black dark:text-white text-[17px] outline-none font-medium">
+                </div>
+                <div class="bg-black/5 dark:bg-white/5 p-4 rounded-[16px] border border-black/5 dark:border-white/5">
+                    <label class="block text-[12px] font-bold text-[#CDA4FF] uppercase tracking-widest mb-2">Horario de Tarde</label>
+                    <input type="text" id="editAfternoonTime" class="w-full bg-transparent text-black dark:text-white text-[17px] outline-none font-medium">
+                </div>
+            </div>
+            <button onclick="saveEditedTimes()" class="w-full py-4 text-[15px] font-semibold text-white bg-[#0A84FF] rounded-[14px] active:scale-95 ios-transition shadow-lg shadow-[#0A84FF]/20 mb-3">Guardar Cambios</button>
+        </div>
+    </div>
+
+    <!-- Modales Originales -->
     <div id="modesPickerModal" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md flex items-end justify-center transition-opacity duration-300 opacity-0" onclick="toggleModal('modesPickerModal')">
         <div class="bg-white dark:bg-[#1C1C1E] border-t border-black/[0.05] dark:border-white/10 w-full max-w-md rounded-t-[32px] p-6 pb-[calc(24px+env(safe-area-inset-bottom,20px))] ios-modal-sheet transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-full" onclick="event.stopPropagation()">
             <div class="modal-grabber"></div>
@@ -370,6 +442,7 @@
         </div>
     </div>
 
+    <!-- Alertas Customizadas y Prompts -->
     <div id="customAlert" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
         <div id="customAlertBg" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
         <div id="customAlertBox" class="relative bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(30,30,30,0.95)] backdrop-blur-xl border border-black/10 dark:border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-[1.10] opacity-0 ios-spring shadow-2xl">
@@ -384,7 +457,19 @@
             <p id="customConfirmMsg" class="text-[16px] font-medium text-black dark:text-white mb-6 leading-relaxed"></p>
             <div class="flex gap-3">
                 <button onclick="closeCustomConfirm()" class="flex-1 py-3 text-black/60 dark:text-white/60 font-medium text-[15px] bg-black/5 dark:bg-white/10 rounded-xl active:scale-95 ios-transition">Cancelar</button>
-                <button id="customConfirmBtn" class="flex-1 py-3 text-white font-semibold text-[15px] bg-[#FF453A] rounded-xl shadow-lg shadow-[#FF453A]/20 active:scale-95 ios-transition">Resetear</button>
+                <button id="customConfirmBtn" class="flex-1 py-3 text-white font-semibold text-[15px] bg-[#FF453A] rounded-xl shadow-lg shadow-[#FF453A]/20 active:scale-95 ios-transition">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="customPrompt" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div id="customPromptBg" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="customPromptBox" class="relative bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(30,30,30,0.95)] backdrop-blur-xl border border-black/10 dark:border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-[1.10] opacity-0 ios-spring shadow-2xl">
+            <h3 id="customPromptTitle" class="text-[17px] font-semibold text-black dark:text-white mb-4"></h3>
+            <input type="text" id="customPromptInput" class="w-full h-[44px] bg-black/[0.05] dark:bg-white/[0.1] text-black dark:text-white text-[15px] px-4 rounded-xl outline-none mb-5" />
+            <div class="flex gap-3">
+                <button onclick="closeCustomPrompt()" class="flex-1 py-2.5 text-black/60 dark:text-white/60 font-medium text-[15px] bg-black/5 dark:bg-white/10 rounded-xl active:scale-95 ios-transition">Cancelar</button>
+                <button id="customPromptBtn" class="flex-1 py-2.5 text-white font-semibold text-[15px] bg-[#0A84FF] rounded-xl shadow-lg shadow-[#0A84FF]/20 active:scale-95 ios-transition">Guardar</button>
             </div>
         </div>
     </div>
@@ -394,7 +479,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Configuración Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDm4lYig4JJR7DlKj5kdFKYtNiVMpYgUZo",
             authDomain: "predicacion-60930.firebaseapp.com",
@@ -413,10 +497,8 @@
         let isFirebaseReady = false;
         let currentUser = null;
 
-        const defaultDrivers = ["Ariel", "Darío", "Diego", "E. García", "E. Gauna", "Enzo", "Jeremías", "Jorge", "Julio", "Leonardo", "Luis", "Marcelo", "Miguel", "Pablo F.", "Ramón S."];
-        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-        
-        const userLocations = [
+        const defaultDrivers = ["Abel", "Ariel", "Darío", "Diego", "E. García", "E. Gauna", "Enzo", "Jeremías", "Jorge", "Julio", "Leonardo", "Luis", "Marcelo", "Miguel", "Pablo F.", "Ramón S."];
+        const defaultLocations = [
             "P.J. Muzio y Cutillo", "Galina y Las Heras", "J. Berreta y J. Marmol", "Saavedra y Roque Gonzalez", 
             "Crucero Gral. Belgrano y J. Ingenieros", "Cutillo y Urquiza", "Galina y 2 de Abril", "P.J. Muzio y Pje. Los Andes", 
             "J. Ingenieros y Juan Evans", "P.J. Muzio y Alem", "13 de Julio y Jorge Montes", "Av. Cristobal Colon y Nahuelpan", 
@@ -430,7 +512,8 @@
             "Flia. Quirulef", "Flia. Cicchitti", "Flia. Perales", "Flia. Molina", "Maria Ch.", "Carmen S.", "Cleri J.", 
             "Maestros Puntanos y J. Murray Thomas", "Conesa y J. Jones"
         ];
-
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        
         const weekStructure = [
             { id: 'LUN', label: 'LUN', shifts: [{time: '10.00', id: 'm'}, {time: '17.30', id: 't'}] },
             { id: 'MAR', label: 'MAR', shifts: [{time: '10.00', id: 'm'}, {time: '17.30', id: 't'}] },
@@ -442,7 +525,7 @@
         ];
 
         let state = { 
-            currentMonth: 0, currentWeek: 1, assignments: {}, drivers: [...defaultDrivers],
+            currentMonth: 0, currentWeek: 1, assignments: {}, drivers: [], locations: [],
             morningTime: "10.00", afternoonTime: "17.30", campanaConfig: { active: false, start: '', end: '' }
         };
         
@@ -461,7 +544,8 @@
             }
             state = Object.assign(state, parsed);
         }
-        if (!state.drivers) state.drivers = [...defaultDrivers];
+        if (!state.drivers || state.drivers.length === 0) state.drivers = [...defaultDrivers];
+        if (!state.locations || state.locations.length === 0) state.locations = [...defaultLocations];
 
         async function loginWithPassword() {
             const input = document.getElementById('accessPassword');
@@ -502,14 +586,20 @@
             const docRef = doc(db, 'artifacts', uniqueAppId, 'public', 'data', 'schedule', 'main');
             onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    const remoteData = docSnap.data(); state = Object.assign(state, remoteData);
-                    if (!state.drivers) state.drivers = [];
-                    const missingDrivers = defaultDrivers.filter(d => !state.drivers.includes(d));
-                    if (missingDrivers.length > 0) { state.drivers.push(...missingDrivers); setDoc(docRef, { drivers: state.drivers }, { merge: true }); }
+                    const remoteData = docSnap.data(); 
+                    state = Object.assign(state, remoteData);
+                    if (!state.drivers) state.drivers = [...defaultDrivers];
+                    if (!state.locations) state.locations = [...defaultLocations];
+                    
                     localStorage.setItem('app_horario_2026_v2', JSON.stringify(state));
                     updateSelectDisplays(); renderSchedule(); renderTerritoryGrid(); renderShiftTerritoryGrid();
-                } else { setDoc(docRef, state, { merge: true }); }
-                isFirebaseReady = true; const cloudIcon = document.getElementById('cloudIcon');
+                } else { 
+                    if (!state.drivers) state.drivers = [...defaultDrivers];
+                    if (!state.locations) state.locations = [...defaultLocations];
+                    setDoc(docRef, state, { merge: true }); 
+                }
+                isFirebaseReady = true; 
+                const cloudIcon = document.getElementById('cloudIcon');
                 if(cloudIcon) { cloudIcon.outerHTML = '<i data-lucide="cloud-check" id="cloudIcon" class="w-[18px] h-[18px] text-black dark:text-[#32D74B] transition-colors duration-500"></i>'; lucide.createIcons(); }
             }, (error) => { document.getElementById('cloudIcon').classList.add('text-[#FF453A]'); });
         }
@@ -710,7 +800,7 @@
 
         function openModesPicker() {
             const list = document.getElementById('modesOptionsList'); const wk = getWeekKey(), sabData = state.assignments[wk]?.['SAB'] || {}; const isCampActive = state.campanaConfig?.active;
-            const modes = [ { id: 'normal', name: 'Normal', active: !isCampActive && !sabData.isVisita && !sabData.isAsamblea && !sabData.isCleaning && !sabData.isSabCongre }, { id: 'campana', name: 'Campaña', active: isCampActive }, { id: 'visita', name: 'Visita', active: sabData.isVisita }, { id: 'asamblea', name: 'Asamblea', active: sabData.isAsamblea }, { id: 'limpieza', name: 'Limpieza', active: sabData.isCleaning }, { id: 'sabCongre', name: 'Sáb. de Congre.', active: sabData.isSabCongre } ];
+            const modes = [ { id: 'normal', name: 'Normal', active: !isCampActive && !sabData.isVisita && !sabData.isAsamblea && !sabData.isAsambleaReg && !sabData.isCleaning && !sabData.isSabCongre }, { id: 'campana', name: 'Campaña', active: isCampActive }, { id: 'visita', name: 'Visita', active: sabData.isVisita }, { id: 'asamblea', name: 'Asamblea', active: sabData.isAsamblea }, { id: 'asambleaReg', name: 'Asamblea Reg.', active: sabData.isAsambleaReg }, { id: 'limpieza', name: 'Limpieza', active: sabData.isCleaning }, { id: 'sabCongre', name: 'Sáb. de Congre.', active: sabData.isSabCongre } ];
             list.innerHTML = modes.map(m => {
                 const isSpecial = m.id === 'campana' && m.active; const activeColor = isSpecial ? 'text-[#CDA4FF] font-semibold' : 'text-[#32D74B] font-semibold';
                 return `<button type="button" onclick="handleModeSelection('${m.id}')" class="w-full text-left px-5 py-4 text-[15px] font-medium ios-transition border-b border-gray-300 dark:border-white/5 active:bg-black/5 dark:active:bg-white/10 ${m.active ? activeColor : 'text-black/80 dark:text-white/80'}">${m.name}</button>`;
@@ -719,21 +809,22 @@
         }
 
         function handleModeSelection(modeId) {
-            if (modeId === 'normal') resetModes(); else if (modeId === 'campana') openCampanaModal(); else if (modeId === 'visita') toggleVisita(); else if (modeId === 'asamblea') toggleAsamblea(); else if (modeId === 'limpieza') toggleCleaning(); else if (modeId === 'sabCongre') toggleSabCongre();
+            if (modeId === 'normal') resetModes(); else if (modeId === 'campana') openCampanaModal(); else if (modeId === 'visita') toggleVisita(); else if (modeId === 'asamblea') toggleAsamblea(); else if (modeId === 'asambleaReg') toggleAsambleaReg(); else if (modeId === 'limpieza') toggleCleaning(); else if (modeId === 'sabCongre') toggleSabCongre();
             if (modeId !== 'campana') toggleModal('modesPickerModal');
         }
 
         function getWeekKey() { return `${state.currentMonth}-${state.currentWeek}`; }
 
-        function resetModes() { const wk = getWeekKey(); if (state.assignments[wk]?.['SAB']) { state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isSabCongre = false; } saveState(); renderSchedule(); updateModesToggleState(); }
-        function toggleVisita() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isVisita = !state.assignments[wk]['SAB'].isVisita; if (state.assignments[wk]['SAB'].isVisita) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isSabCongre = false; } saveState(); renderSchedule(); updateModesToggleState(); }
-        function toggleAsamblea() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isAsamblea = !state.assignments[wk]['SAB'].isAsamblea; if (state.assignments[wk]['SAB'].isAsamblea) { state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isSabCongre = false; } saveState(); renderSchedule(); updateModesToggleState(); }
-        function toggleCleaning() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isCleaning = !state.assignments[wk]['SAB'].isCleaning; if (state.assignments[wk]['SAB'].isCleaning) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isSabCongre = false; if (!state.assignments[wk]['SAB'].cleaningTime) state.assignments[wk]['SAB'].cleaningTime = "9.00"; } saveState(); renderSchedule(); updateModesToggleState(); }
-        function toggleSabCongre() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isSabCongre = !state.assignments[wk]['SAB'].isSabCongre; if (state.assignments[wk]['SAB'].isSabCongre) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isCleaning = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function resetModes() { const wk = getWeekKey(); if (state.assignments[wk]?.['SAB']) { state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isAsambleaReg = false; state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isSabCongre = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleVisita() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isVisita = !state.assignments[wk]['SAB'].isVisita; if (state.assignments[wk]['SAB'].isVisita) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isAsambleaReg = false; state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isSabCongre = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleAsamblea() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isAsamblea = !state.assignments[wk]['SAB'].isAsamblea; if (state.assignments[wk]['SAB'].isAsamblea) { state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isSabCongre = false; state.assignments[wk]['SAB'].isAsambleaReg = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleAsambleaReg() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isAsambleaReg = !state.assignments[wk]['SAB'].isAsambleaReg; if (state.assignments[wk]['SAB'].isAsambleaReg) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isCleaning = false; state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isSabCongre = false; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleCleaning() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isCleaning = !state.assignments[wk]['SAB'].isCleaning; if (state.assignments[wk]['SAB'].isCleaning) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isAsambleaReg = false; state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isSabCongre = false; if (!state.assignments[wk]['SAB'].cleaningTime) state.assignments[wk]['SAB'].cleaningTime = "9.00"; } saveState(); renderSchedule(); updateModesToggleState(); }
+        function toggleSabCongre() { const wk = getWeekKey(); if (!state.assignments[wk]) state.assignments[wk] = {}; if (!state.assignments[wk]['SAB']) state.assignments[wk]['SAB'] = {}; state.assignments[wk]['SAB'].isSabCongre = !state.assignments[wk]['SAB'].isSabCongre; if (state.assignments[wk]['SAB'].isSabCongre) { state.assignments[wk]['SAB'].isAsamblea = false; state.assignments[wk]['SAB'].isAsambleaReg = false; state.assignments[wk]['SAB'].isVisita = false; state.assignments[wk]['SAB'].isCleaning = false; } saveState(); renderSchedule(); updateModesToggleState(); }
 
         function updateModesToggleState() {
             const wk = getWeekKey(), sabData = state.assignments[wk]?.['SAB'] || {}; const btn = document.getElementById('btnToggleModes'), textSpan = document.getElementById('modesToggleText'); let activeModes = [];
-            if (isWeekInCampana(state.currentMonth, state.currentWeek)) activeModes.push('Campaña'); if (sabData.isVisita) activeModes.push('Visita'); if (sabData.isAsamblea) activeModes.push('Asamblea'); if (sabData.isCleaning) activeModes.push('Limpieza'); if (sabData.isSabCongre) activeModes.push('Sáb. Congre.');
+            if (isWeekInCampana(state.currentMonth, state.currentWeek)) activeModes.push('Campaña'); if (sabData.isVisita) activeModes.push('Visita'); if (sabData.isAsamblea) activeModes.push('Asamblea'); if (sabData.isAsambleaReg) activeModes.push('Asamblea Reg.'); if (sabData.isCleaning) activeModes.push('Limpieza'); if (sabData.isSabCongre) activeModes.push('Sáb. Congre.');
             if (activeModes.length > 0) {
                 textSpan.textContent = `Modo: ${activeModes.join(' + ')}`;
                 if (activeModes.includes('Campaña') && activeModes.length === 1) { btn.classList.add('bg-[#CDA4FF]/20', 'text-[#CDA4FF]', 'border-[#CDA4FF]/30'); btn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-black/90', 'dark:text-white/90', 'bg-[#32D74B]/20', 'text-[#32D74B]', 'border-[#32D74B]/30'); } 
@@ -743,14 +834,107 @@
             }
         }
 
-        // --- SISTEMA EDICIÓN PLANILLA ---
+        // --- SISTEMAS DE EDICIÓN ---
+        function openDriversEditor() {
+            toggleModal('settingsMenuModal');
+            setTimeout(() => {
+                renderDriversList();
+                toggleModal('editDriversModal');
+            }, 300);
+        }
+
+        function renderDriversList() {
+            const list = document.getElementById('driversEditList');
+            list.innerHTML = state.drivers.map((d, i) => `
+                <div class="flex justify-between items-center py-3 border-b border-black/5 dark:border-white/5 last:border-0">
+                    <span class="text-[15px] font-medium text-black dark:text-white">${d}</span>
+                    <div class="flex gap-2">
+                        <button onclick="promptEditDriver(${i})" class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-[#0A84FF] active:scale-90"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                        <button onclick="promptDeleteDriver(${i})" class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-[#FF453A] active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function promptAddDriver() {
+            openCustomPrompt("Nuevo Conductor", "", (val) => {
+                if(val) { state.drivers.push(val); state.drivers.sort((a,b) => a.localeCompare(b, 'es', {sensitivity: 'base'})); saveState(); renderDriversList(); renderSchedule(); }
+            });
+        }
+        function promptEditDriver(idx) {
+            openCustomPrompt("Editar Conductor", state.drivers[idx], (val) => {
+                if(val) { state.drivers[idx] = val; state.drivers.sort((a,b) => a.localeCompare(b, 'es', {sensitivity: 'base'})); saveState(); renderDriversList(); renderSchedule(); }
+            });
+        }
+        function promptDeleteDriver(idx) {
+            openCustomConfirm(`¿Seguro que deseas eliminar a ${state.drivers[idx]}?`, "Eliminar", () => {
+                state.drivers.splice(idx, 1); saveState(); renderDriversList(); renderSchedule();
+            });
+        }
+
+        function openLocationsEditor() {
+            toggleModal('settingsMenuModal');
+            setTimeout(() => {
+                renderLocationsEditList();
+                toggleModal('editLocationsModal');
+            }, 300);
+        }
+
+        function renderLocationsEditList() {
+            const list = document.getElementById('locationsEditList');
+            list.innerHTML = state.locations.map((loc, i) => `
+                <div class="flex justify-between items-center py-3 border-b border-black/5 dark:border-white/5 last:border-0">
+                    <span class="text-[14px] font-medium text-black dark:text-white flex-1 mr-3 leading-snug">${loc}</span>
+                    <div class="flex gap-2 shrink-0">
+                        <button onclick="promptEditLocation(${i})" class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-[#0A84FF] active:scale-90"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                        <button onclick="promptDeleteLocation(${i})" class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-[#FF453A] active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function promptAddLocation() {
+            openCustomPrompt("Nueva Ubicación", "", (val) => {
+                if(val) { state.locations.push(val); saveState(); renderLocationsEditList(); renderSchedule(); }
+            });
+        }
+        function promptEditLocation(idx) {
+            openCustomPrompt("Editar Ubicación", state.locations[idx], (val) => {
+                if(val) { state.locations[idx] = val; saveState(); renderLocationsEditList(); renderSchedule(); }
+            });
+        }
+        function promptDeleteLocation(idx) {
+            openCustomConfirm(`¿Eliminar ubicación?`, "Eliminar", () => {
+                state.locations.splice(idx, 1); saveState(); renderLocationsEditList(); renderSchedule();
+            });
+        }
+
+        function openTimesEditor() {
+            toggleModal('settingsMenuModal');
+            setTimeout(() => {
+                document.getElementById('editMorningTime').value = state.morningTime;
+                document.getElementById('editAfternoonTime').value = state.afternoonTime;
+                toggleModal('editTimesModal');
+            }, 300);
+        }
+
+        function saveEditedTimes() {
+            state.morningTime = document.getElementById('editMorningTime').value;
+            state.afternoonTime = document.getElementById('editAfternoonTime').value;
+            saveState(); renderSchedule(); toggleModal('editTimesModal');
+        }
+
         function handleHoldStart(e, day, shift, type = 'spot') {
             clearTimeout(holdTimer); isHolding = false; const el = e.currentTarget; el.classList.add('holding');
             holdTimer = setTimeout(() => {
                 isHolding = true; const wk = getWeekKey();
+                
                 let field = 'manualMode';
                 if (type === 'driver') field = 'manualDriverMode';
-                if (type === 'time') field = 'manualTimeMode';
+                else if (type === 'time') field = 'manualTimeMode';
+                
                 const currentMode = state.assignments[wk]?.[day]?.[shift]?.[field] || false;
                 updateData(day, shift, field, !currentMode); renderSchedule();
                 if ("vibrate" in navigator) navigator.vibrate([15, 30, 15]); el.classList.remove('holding');
@@ -770,7 +954,7 @@
         function renderLocationOptions(searchTerm = '') {
             const list = document.getElementById('locationOptionsList'); list.innerHTML = '';
             const casas = [], callesGroups = {}; const term = searchTerm.toLowerCase().trim();
-            userLocations.forEach(loc => {
+            state.locations.forEach(loc => {
                 const isCasa = loc.toLowerCase().includes("flia.") || ["Maria Ch.", "Carmen S.", "Cleri J.", "Salon del Reino", "Escuela 744"].includes(loc);
                 if (isCasa) casas.push(loc); else { let mainStreet = loc.split(" y ")[0].trim(); if (!callesGroups[mainStreet]) callesGroups[mainStreet] = []; callesGroups[mainStreet].push(loc); }
             });
@@ -782,7 +966,7 @@
             };
 
             if (term) {
-                const filtered = userLocations.filter(loc => loc.toLowerCase().includes(term));
+                const filtered = state.locations.filter(loc => loc.toLowerCase().includes(term));
                 if (filtered.length === 0) { list.innerHTML = `<div class="py-8 text-center text-[15px] text-black/50 dark:text-white/50 font-medium">No se encontraron resultados</div>`; } 
                 else { filtered.sort().forEach(loc => { const isCasa = loc.toLowerCase().includes("flia.") || ["Maria Ch.", "Carmen S.", "Cleri J.", "Salon del Reino", "Escuela 744"].includes(loc); renderSingleOption(loc, isCasa ? "home" : "map-pin"); }); }
                 lucide.createIcons(); return;
@@ -831,11 +1015,12 @@
             const dates = getDatesForMonthWeek(state.currentMonth, state.currentWeek);
             const isCampanaActive = isWeekInCampana(state.currentMonth, state.currentWeek);
             
+            /* Eliminamos el texto aclaratorio y dejamos pastillas limpias para cambiar el horario global */
             const globalHeader = document.createElement('div');
-            globalHeader.className = "mb-1 px-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5 text-center ios-transition animate-fade";
+            globalHeader.className = "mb-2 px-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center ios-transition animate-fade";
             globalHeader.innerHTML = `
-                <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-black/50 dark:text-white/50">Salidas por la mañana:</span><span contenteditable="true" onblur="updateGlobalTime('morningTime', this.innerText)" class="text-[13px] font-bold text-black/80 dark:text-white/90 outline-none min-w-[30px]" data-placeholder="--:--">${state.morningTime}</span><span class="text-[12px] font-medium text-black/50 dark:text-white/50">hs</span></div>
-                <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[12px] font-medium text-black/50 dark:text-white/50">Salidas por la tarde:</span><span contenteditable="true" onblur="updateGlobalTime('afternoonTime', this.innerText)" class="text-[13px] font-bold text-black/80 dark:text-white/90 outline-none min-w-[30px]" data-placeholder="--:--">${state.afternoonTime}</span><span class="text-[12px] font-medium text-black/50 dark:text-white/50">hs</span></div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap bg-black/5 dark:bg-white/10 px-3 py-1 rounded-full"><i data-lucide="sun" class="w-3.5 h-3.5 text-black/50 dark:text-white/50"></i><span contenteditable="true" onblur="updateGlobalTime('morningTime', this.innerText)" class="text-[13px] font-bold text-black/80 dark:text-white/90 outline-none min-w-[30px]" data-placeholder="--:--">${state.morningTime}</span></div>
+                <div class="flex items-center gap-1.5 whitespace-nowrap bg-black/5 dark:bg-white/10 px-3 py-1 rounded-full"><i data-lucide="moon" class="w-3.5 h-3.5 text-black/50 dark:text-white/50"></i><span contenteditable="true" onblur="updateGlobalTime('afternoonTime', this.innerText)" class="text-[13px] font-bold text-black/80 dark:text-white/90 outline-none min-w-[30px]" data-placeholder="--:--">${state.afternoonTime}</span></div>
             `;
             container.appendChild(globalHeader);
 
@@ -871,22 +1056,23 @@
                         ? `<div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'driver', this.innerText); renderSchedule();" class="shrink-0 w-[64px] py-0 flex items-center justify-center rounded-[8px] text-[11px] font-semibold outline-none text-center overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}" data-placeholder="..."> ${currentDriver} </div>`
                         : `<div onclick="openDriverPicker('${dayDef.id}', '${shift.id}')" class="shrink-0 w-[64px] py-0 rounded-[8px] px-1 text-[11px] font-semibold flex items-center justify-center cursor-pointer active:scale-95 ios-transition overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}">${currentDriver || '-'}</div>`;
 
+                    /* Aumentamos el tamaño de la fuente a text-[12px] y ajustamos el ancho a w-[44px] */
                     let timeField = "";
                     if (shift.id === 'n') {
-                        timeField = `<input type="text" value="${sData.time || shift.time}" onchange="updateData('${dayDef.id}', '${shift.id}', 'time', this.value); renderSchedule();" class="w-[36px] text-center text-[10px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] bg-transparent border-none outline-none shrink-0 px-0 mr-1.5">`;
+                        timeField = `<input type="text" value="${sData.time || shift.time}" onchange="updateData('${dayDef.id}', '${shift.id}', 'time', this.value); renderSchedule();" class="w-[44px] text-center text-[12px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] bg-transparent border-none outline-none shrink-0 px-0 mr-1.5 tracking-tight">`;
                     } else {
                         let tVal = sData.time || shift.time || '--.--';
 
                         if (isManualTime) {
                             timeField = `
-                                <div class="shrink-0 w-[38px] flex justify-center items-center pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 ios-transition" ${timeEvents}>
-                                    <div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'time', this.innerText); updateData('${dayDef.id}', '${shift.id}', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[10px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-0.5" data-placeholder="--:--">${tVal}</div>
+                                <div class="shrink-0 w-[44px] flex justify-center items-center pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 ios-transition" ${timeEvents}>
+                                    <div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'time', this.innerText); updateData('${dayDef.id}', '${shift.id}', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[12px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-0.5 tracking-tight" data-placeholder="--:--">${tVal}</div>
                                 </div>
                             `;
                         } else {
                             timeField = `
-                                <div class="shrink-0 w-[38px] flex justify-center items-center text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 cursor-pointer ios-transition" ${timeEvents}>
-                                    <span class="text-[10px] font-bold tracking-tight">${tVal}</span>
+                                <div class="shrink-0 w-[44px] flex justify-center items-center text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 cursor-pointer ios-transition" ${timeEvents}>
+                                    <span class="text-[12px] font-bold tracking-tight">${tVal}</span>
                                 </div>
                             `;
                         }
@@ -895,10 +1081,7 @@
                     const terrColorClass = hasTerr 
                         ? 'bg-[#34C759]/15 text-[#28A745] dark:bg-[#32D74B]/20 dark:text-[#32D74B]' 
                         : 'bg-black/[0.04] dark:bg-white/[0.06] text-black/30 dark:text-white/30';
-                    
-                    /* 1. Eliminamos el div vacío para L a V, permitiendo que el texto se pegue al horario.
-                       2. Conservamos el espaciado o el G1, G2 exclusivamente para el Sábado (excepto en Sáb. de Congre).
-                    */
+                        
                     let prefixHtml = shift.prefix 
                         ? `<div class="shrink-0 w-[20px] text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-1.5">${shift.prefix}</div>` 
                         : (dayDef.id === 'SAB' && !sabData.isSabCongre ? `<div class="shrink-0 w-[20px] mr-1.5"></div>` : ``);
@@ -908,10 +1091,15 @@
                 };
 
                 let content = '';
-                if (dayDef.id === 'SAB' && (dayData.isCleaning || dayData.isAsamblea)) {
-                    if (dayData.isCleaning) {
-                        content = `<div class="flex items-center w-full py-0.5 bg-black/5 dark:bg-[#32D74B]/10 border border-black/[0.06] dark:border-[#32D74B]/20 rounded-[8px] px-2"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[13px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
-                    } else { content = `<div class="flex items-center w-full py-1 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`; }
+                
+                if (dayDef.id === 'VIE' && sabData.isAsambleaReg) {
+                    content = `<div class="flex items-center w-full py-1 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
+                } else if (dayDef.id === 'SAB' && sabData.isAsambleaReg) {
+                    content = `<div class="flex items-center w-full py-1 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
+                } else if (dayDef.id === 'SAB' && sabData.isAsamblea) {
+                    content = `<div class="flex items-center w-full py-1 min-h-[32px]"></div>`;
+                } else if (dayDef.id === 'SAB' && sabData.isCleaning) {
+                    content = `<div class="flex items-center w-full py-0.5 bg-black/5 dark:bg-[#32D74B]/10 border border-black/[0.06] dark:border-[#32D74B]/20 rounded-[8px] px-2"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[13px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
                 } else if (dayDef.id === 'SAB' && sabData.isSabCongre) {
                     content = getShiftHtml({time: state.morningTime, id: 'm'}, '');
                 } else if (dayDef.id === 'SAB' && sabData.isVisita) {
@@ -926,14 +1114,16 @@
                     let sabTimeEvents = `onpointerdown="handleHoldStart(event, 'SAB', 'g1', 'time')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
 
                     let sabTimeHtml = isManualSabTime 
-                        ? `<div class="flex justify-center items-center shrink-0 w-[38px] pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 ios-transition" ${sabTimeEvents}>
-                                <div contenteditable="true" onblur="updateData('SAB', 'g1', 'time', this.innerText); updateData('SAB', 'g1', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[10px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-0.5" data-placeholder="--:--">${tValSab}</div>
+                        ? `<div class="flex justify-center items-center shrink-0 w-[44px] pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 ios-transition" ${sabTimeEvents}>
+                                <div contenteditable="true" onblur="updateData('SAB', 'g1', 'time', this.innerText); updateData('SAB', 'g1', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[12px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-0.5 tracking-tight" data-placeholder="--:--">${tValSab}</div>
                            </div>`
-                        : `<div class="flex justify-center items-center shrink-0 w-[38px] text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 cursor-pointer ios-transition" ${sabTimeEvents}>
-                                <span class="text-[10px] font-bold tracking-tight">${tValSab}</span>
+                        : `<div class="flex justify-center items-center shrink-0 w-[44px] text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 cursor-pointer ios-transition" ${sabTimeEvents}>
+                                <span class="text-[12px] font-bold tracking-tight">${tValSab}</span>
                            </div>`;
                            
                     content = `<div class="flex w-full items-stretch py-0.5"><div class="flex flex-col justify-center shrink-0">${sabTimeHtml}</div><div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${rows}</div></div>`;
+                } else if (dayDef.id === 'DOM' && (sabData.isAsamblea || sabData.isAsambleaReg)) {
+                    content = `<div class="flex items-center w-full py-1 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
                 } else {
                     let curShifts = dayDef.shifts.map(s => { let t = s.time; if (s.id === 'm') t = state.morningTime; if (s.id === 't') t = state.afternoonTime; return { ...s, time: t }; });
                     if (sabData.isVisita) {
@@ -1155,6 +1345,70 @@
             }, 300); 
         }
 
+        let customPromptCallback = null;
+        function openCustomPrompt(title, initialValue, callback) {
+            document.getElementById('customPromptTitle').textContent = title;
+            const input = document.getElementById('customPromptInput');
+            input.value = initialValue;
+            customPromptCallback = callback;
+            
+            const modal = document.getElementById('customPrompt');
+            const box = document.getElementById('customPromptBox');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            void box.offsetWidth;
+            document.getElementById('customPromptBg').classList.remove('opacity-0');
+            box.classList.remove('scale-[1.10]', 'opacity-0');
+            box.classList.add('scale-100', 'opacity-100');
+            input.focus();
+        }
+
+        function closeCustomPrompt() {
+            const box = document.getElementById('customPromptBox');
+            document.getElementById('customPromptBg').classList.add('opacity-0');
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-[1.10]', 'opacity-0');
+            setTimeout(() => {
+                document.getElementById('customPrompt').classList.add('hidden');
+                document.getElementById('customPrompt').classList.remove('flex');
+            }, 300);
+        }
+
+        document.getElementById('customPromptBtn').onclick = () => {
+            if (customPromptCallback) customPromptCallback(document.getElementById('customPromptInput').value.trim());
+            closeCustomPrompt();
+        };
+
+        let confirmActionCallback = null;
+        function openCustomConfirm(msg, btnText, callback) {
+            document.getElementById('customConfirmMsg').textContent = msg;
+            document.getElementById('customConfirmBtn').textContent = btnText;
+            confirmActionCallback = callback;
+            
+            const modal = document.getElementById('customConfirm');
+            const box = document.getElementById('customConfirmBox');
+            modal.classList.remove('hidden'); modal.classList.add('flex'); 
+            void box.offsetWidth; 
+            document.getElementById('customConfirmBg').classList.remove('opacity-0'); 
+            box.classList.remove('scale-[1.10]', 'opacity-0');
+            box.classList.add('scale-100', 'opacity-100');
+        }
+
+        document.getElementById('customConfirmBtn').onclick = () => {
+            if (confirmActionCallback) confirmActionCallback();
+            closeCustomConfirm();
+        }
+
+        function closeCustomConfirm() {
+            const box = document.getElementById('customConfirmBox');
+            document.getElementById('customConfirmBg').classList.add('opacity-0'); 
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-[1.10]', 'opacity-0');
+            setTimeout(() => { 
+                document.getElementById('customConfirm').classList.add('hidden'); 
+                document.getElementById('customConfirm').classList.remove('flex'); 
+            }, 300);
+        }
+
         function handleCameraClick() {
             if (cameraPreventClick) return;
             toggleScreenshotMode();
@@ -1172,40 +1426,20 @@
         function handleCameraHoldEnd(e) { clearTimeout(cameraHoldTimer); }
 
         function showConfirmResetWeek() {
-            document.getElementById('customConfirmMsg').textContent = "¿Desea borrar todos los datos de esta semana?";
-            document.getElementById('customConfirmBtn').onclick = () => {
+            openCustomConfirm("¿Desea borrar todos los datos de esta semana?", "Resetear", () => {
                 const wk = getWeekKey();
                 const empty = { spot: '', driver: '', territories: [], manualMode: false, manualDriverMode: false, time: '' };
                 state.assignments[wk] = {
                     LUN: { m: {...empty}, t: {...empty} }, MAR: { m: {...empty}, t: {...empty} }, MIE: { m: {...empty}, t: {...empty}, n: {...empty} }, JUE: { m: {...empty}, t: {...empty} }, VIE: { m: {...empty}, t: {...empty}, n: {...empty} },
-                    SAB: { m: {...empty}, t: {...empty}, g1: {...empty}, g2: {...empty}, g3: {...empty}, g4: {...empty}, isVisita: false, isAsamblea: false, isCleaning: false, isSabCongre: false, cleaningTime: '' }, DOM: { m: {...empty} }
+                    SAB: { m: {...empty}, t: {...empty}, g1: {...empty}, g2: {...empty}, g3: {...empty}, g4: {...empty}, isVisita: false, isAsamblea: false, isAsambleaReg: false, isCleaning: false, isSabCongre: false, cleaningTime: '' }, DOM: { m: {...empty} }
                 };
                 saveState(); renderSchedule(); renderTerritoryGrid(); updateModesToggleState();
                 showCustomAlert("Semana reseteada con éxito.");
-                closeCustomConfirm();
-            };
-            const modal = document.getElementById('customConfirm');
-            const box = document.getElementById('customConfirmBox');
-            modal.classList.remove('hidden'); modal.classList.add('flex'); 
-            void box.offsetWidth; 
-            document.getElementById('customConfirmBg').classList.remove('opacity-0'); 
-            box.classList.remove('scale-[1.10]', 'opacity-0');
-            box.classList.add('scale-100', 'opacity-100');
-        }
-
-        function closeCustomConfirm() {
-            const box = document.getElementById('customConfirmBox');
-            document.getElementById('customConfirmBg').classList.add('opacity-0'); 
-            box.classList.remove('scale-100', 'opacity-100');
-            box.classList.add('scale-[1.10]', 'opacity-0');
-            setTimeout(() => { 
-                document.getElementById('customConfirm').classList.add('hidden'); 
-                document.getElementById('customConfirm').classList.remove('flex'); 
-            }, 300);
+            });
         }
 
         Object.assign(window, {
-            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions, handleCameraHoldStart, handleCameraHoldEnd, handleCameraClick, closeCustomConfirm
+            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions, handleCameraHoldStart, handleCameraHoldEnd, handleCameraClick, openCustomConfirm, closeCustomConfirm, openDriversEditor, openLocationsEditor, openTimesEditor, saveEditedTimes, promptAddDriver, promptEditDriver, promptDeleteDriver, promptAddLocation, promptEditLocation, promptDeleteLocation, closeCustomPrompt
         });
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
