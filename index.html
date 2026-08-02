@@ -1045,28 +1045,27 @@
                     const timeEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'time')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
                     
                     let addrContent = isManual 
-                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full py-0 flex items-center px-1 text-[14px] font-medium leading-tight text-black dark:text-white/90 outline-none" data-placeholder="Escribir...">${spotValue}</div>`
-                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full py-0 flex items-center px-1 text-[14px] font-medium leading-tight ${spotValue ? 'text-black dark:text-white/90' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
+                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full py-1.5 flex items-center px-2 text-[15px] font-medium leading-tight text-black dark:text-white/90 outline-none" data-placeholder="Escribir...">${spotValue}</div>`
+                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full py-1.5 flex items-center px-2 text-[15px] font-medium leading-tight ${spotValue ? 'text-black dark:text-white/90' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
                     
                     const driverClass = currentDriver 
                         ? 'bg-black/[0.04] dark:bg-white/[0.06] text-black/70 dark:text-white/70' 
                         : 'bg-black/[0.02] dark:bg-white/[0.02] text-black/30 dark:text-white/30';
                         
                     let driverContentHtml = isManualDriver
-                        ? `<div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'driver', this.innerText); renderSchedule();" class="shrink-0 w-[64px] py-0 flex items-center justify-center rounded-[8px] text-[11px] font-semibold outline-none text-center overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}" data-placeholder="..."> ${currentDriver} </div>`
-                        : `<div onclick="openDriverPicker('${dayDef.id}', '${shift.id}')" class="shrink-0 w-[64px] py-0 rounded-[8px] px-1 text-[11px] font-semibold flex items-center justify-center cursor-pointer active:scale-95 ios-transition overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}">${currentDriver || '-'}</div>`;
+                        ? `<div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'driver', this.innerText); renderSchedule();" class="shrink-0 w-[64px] py-1 flex items-center justify-center rounded-[8px] text-[12px] font-semibold outline-none text-center overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}" data-placeholder="..."> ${currentDriver} </div>`
+                        : `<div onclick="openDriverPicker('${dayDef.id}', '${shift.id}')" class="shrink-0 w-[64px] py-1 rounded-[8px] px-1 text-[12px] font-semibold flex items-center justify-center cursor-pointer active:scale-95 ios-transition overflow-hidden whitespace-nowrap text-ellipsis ${driverClass}">${currentDriver || '-'}</div>`;
 
-                    /* Aumentamos el tamaño de la fuente a text-[12px] y ajustamos el ancho a w-[44px] */
                     let timeField = "";
                     if (shift.id === 'n') {
-                        timeField = `<input type="text" value="${sData.time || shift.time}" onchange="updateData('${dayDef.id}', '${shift.id}', 'time', this.value); renderSchedule();" class="w-[44px] text-center text-[12px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] bg-transparent border-none outline-none shrink-0 px-0 mr-1.5 tracking-tight">`;
+                        timeField = `<input type="text" value="${sData.time || shift.time}" onchange="updateData('${dayDef.id}', '${shift.id}', 'time', this.value); renderSchedule();" class="w-[42px] text-center text-[12px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] bg-transparent border-none outline-none shrink-0 px-0 mr-1.5">`;
                     } else {
                         let tVal = sData.time || shift.time || '--.--';
 
                         if (isManualTime) {
                             timeField = `
                                 <div class="shrink-0 w-[44px] flex justify-center items-center pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 ios-transition" ${timeEvents}>
-                                    <div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'time', this.innerText); updateData('${dayDef.id}', '${shift.id}', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[12px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-0.5 tracking-tight" data-placeholder="--:--">${tVal}</div>
+                                    <div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'time', this.innerText); updateData('${dayDef.id}', '${shift.id}', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[12px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-1 tracking-tight" data-placeholder="--:--">${tVal}</div>
                                 </div>
                             `;
                         } else {
@@ -1081,25 +1080,23 @@
                     const terrColorClass = hasTerr 
                         ? 'bg-[#34C759]/15 text-[#28A745] dark:bg-[#32D74B]/20 dark:text-[#32D74B]' 
                         : 'bg-black/[0.04] dark:bg-white/[0.06] text-black/30 dark:text-white/30';
-                        
+                    
                     let prefixHtml = shift.prefix 
                         ? `<div class="shrink-0 w-[20px] text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-1.5">${shift.prefix}</div>` 
                         : (dayDef.id === 'SAB' && !sabData.isSabCongre ? `<div class="shrink-0 w-[20px] mr-1.5"></div>` : ``);
                     
-                    /* Aplicamos la línea lila suave para separar los turnos (border-[#AF52DE]/20) */
-                    return `<div class="flex items-center gap-1 w-full py-0.5 border-b border-[#AF52DE]/20 dark:border-[#CDA4FF]/20 last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-0 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
+                    return `<div class="flex items-center gap-1 w-full py-1.5 border-b border-[#AF52DE]/20 dark:border-[#CDA4FF]/20 last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-1 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
                 };
 
                 let content = '';
-                
                 if (dayDef.id === 'VIE' && sabData.isAsambleaReg) {
-                    content = `<div class="flex items-center w-full py-1 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
+                    content = `<div class="flex items-center w-full py-2 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[14px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
                 } else if (dayDef.id === 'SAB' && sabData.isAsambleaReg) {
-                    content = `<div class="flex items-center w-full py-1 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
+                    content = `<div class="flex items-center w-full py-2 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[14px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
                 } else if (dayDef.id === 'SAB' && sabData.isAsamblea) {
                     content = `<div class="flex items-center w-full py-1 min-h-[32px]"></div>`;
                 } else if (dayDef.id === 'SAB' && sabData.isCleaning) {
-                    content = `<div class="flex items-center w-full py-0.5 bg-black/5 dark:bg-[#32D74B]/10 border border-black/[0.06] dark:border-[#32D74B]/20 rounded-[8px] px-2"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[13px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
+                    content = `<div class="flex items-center w-full py-1.5 bg-black/5 dark:bg-[#32D74B]/10 border border-black/[0.06] dark:border-[#32D74B]/20 rounded-[8px] px-2"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[14px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
                 } else if (dayDef.id === 'SAB' && sabData.isSabCongre) {
                     content = getShiftHtml({time: state.morningTime, id: 'm'}, '');
                 } else if (dayDef.id === 'SAB' && sabData.isVisita) {
@@ -1115,15 +1112,15 @@
 
                     let sabTimeHtml = isManualSabTime 
                         ? `<div class="flex justify-center items-center shrink-0 w-[44px] pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 ios-transition" ${sabTimeEvents}>
-                                <div contenteditable="true" onblur="updateData('SAB', 'g1', 'time', this.innerText); updateData('SAB', 'g1', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[12px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-0.5 tracking-tight" data-placeholder="--:--">${tValSab}</div>
+                                <div contenteditable="true" onblur="updateData('SAB', 'g1', 'time', this.innerText); updateData('SAB', 'g1', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[12px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-1 tracking-tight" data-placeholder="--:--">${tValSab}</div>
                            </div>`
                         : `<div class="flex justify-center items-center shrink-0 w-[44px] text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 cursor-pointer ios-transition" ${sabTimeEvents}>
                                 <span class="text-[12px] font-bold tracking-tight">${tValSab}</span>
                            </div>`;
                            
-                    content = `<div class="flex w-full items-stretch py-0.5"><div class="flex flex-col justify-center shrink-0">${sabTimeHtml}</div><div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${rows}</div></div>`;
+                    content = `<div class="flex w-full items-stretch py-1"><div class="flex flex-col justify-center shrink-0">${sabTimeHtml}</div><div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${rows}</div></div>`;
                 } else if (dayDef.id === 'DOM' && (sabData.isAsamblea || sabData.isAsambleaReg)) {
-                    content = `<div class="flex items-center w-full py-1 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
+                    content = `<div class="flex items-center w-full py-2 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[14px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
                 } else {
                     let curShifts = dayDef.shifts.map(s => { let t = s.time; if (s.id === 'm') t = state.morningTime; if (s.id === 't') t = state.afternoonTime; return { ...s, time: t }; });
                     if (sabData.isVisita) {
@@ -1139,12 +1136,12 @@
                 }
                 
                 const dayRow = document.createElement('div');
-                dayRow.className = `py-1 px-1.5 flex items-center border-b border-[#AF52DE]/40 dark:border-[#CDA4FF]/30 last:border-0 ios-transition bg-white dark:bg-[#1C1C1E]`;
+                dayRow.className = `py-2 px-2 flex items-center border-b border-[#AF52DE]/40 dark:border-[#CDA4FF]/30 last:border-0 ios-transition bg-white dark:bg-[#1C1C1E]`;
                 
                 dayRow.innerHTML = `
-                    <div class="w-[36px] h-[36px] shrink-0 flex flex-col items-center justify-center mr-1.5 rounded-[12px] bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-black/[0.04] dark:border-white/[0.05]">
-                        <span class="text-[8px] font-bold text-black dark:text-white/40 mb-[1px] leading-none uppercase tracking-widest">${dayDef.label}</span>
-                        <span class="text-[16px] font-semibold text-black dark:text-white/90 tracking-tight leading-none">${dateInfo.day}</span>
+                    <div class="w-[42px] h-[42px] shrink-0 flex flex-col items-center justify-center mr-2 rounded-[12px] bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-black/[0.04] dark:border-white/[0.05]">
+                        <span class="text-[9px] font-bold text-black dark:text-white mb-[1px] leading-none uppercase tracking-widest">${dayDef.label}</span>
+                        <span class="text-[18px] font-semibold text-black dark:text-white tracking-tight leading-none">${dateInfo.day}</span>
                     </div>
                     <div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${content}</div>
                 `;
