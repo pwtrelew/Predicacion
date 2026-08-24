@@ -521,7 +521,7 @@
             { id: 'JUE', label: 'JUE', shifts: [{time: '10.00', id: 'm'}, {time: '17.30', id: 't'}] },
             { id: 'VIE', label: 'VIE', shifts: [{time: '10.00', id: 'm'}, {time: '17.30', id: 't'}] },
             { id: 'SAB', label: 'SAB', shifts: [{time: '10.00', id: 'g1', prefix: 'G1'}, {time: '', id: 'g2', prefix: 'G2'}, {time: '', id: 'g3', prefix: 'G3'}, {time: '', id: 'g4', prefix: 'G4'}]},
-            { id: 'DOM', label: 'DOM', shifts: [{time: '10.00', id: 'm'}] }
+            { id: 'DOM', label: 'DOM', shifts: [{time: '10.00', id: 'm'}] } // La estructura base no cambia, lo controlamos en el render
         ];
 
         let state = { 
@@ -926,15 +926,15 @@
             saveState(); renderSchedule(); toggleModal('editTimesModal');
         }
 
+        // --- SISTEMA EDICIÓN PLANILLA ---
         function handleHoldStart(e, day, shift, type = 'spot') {
             clearTimeout(holdTimer); isHolding = false; const el = e.currentTarget; el.classList.add('holding');
             holdTimer = setTimeout(() => {
                 isHolding = true; const wk = getWeekKey();
-                
                 let field = 'manualMode';
                 if (type === 'driver') field = 'manualDriverMode';
-                else if (type === 'time') field = 'manualTimeMode';
-                
+                if (type === 'time') field = 'manualTimeMode';
+                if (type === 'prefix') field = 'manualPrefixMode'; // Agregamos el modo manual para prefijos
                 const currentMode = state.assignments[wk]?.[day]?.[shift]?.[field] || false;
                 updateData(day, shift, field, !currentMode); renderSchedule();
                 if ("vibrate" in navigator) navigator.vibrate([15, 30, 15]); el.classList.remove('holding');
@@ -1026,7 +1026,7 @@
                     const sData = dayData[shift.id] || {};
                     const spotValue = sData.spot ? sData.spot : defaultSpot;
                     const isManual = sData.manualMode === true, isManualDriver = sData.manualDriverMode === true;
-                    const isManualTime = sData.manualTimeMode === true;
+                    const isManualTime = sData.manualTimeMode === true, isManualPrefix = sData.manualPrefixMode === true;
                     const defDriver = sabData.isVisita ? (dayDef.id === 'MAR' ? '' : 'Abel') : '';
                     const currentDriver = sData.driver !== undefined ? sData.driver : defDriver, tArray = sData.territories || [];
                     const hasTerr = tArray.length > 0;
@@ -1034,10 +1034,11 @@
                     const cellEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'spot')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
                     const driverEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'driver')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
                     const timeEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'time')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
-                    
+                    const prefixEvents = `onpointerdown="handleHoldStart(event, '${dayDef.id}', '${shift.id}', 'prefix')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
+
                     let addrContent = isManual 
-                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full py-1 flex items-center px-1.5 text-[15px] font-medium leading-tight text-black dark:text-white/90 outline-none" data-placeholder="Escribir...">${spotValue}</div>`
-                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full py-1 flex items-center px-1.5 text-[15px] font-medium leading-tight ${spotValue ? 'text-black dark:text-white/90' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
+                        ? `<div contenteditable="true" onfocus="this.parentElement.classList.add('manual-edit-active')" onblur="this.parentElement.classList.remove('manual-edit-active'); updateData('${dayDef.id}', '${shift.id}', 'spot', this.innerText); renderSchedule();" class="w-full py-1 flex items-center px-1 text-[14px] font-medium leading-tight text-black dark:text-white/90 outline-none" data-placeholder="Escribir...">${spotValue}</div>`
+                        : `<div onclick="openLocationPicker('${dayDef.id}', '${shift.id}')" class="w-full py-1 flex items-center px-1 text-[14px] font-medium leading-tight ${spotValue ? 'text-black dark:text-white/90' : 'text-black/30 dark:text-white/30'} break-words">${spotValue || 'Ubicación...'}</div>`;
                     
                     const driverClass = currentDriver 
                         ? 'bg-black/[0.04] dark:bg-white/[0.06] text-black/70 dark:text-white/70' 
@@ -1055,14 +1056,14 @@
 
                         if (isManualTime) {
                             timeField = `
-                                <div class="shrink-0 w-[48px] flex justify-center items-center pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 ios-transition" ${timeEvents}>
-                                    <div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'time', this.innerText); updateData('${dayDef.id}', '${shift.id}', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[14px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-1 tracking-tight" data-placeholder="--:--">${tVal}</div>
+                                <div class="shrink-0 w-[42px] flex justify-center items-center pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 ios-transition" ${timeEvents}>
+                                    <div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'time', this.innerText); updateData('${dayDef.id}', '${shift.id}', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[12px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-0.5 tracking-tight" data-placeholder="--:--">${tVal}</div>
                                 </div>
                             `;
                         } else {
                             timeField = `
-                                <div class="shrink-0 w-[48px] flex justify-center items-center text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 cursor-pointer ios-transition" ${timeEvents}>
-                                    <span class="text-[14px] font-bold tracking-tight">${tVal}</span>
+                                <div class="shrink-0 w-[42px] flex justify-center items-center text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 cursor-pointer ios-transition" ${timeEvents}>
+                                    <span class="text-[12px] font-bold tracking-tight">${tVal}</span>
                                 </div>
                             `;
                         }
@@ -1072,28 +1073,40 @@
                         ? 'bg-[#34C759]/15 text-[#28A745] dark:bg-[#32D74B]/20 dark:text-[#32D74B]' 
                         : 'bg-black/[0.04] dark:bg-white/[0.06] text-black/30 dark:text-white/30';
                     
-                    let prefixHtml = shift.prefix 
-                        ? `<div class="shrink-0 w-[20px] text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-1.5">${shift.prefix}</div>` 
-                        : (dayDef.id === 'SAB' && !sabData.isSabCongre ? `<div class="shrink-0 w-[20px] mr-1.5"></div>` : ``);
+                    let customPrefix = sData.prefixText !== undefined ? sData.prefixText : shift.prefix;
+                    
+                    let prefixHtml = '';
+                    if (shift.prefix) {
+                        if (isManualPrefix) {
+                             prefixHtml = `<div class="shrink-0 min-w-[20px] max-w-[45px] ios-transition flex items-center justify-center mr-1" ${prefixEvents}>
+                                             <div contenteditable="true" onblur="updateData('${dayDef.id}', '${shift.id}', 'prefixText', this.innerText); updateData('${dayDef.id}', '${shift.id}', 'manualPrefixMode', false); renderSchedule();" class="w-full text-center text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-0.5 tracking-tighter" data-placeholder="...">${customPrefix}</div>
+                                           </div>`;
+                        } else {
+                             prefixHtml = `<div class="shrink-0 min-w-[20px] max-w-[45px] text-[11px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] text-center tracking-tighter mr-1 cursor-pointer ios-transition" ${prefixEvents}>${customPrefix}</div>`;
+                        }
+                    } else if (dayDef.id === 'SAB' && !sabData.isSabCongre) {
+                        prefixHtml = `<div class="shrink-0 w-[20px] mr-1"></div>`;
+                    }
                     
                     /* Aplicamos la línea lila suave para separar los turnos (border-[#AF52DE]/20) */
-                    return `<div class="flex items-center gap-1 w-full py-1 border-b border-[#AF52DE]/20 dark:border-[#CDA4FF]/20 last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-1 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
+                    return `<div class="flex items-center gap-1 w-full py-0.5 border-b border-[#AF52DE]/20 dark:border-[#CDA4FF]/20 last:border-0">${!compact ? timeField : ''}${prefixHtml}<div class="relative flex-1 min-w-0 flex items-center rounded-lg ios-transition" ${cellEvents}>${addrContent}</div><button onclick="openShiftTerritoryModal('${dayDef.id}', '${shift.id}')" class="shrink-0 py-0 min-w-[32px] rounded-[8px] px-1.5 text-[11px] font-bold ${terrColorClass} active:scale-90 ios-transition ml-1">${hasTerr ? tArray.join(',') : '-'}</button><div class="ios-transition ml-1" ${driverEvents}>${driverContentHtml}</div></div>`;
                 };
 
                 let content = '';
-                if (dayDef.id === 'VIE' && sabData.isAsambleaReg) {
-                    content = `<div class="flex items-center w-full py-2 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[14px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
-                } else if (dayDef.id === 'SAB' && sabData.isAsambleaReg) {
-                    content = `<div class="flex items-center w-full py-2 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[14px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
-                } else if (dayDef.id === 'SAB' && sabData.isAsamblea) {
-                    content = `<div class="flex items-center w-full py-1 min-h-[32px]"></div>`;
-                } else if (dayDef.id === 'SAB' && sabData.isCleaning) {
-                    content = `<div class="flex items-center w-full py-1.5 bg-black/5 dark:bg-[#32D74B]/10 border border-black/[0.06] dark:border-[#32D74B]/20 rounded-[8px] px-2"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[14px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
+                if (dayDef.id === 'SAB' && (dayData.isCleaning || dayData.isAsamblea || dayData.isAsambleaReg)) {
+                    if (dayData.isCleaning) {
+                        content = `<div class="flex items-center w-full py-0.5 bg-black/5 dark:bg-[#32D74B]/10 border border-black/[0.06] dark:border-[#32D74B]/20 rounded-[8px] px-2"><span contenteditable="true" onblur="updateCleaningTime('${weekKey}', this.innerText)" class="w-[45px] text-center text-[12px] font-bold text-black dark:text-[#32D74B] mr-2 outline-none" data-placeholder="9.00">${dayData.cleaningTime || "9.00"}</span><div class="flex-1 flex items-center justify-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-black dark:text-[#32D74B]"></i><span class="font-bold text-[13px] text-black dark:text-[#32D74B] tracking-widest uppercase">Limpieza General</span></div></div>`;
+                    } else { content = `<div class="flex items-center w-full py-1 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`; }
+                } else if ((dayDef.id === 'DOM' || dayDef.id === 'VIE') && sabData.isAsambleaReg) {
+                     content = `<div class="flex items-center w-full py-1 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
+                } else if (dayDef.id === 'DOM' && sabData.isAsamblea) {
+                     content = `<div class="flex items-center w-full py-1 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[13px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
                 } else if (dayDef.id === 'SAB' && sabData.isSabCongre) {
                     content = getShiftHtml({time: state.morningTime, id: 'm'}, '');
                 } else if (dayDef.id === 'SAB' && sabData.isVisita) {
                     content = [{time: state.morningTime, id: 'm'}, {time: '19.30', id: 't'}].map(s => getShiftHtml(s, s.id === 't' ? 'Salón del Reino' : '')).join('');
                 } else if (dayDef.id === 'SAB') {
+                    
                     let shiftsWithTime = dayDef.shifts.map(s => { let t = s.time; if (s.id === 'g1') t = state.morningTime; return { ...s, time: t }; });
                     const rows = shiftsWithTime.map(s => getShiftHtml(s, '', true)).join('');
                     
@@ -1103,16 +1116,39 @@
                     let sabTimeEvents = `onpointerdown="handleHoldStart(event, 'SAB', 'g1', 'time')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
 
                     let sabTimeHtml = isManualSabTime 
-                        ? `<div class="flex justify-center items-center shrink-0 w-[48px] pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 ios-transition" ${sabTimeEvents}>
-                                <div contenteditable="true" onblur="updateData('SAB', 'g1', 'time', this.innerText); updateData('SAB', 'g1', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[14px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-1 tracking-tight" data-placeholder="--:--">${tValSab}</div>
+                        ? `<div class="flex justify-center items-center shrink-0 w-[42px] pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 ios-transition" ${sabTimeEvents}>
+                                <div contenteditable="true" onblur="updateData('SAB', 'g1', 'time', this.innerText); updateData('SAB', 'g1', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[12px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-0.5" data-placeholder="--:--">${tValSab}</div>
                            </div>`
-                        : `<div class="flex justify-center items-center shrink-0 w-[48px] text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 cursor-pointer ios-transition" ${sabTimeEvents}>
-                                <span class="text-[14px] font-bold tracking-tight">${tValSab}</span>
+                        : `<div class="flex justify-center items-center shrink-0 w-[42px] text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 cursor-pointer ios-transition" ${sabTimeEvents}>
+                                <span class="text-[12px] font-bold tracking-tight">${tValSab}</span>
                            </div>`;
                            
-                    content = `<div class="flex w-full items-stretch py-1"><div class="flex flex-col justify-center shrink-0">${sabTimeHtml}</div><div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${rows}</div></div>`;
-                } else if (dayDef.id === 'DOM' && (sabData.isAsamblea || sabData.isAsambleaReg)) {
-                    content = `<div class="flex items-center w-full py-2 bg-[#34C759] dark:bg-[#32D74B] rounded-[8px] shadow-sm"><div class="flex-1 text-center font-bold text-[14px] text-white dark:text-black tracking-widest uppercase">Asamblea</div></div>`;
+                    content = `<div class="flex w-full items-stretch py-0.5"><div class="flex flex-col justify-center shrink-0">${sabTimeHtml}</div><div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${rows}</div></div>`;
+
+                } else if (dayDef.id === 'DOM' && isCampanaActive) {
+                    // Lógica especial para el Domingo en modo Campaña
+                    const campanaDomingoShifts = [
+                        { id: 'g1g2', prefix: 'G1-G2' },
+                        { id: 'g3g4', prefix: 'G3-G4' }
+                    ];
+                    
+                    const rows = campanaDomingoShifts.map(s => getShiftHtml(s, '', true)).join('');
+                    
+                    let sDataDom = dayData['g1g2'] || {};
+                    let isManualDomTime = sDataDom.manualTimeMode === true;
+                    let tValDom = sDataDom.time || state.morningTime || "10.00";
+                    let domTimeEvents = `onpointerdown="handleHoldStart(event, 'DOM', 'g1g2', 'time')" onpointerup="handleHoldEnd(event)" onpointerleave="handleHoldEnd(event)" onpointercancel="handleHoldEnd(event)" oncontextmenu="event.preventDefault();"`;
+
+                    let domTimeHtml = isManualDomTime 
+                        ? `<div class="flex justify-center items-center shrink-0 w-[42px] pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 ios-transition" ${domTimeEvents}>
+                                <div contenteditable="true" onblur="updateData('DOM', 'g1g2', 'time', this.innerText); updateData('DOM', 'g1g2', 'manualTimeMode', false); renderSchedule();" class="w-full text-center text-[12px] font-bold text-[#AF52DE] dark:text-[#CDA4FF] outline-none bg-black/5 dark:bg-white/10 rounded-[4px] py-0.5" data-placeholder="--:--">${tValDom}</div>
+                           </div>`
+                        : `<div class="flex justify-center items-center shrink-0 w-[42px] text-[#AF52DE] dark:text-[#CDA4FF] select-none leading-none pr-1.5 border-r border-black/[0.06] dark:border-white/[0.06] mr-1.5 cursor-pointer ios-transition" ${domTimeEvents}>
+                                <span class="text-[12px] font-bold tracking-tight">${tValDom}</span>
+                           </div>`;
+                           
+                    content = `<div class="flex w-full items-stretch py-0.5"><div class="flex flex-col justify-center shrink-0">${domTimeHtml}</div><div class="flex-1 flex flex-col justify-center gap-0 min-w-0">${rows}</div></div>`;
+
                 } else {
                     let curShifts = dayDef.shifts.map(s => { let t = s.time; if (s.id === 'm') t = state.morningTime; if (s.id === 't') t = state.afternoonTime; return { ...s, time: t }; });
                     if (sabData.isVisita) {
