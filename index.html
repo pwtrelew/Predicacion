@@ -1284,7 +1284,7 @@
         
         function renderShiftTerritoryGrid() {
             const g = document.getElementById('shiftTerritoryGrid'); g.innerHTML = '';
-            const allTerrs = ['Rev.']; for(let i=1; i<=75; i++) { allTerrs.push(i.toString()); if(i===4) allTerrs.push('4.1'); }
+            const allTerrs = ['Rev.']; for(let i=1; i<=89; i++) { allTerrs.push(i.toString()); if(i===4) allTerrs.push('4.1'); }
             allTerrs.forEach(tStr => {
                 const sel = tempTerritories.indexOf(tStr) > -1; const warning = territoryWarnings[tStr];
                 let bgClass = 'bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70';
@@ -1309,9 +1309,9 @@
                     Object.values(state.assignments[key]).forEach(d => Object.values(d).forEach(s => s.territories?.forEach(t => { if (t !== 'Rev.') monthlyAssigned.add(t); })));
                 }
             });
-            const allTerrs = ['Rev.']; for(let i=1; i<=75; i++) { allTerrs.push(i.toString()); if(i===4) allTerrs.push('4.1'); }
+            const allTerrs = ['Rev.']; for(let i=1; i<=89; i++) { allTerrs.push(i.toString()); if(i===4) allTerrs.push('4.1'); }
             let workedCount = 0; allTerrs.forEach(tStr => { if (tStr !== 'Rev.' && monthlyAssigned.has(tStr)) workedCount++; });
-            const remainingCount = 76 - workedCount;
+            const remainingCount = 90 - workedCount;
             const subtitleEl = document.getElementById('territoryModalSubtitle');
             if (subtitleEl) {
                 if (remainingCount === 0) subtitleEl.innerHTML = `<span class="text-[#34C759] dark:text-[#32D74B] font-bold">¡Todos los territorios abarcados!</span>`;
