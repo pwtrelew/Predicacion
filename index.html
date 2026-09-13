@@ -474,6 +474,19 @@
         </div>
     </div>
 
+    <div id="locationTypeModal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div id="locationTypeBg" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="locationTypeBox" class="relative bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(30,30,30,0.95)] backdrop-blur-xl border border-black/10 dark:border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-[1.10] opacity-0 ios-spring shadow-2xl">
+            <h3 class="text-[17px] font-semibold text-black dark:text-white mb-2">Tipo de Ubicación</h3>
+            <p class="text-[13px] text-black/60 dark:text-white/60 mb-5 leading-tight">¿Qué tipo de punto de encuentro deseas agregar?</p>
+            <div class="flex flex-col gap-3">
+                <button onclick="selectLocationType('calle')" class="w-full py-3.5 text-black dark:text-white font-medium text-[15px] bg-black/5 dark:bg-white/10 rounded-xl active:scale-95 ios-transition flex items-center justify-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Calle / Esquina</button>
+                <button onclick="selectLocationType('casa')" class="w-full py-3.5 text-white font-semibold text-[15px] bg-[#0A84FF] rounded-xl shadow-lg shadow-[#0A84FF]/20 active:scale-95 ios-transition flex items-center justify-center gap-2"><i data-lucide="home" class="w-4 h-4"></i> Casa / Familia</button>
+            </div>
+            <button onclick="closeLocationTypeModal()" class="w-full mt-4 py-2 text-black/40 dark:text-white/40 font-medium text-[14px] active:opacity-70 ios-transition">Cancelar</button>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -510,7 +523,7 @@
             "Lezana y 13 de Julio", "Las Heras y L. Novaro", "Alem y Alberdi", "Roque Gonzalez y W. Davies", "Nahuelpan y Velero Mimosa", 
             "Flia. Ferrin (Dario)", "Flia. Ferrin (Pablo)", "Flia. Sanchez", "Flia. Velazquez", "Flia. Garcia", "Flia. Echegaray", 
             "Flia. Quirulef", "Flia. Cicchitti", "Flia. Perales", "Flia. Molina", "Maria Ch.", "Carmen S.", "Cleri J.", 
-            "Maestros Puntanos y J. Murray Thomas", "Conesa y J. Jones"
+            "Maestros Puntanos y J. Murray Thomas", "Conesa y J. Jones", "13 de Julio y Tello"
         ];
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         
@@ -541,6 +554,21 @@
             if (parsed.isCampana !== undefined) {
                 parsed.campanaConfig = { active: parsed.isCampana, start: '', end: '' };
                 delete parsed.isCampana;
+            }
+            if (parsed.locations) {
+                const idx = parsed.locations.indexOf("Escuela 196");
+                if (idx !== -1) parsed.locations[idx] = "13 de Julio y Tello";
+            }
+            if (parsed.assignments) {
+                Object.keys(parsed.assignments).forEach(wk => {
+                    Object.keys(parsed.assignments[wk]).forEach(day => {
+                        Object.keys(parsed.assignments[wk][day]).forEach(shift => {
+                            if (parsed.assignments[wk][day][shift] && parsed.assignments[wk][day][shift].spot === "Escuela 196") {
+                                parsed.assignments[wk][day][shift].spot = "13 de Julio y Tello";
+                            }
+                        });
+                    });
+                });
             }
             state = Object.assign(state, parsed);
         }
@@ -587,6 +615,28 @@
             onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const remoteData = docSnap.data(); 
+                    
+                    let needsUpdate = false;
+                    if (remoteData.locations) {
+                        const idx = remoteData.locations.indexOf("Escuela 196");
+                        if (idx !== -1) { remoteData.locations[idx] = "13 de Julio y Tello"; needsUpdate = true; }
+                    }
+                    if (remoteData.assignments) {
+                        Object.keys(remoteData.assignments).forEach(wk => {
+                            Object.keys(remoteData.assignments[wk]).forEach(day => {
+                                Object.keys(remoteData.assignments[wk][day]).forEach(shift => {
+                                    if (remoteData.assignments[wk][day][shift] && remoteData.assignments[wk][day][shift].spot === "Escuela 196") {
+                                        remoteData.assignments[wk][day][shift].spot = "13 de Julio y Tello";
+                                        needsUpdate = true;
+                                    }
+                                });
+                            });
+                        });
+                    }
+                    if (needsUpdate) {
+                        setDoc(docRef, { locations: remoteData.locations, assignments: remoteData.assignments }, { merge: true });
+                    }
+
                     state = Object.assign(state, remoteData);
                     if (!state.drivers) state.drivers = [...defaultDrivers];
                     if (!state.locations) state.locations = [...defaultLocations];
@@ -896,10 +946,37 @@
         }
 
         function promptAddLocation() {
-            openCustomPrompt("Nueva Ubicación", "", (val) => {
-                if(val) { state.locations.push(val); saveState(); renderLocationsEditList(); renderSchedule(); }
-            });
+            const modal = document.getElementById('locationTypeModal');
+            const box = document.getElementById('locationTypeBox');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            void box.offsetWidth;
+            document.getElementById('locationTypeBg').classList.remove('opacity-0');
+            box.classList.remove('scale-[1.10]', 'opacity-0');
+            box.classList.add('scale-100', 'opacity-100');
+            lucide.createIcons();
         }
+
+        function closeLocationTypeModal() {
+            const box = document.getElementById('locationTypeBox');
+            document.getElementById('locationTypeBg').classList.add('opacity-0');
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-[1.10]', 'opacity-0');
+            setTimeout(() => {
+                document.getElementById('locationTypeModal').classList.add('hidden');
+                document.getElementById('locationTypeModal').classList.remove('flex');
+            }, 300);
+        }
+
+        function selectLocationType(type) {
+            closeLocationTypeModal();
+            setTimeout(() => {
+                const initialText = type === 'casa' ? 'Flia. ' : '';
+                openCustomPrompt("Nueva Ubicación", initialText, (val) => {
+                    if(val) { state.locations.push(val); saveState(); renderLocationsEditList(); renderSchedule(); }
+                });
+            }, 350);
+        }
+
         function promptEditLocation(idx) {
             openCustomPrompt("Editar Ubicación", state.locations[idx], (val) => {
                 if(val) { state.locations[idx] = val; saveState(); renderLocationsEditList(); renderSchedule(); }
@@ -1464,7 +1541,7 @@
         }
 
         Object.assign(window, {
-            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions, handleCameraHoldStart, handleCameraHoldEnd, handleCameraClick, openCustomConfirm, closeCustomConfirm, openDriversEditor, openLocationsEditor, openTimesEditor, saveEditedTimes, promptAddDriver, promptEditDriver, promptDeleteDriver, promptAddLocation, promptEditLocation, promptDeleteLocation, closeCustomPrompt
+            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions, handleCameraHoldStart, handleCameraHoldEnd, handleCameraClick, openCustomConfirm, closeCustomConfirm, openDriversEditor, openLocationsEditor, openTimesEditor, saveEditedTimes, promptAddDriver, promptEditDriver, promptDeleteDriver, promptAddLocation, promptEditLocation, promptDeleteLocation, closeCustomPrompt, closeLocationTypeModal, selectLocationType
         });
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
