@@ -1,4 +1,4 @@
-const CACHE_NAME = 'predi-cache-v9';
+const CACHE_NAME = 'predi-cache-v2026-2';
 
 // Recursos estáticos iniciales a guardar en memoria
 const ASSETS_TO_CACHE = [
@@ -19,7 +19,13 @@ self.addEventListener('install', event => {
                 return cache.addAll(ASSETS_TO_CACHE);
             })
     );
-    self.skipWaiting();
+});
+
+// Escuchar mensaje del usuario para actualizar
+self.addEventListener('message', event => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
 
 // 2. ACTIVACIÓN: Limpia cachés antiguos si hay una nueva versión
