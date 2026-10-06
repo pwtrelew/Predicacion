@@ -487,6 +487,16 @@
         </div>
     </div>
 
+    <div id="updateAlertModal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4">
+        <div id="updateAlertBg" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="updateAlertBox" class="relative bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(30,30,30,0.95)] backdrop-blur-xl border border-black/10 dark:border-white/10 p-6 rounded-[24px] max-w-xs w-full text-center scale-[1.10] opacity-0 ios-spring shadow-2xl">
+            <i data-lucide="download-cloud" class="w-10 h-10 mx-auto text-[#0A84FF] mb-3"></i>
+            <h3 class="text-[17px] font-semibold text-black dark:text-white mb-2">Nueva versión disponible</h3>
+            <p class="text-[14px] font-medium text-black/60 dark:text-white/60 mb-6 leading-relaxed">Se han descargado mejoras. Actualiza para aplicar los cambios.</p>
+            <button onclick="acceptAppUpdate()" class="w-full py-3.5 text-white font-semibold text-[16px] bg-[#0A84FF] rounded-xl shadow-lg shadow-[#0A84FF]/20 active:scale-95 ios-transition">Actualizar ahora</button>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -566,6 +576,10 @@
                             if (parsed.assignments[wk][day][shift] && parsed.assignments[wk][day][shift].spot === "Escuela 196") {
                                 parsed.assignments[wk][day][shift].spot = "13 de Julio y Tello";
                             }
+                            if (parsed.assignments[wk][day][shift] && parsed.assignments[wk][day][shift].territories) {
+                                const tIdx = parsed.assignments[wk][day][shift].territories.indexOf("Rev.");
+                                if (tIdx !== -1) parsed.assignments[wk][day][shift].territories[tIdx] = "Rev. y Terr. Personal";
+                            }
                         });
                     });
                 });
@@ -628,6 +642,13 @@
                                     if (remoteData.assignments[wk][day][shift] && remoteData.assignments[wk][day][shift].spot === "Escuela 196") {
                                         remoteData.assignments[wk][day][shift].spot = "13 de Julio y Tello";
                                         needsUpdate = true;
+                                    }
+                                    if (remoteData.assignments[wk][day][shift] && remoteData.assignments[wk][day][shift].territories) {
+                                        const tIdx = remoteData.assignments[wk][day][shift].territories.indexOf("Rev.");
+                                        if (tIdx !== -1) {
+                                            remoteData.assignments[wk][day][shift].territories[tIdx] = "Rev. y Terr. Personal";
+                                            needsUpdate = true;
+                                        }
                                     }
                                 });
                             });
@@ -1304,7 +1325,7 @@
                             }
                             Object.values(state.assignments[key][dayId]).forEach(s => {
                                 if (s.territories && s.territories.length > 0) {
-                                    s.territories.forEach(t => { if (t !== 'Rev.') { monthlyCounts[t] = (monthlyCounts[t] || 0) + 1; totalAssigned++; if (isShiftCampana) campanaTerrs.add(t); } });
+                                    s.territories.forEach(t => { if (t !== 'Rev. y Terr. Personal') { monthlyCounts[t] = (monthlyCounts[t] || 0) + 1; totalAssigned++; if (isShiftCampana) campanaTerrs.add(t); } });
                                 }
                             });
                         });
@@ -1343,7 +1364,7 @@
             const dates = getDatesForMonthWeek(m, w);
             weekStructure.forEach((dayDef, index) => {
                 if (!weekData[dayDef.id]) return;
-                Object.values(weekData[dayDef.id]).forEach(shiftData => shiftData.territories?.forEach(t => { if (t !== 'Rev.') territoryWarnings[t] = { color: colorStatus, dateStr: `${dates[index].day} de ${monthNames[m]}` }; }));
+                Object.values(weekData[dayDef.id]).forEach(shiftData => shiftData.territories?.forEach(t => { if (t !== 'Rev. y Terr. Personal') territoryWarnings[t] = { color: colorStatus, dateStr: `${dates[index].day} de ${monthNames[m]}` }; }));
             });
         }
 
@@ -1361,7 +1382,7 @@
         
         function renderShiftTerritoryGrid() {
             const g = document.getElementById('shiftTerritoryGrid'); g.innerHTML = '';
-            const allTerrs = ['Rev.']; for(let i=1; i<=89; i++) { allTerrs.push(i.toString()); if(i===4) allTerrs.push('4.1'); }
+            const allTerrs = ['Rev. y Terr. Personal']; for(let i=1; i<=89; i++) { allTerrs.push(i.toString()); if(i===4) allTerrs.push('4.1'); }
             allTerrs.forEach(tStr => {
                 const sel = tempTerritories.indexOf(tStr) > -1; const warning = territoryWarnings[tStr];
                 let bgClass = 'bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70';
@@ -1370,8 +1391,9 @@
                     if (warning.color === 'red') bgClass = 'bg-[#FF453A]/10 text-[#FF453A] border border-[#FF453A]/20 font-semibold shadow-sm';
                     else if (warning.color === 'orange') bgClass = 'bg-[#FF9F0A]/10 text-[#FF9F0A] border border-[#FF9F0A]/20 font-medium shadow-sm';
                 }
-                const btn = document.createElement('button'); btn.className = `h-8 text-[12px] rounded-md flex items-center justify-center ios-transition active:scale-90 ${bgClass}`; btn.textContent = tStr; 
-                btn.onclick = () => { if (!sel && warning && tStr !== 'Rev.') showCustomAlert(`El territorio ${tStr} ya fue asignado el día ${warning.dateStr}.`); toggleShiftTerritory(tStr); }; 
+                const spanClass = tStr === 'Rev. y Terr. Personal' ? 'col-span-full' : '';
+                const btn = document.createElement('button'); btn.className = `h-8 text-[12px] rounded-md flex items-center justify-center ios-transition active:scale-90 ${bgClass} ${spanClass}`; btn.textContent = tStr; 
+                btn.onclick = () => { if (!sel && warning && tStr !== 'Rev. y Terr. Personal') showCustomAlert(`El territorio ${tStr} ya fue asignado el día ${warning.dateStr}.`); toggleShiftTerritory(tStr); }; 
                 g.appendChild(btn);
             });
         }
@@ -1383,11 +1405,11 @@
             const grid = document.getElementById('territoryGrid'); grid.innerHTML = ''; const monthlyAssigned = new Set();
             Object.keys(state.assignments).forEach(key => { 
                 if (key.startsWith(`${state.currentMonth}-`)) {
-                    Object.values(state.assignments[key]).forEach(d => Object.values(d).forEach(s => s.territories?.forEach(t => { if (t !== 'Rev.') monthlyAssigned.add(t); })));
+                    Object.values(state.assignments[key]).forEach(d => Object.values(d).forEach(s => s.territories?.forEach(t => { if (t !== 'Rev. y Terr. Personal') monthlyAssigned.add(t); })));
                 }
             });
-            const allTerrs = ['Rev.']; for(let i=1; i<=89; i++) { allTerrs.push(i.toString()); if(i===4) allTerrs.push('4.1'); }
-            let workedCount = 0; allTerrs.forEach(tStr => { if (tStr !== 'Rev.' && monthlyAssigned.has(tStr)) workedCount++; });
+            const allTerrs = ['Rev. y Terr. Personal']; for(let i=1; i<=89; i++) { allTerrs.push(i.toString()); if(i===4) allTerrs.push('4.1'); }
+            let workedCount = 0; allTerrs.forEach(tStr => { if (tStr !== 'Rev. y Terr. Personal' && monthlyAssigned.has(tStr)) workedCount++; });
             const remainingCount = 90 - workedCount;
             const subtitleEl = document.getElementById('territoryModalSubtitle');
             if (subtitleEl) {
@@ -1396,7 +1418,8 @@
             }
             allTerrs.forEach(tStr => {
                 const isAuto = monthlyAssigned.has(tStr); const div = document.createElement('div'); 
-                div.className = `h-8 text-[11px] font-medium rounded-md flex items-center justify-center ios-transition ${isAuto ? 'bg-[#34C759]/10 text-[#34C759] border border-[#34C759]/20 dark:bg-[#32D74B]/20 dark:text-[#32D74B] dark:border-[#32D74B]/30 shadow-sm' : 'bg-black/[0.04] dark:bg-white/5 text-black/30 dark:text-white/30'}`;
+                const spanClass = tStr === 'Rev. y Terr. Personal' ? 'col-span-full' : '';
+                div.className = `h-8 text-[11px] font-medium rounded-md flex items-center justify-center ios-transition ${spanClass} ${isAuto ? 'bg-[#34C759]/10 text-[#34C759] border border-[#34C759]/20 dark:bg-[#32D74B]/20 dark:text-[#32D74B] dark:border-[#32D74B]/30 shadow-sm' : 'bg-black/[0.04] dark:bg-white/5 text-black/30 dark:text-white/30'}`;
                 div.textContent = tStr; grid.appendChild(div);
             });
         }
@@ -1541,12 +1564,46 @@
         }
 
         Object.assign(window, {
-            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions, handleCameraHoldStart, handleCameraHoldEnd, handleCameraClick, openCustomConfirm, closeCustomConfirm, openDriversEditor, openLocationsEditor, openTimesEditor, saveEditedTimes, promptAddDriver, promptEditDriver, promptDeleteDriver, promptAddLocation, promptEditLocation, promptDeleteLocation, closeCustomPrompt, closeLocationTypeModal, selectLocationType
+            exitScreenshotMode, toggleScreenshotMode, showSyncStatus, openModesPicker, openMonthPicker, openWeekPicker, openSummaryModal, toggleModal, openRankingModal, handleModeSelection, saveCampana, disableCampana, handleHoldStart, handleHoldEnd, openLocationPicker, openDriverPicker, updateData, renderSchedule, openShiftTerritoryModal, saveShiftTerritories, closeCustomAlert, toggleLocationSection, toggleShiftTerritory, updateGlobalTime, updateCleaningTime, loginWithPassword, toggleTheme, renderLocationOptions, handleCameraHoldStart, handleCameraHoldEnd, handleCameraClick, openCustomConfirm, closeCustomConfirm, openDriversEditor, openLocationsEditor, openTimesEditor, saveEditedTimes, promptAddDriver, promptEditDriver, promptDeleteDriver, promptAddLocation, promptEditLocation, promptDeleteLocation, closeCustomPrompt, closeLocationTypeModal, selectLocationType, acceptAppUpdate
         });
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(err => console.log('Fallo SW: ', err)); }
+        let newWorker;
+        function showUpdateAlert() {
+            const alert = document.getElementById('updateAlertModal');
+            const box = document.getElementById('updateAlertBox');
+            alert.classList.remove('hidden'); alert.classList.add('flex'); 
+            void box.offsetWidth; 
+            document.getElementById('updateAlertBg').classList.remove('opacity-0'); 
+            box.classList.remove('scale-[1.10]', 'opacity-0');
+            box.classList.add('scale-100', 'opacity-100');
+            lucide.createIcons();
+        }
+
+        function acceptAppUpdate() {
+            if (newWorker) newWorker.postMessage({ type: 'SKIP_WAITING' });
+        }
+
+        if ('serviceWorker' in navigator) { 
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+                reg.addEventListener('updatefound', () => {
+                    newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showUpdateAlert();
+                        }
+                    });
+                });
+            }).catch(err => console.log('Fallo SW: ', err));
+
+            let refreshing;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                window.location.reload();
+            });
+        }
     </script>
 </body>
 </html>
